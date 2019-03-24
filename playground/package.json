@@ -1,0 +1,22 @@
+{
+  "name": "playground",
+  "version": "0.0.1",
+  "main": "index.js",
+  "license": "MIT",
+  "dependencies": {
+    "react": "^16.8.5",
+    "react-dom": "^16.8.5",
+    "react-monaco-editor": "^0.25.1"
+  },
+  "devDependencies": {
+    "@types/react": "^16.8.8",
+    "@types/react-dom": "^16.8.3",
+    "@types/react-monaco-editor": "^0.16.0",
+    "parcel": "^1.12.3",
+    "typescript": "^3.3.4000"
+  },
+  "scripts": {
+    "build": "parcel build --no-content-hash --no-source-maps --out-dir ../docs src/index.tsx",
+    "start": "parcel index.html"
+  }
+}
