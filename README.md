@@ -1,6 +1,6 @@
 # flow-to-ts
 
-The purpose of this project is to convert flow code to typescript.
+Convert flow code to typescript.
 
 # Quick start
 
