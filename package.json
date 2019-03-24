@@ -5,7 +5,6 @@
   "license": "MIT",
   "dependencies": {
     "@babel/core": "^7.4.0",
-    "@babel/generator": "^7.4.0",
     "@babel/parser": "^7.4.2",
     "@babel/traverse": "^7.4.0",
     "@babel/types": "^7.4.0"

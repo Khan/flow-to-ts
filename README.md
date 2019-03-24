@@ -5,8 +5,6 @@ Convert flow code to typescript.
 # Quick start
 
 - yarn
-- In @babel/traverse/lib/path/replacement.js disable the calls to validate() 
-  in _replaceWith(node).
 - yarn test
 
 # TODO
