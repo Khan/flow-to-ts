@@ -250,9 +250,33 @@ const transform = {
         console.warn("downgrading exact object type");
       }
 
-      const elements = [...properties, ...indexers];
-      path.replaceWith(
-        t.tsTypeLiteral(elements));
+      // TODO: create multiple sets of elements so that we can convert
+      // {x: number, ...T, y: number} to {x: number} & T & {y: number}
+      const elements = [];
+      const spreads = [];
+
+      for (const prop of properties) {
+        if (t.isObjectTypeSpreadProperty(prop)) {
+          const {argument} = prop;
+          spreads.push(argument);
+        } else {
+          elements.push(prop);
+        }
+      }
+
+      // TODO: maintain the position of indexers
+      elements.push(...indexers);
+
+      if (spreads.length > 0 && elements.length > 0) {
+        path.replaceWith(
+          t.tsIntersectionType([...spreads, t.tsTypeLiteral(elements)]));
+      } else if (spreads.length > 0) {
+        path.replaceWith(
+          t.tsIntersectionType(spreads));
+      } else {
+        path.replaceWith(
+          t.tsTypeLiteral(elements));
+      }
     }
   },
   TypeAlias: {
@@ -264,6 +288,20 @@ const transform = {
         t.tsTypeAliasDeclaration(id, typeParameters, right, declare));
     }
   },
+  IntersectionTypeAnnotation: {
+    exit(path) {
+      const {types} = path.node;
+      path.replaceWith(
+        t.tsIntersectionType(types));
+    }
+  },
+  UnionTypeAnnotation: {
+    exit(path) {
+      const {types} = path.node;
+      path.replaceWith(
+        t.tsUnionType(types));
+    }
+  }
 };
 
 module.exports = transform;

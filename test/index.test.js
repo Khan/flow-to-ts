@@ -61,19 +61,20 @@ describe("nullable", () => {
   runTestCases(testCases);
 });
 
-describe("objects", () => {
-  const formatter = (code) => {
-    return code.split("\n").map(line => line.trim()).join("");
-  };
+const formatter = (code) => {
+  return code.split("\n").map(line => line.trim()).join("");
+};
 
+describe("objects", () => {
   const testCases = [
     [`let obj: {a: string};`, `let obj: {a: string;};`],
     [`let obj: {+a: string};`, `let obj: {readonly a: string;};`],
-    [`let obj: {-a: string};`, `let obj: {a: string;};`],
+    [`let obj: {-a: string};`, `let obj: {a: string;};`],  // TODO: test that we warn
     [`let obj: {[key: number]: string};`, `let obj: {[key: number]: string;};`],
     [`let obj: {+[key: number]: string};`, `let obj: {readonly [key: number]: string;};`],
     [`let obj: {a(): string};`, `let obj: {a(): string;};`],
-    [`let obj: {a<T>(b: T): string};`, `let obj: {a<T>(b: T): string;};`],    
+    [`let obj: {a<T>(b: T): string};`, `let obj: {a<T>(b: T): string;};`],
+    [`let obj: {|a: string|};`, `let obj: {a: string;};`],  // TODO: test that we warn
     // TODO: getter, setter properties
     // TODO: test the order of indexer and non-indexer entries
   ];
@@ -81,7 +82,20 @@ describe("objects", () => {
   runTestCases(testCases, formatter);
 });
 
-describe("special types", () => {
+describe("interaction, union, and spread", () => {
+  const testCases = [
+    [`let obj: T & U;`, `let obj: T & U;`],
+    [`let obj: T | U;`, `let obj: T | U;`],
+    [`let obj: {...T, ...U};`, `let obj: T & U;`],
+    [`let obj: {...T, x: number};`, `let obj: T & {x: number;};`],
+    // [`let obj: {x: number, ...T, y: number};`, `let obj: {x: number;} & T & {y: number;};`],
+    // [`let obj: {x: number, ...T};`, `let obj: {x: number;} & T;`],
+  ];
+
+  runTestCases(testCases, formatter);
+});
+
+describe("utility types", () => {
   const testCases = [
     ["let a: $ReadOnly<string>;", "let a: Readonly<string>;"],
     ["let a: $ReadOnlyArray<string>;", "let a: ReadonlyArray<string>;"],
