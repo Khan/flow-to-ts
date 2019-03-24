@@ -130,3 +130,12 @@ describe("utility types", () => {
 
   runTestCases(testCases);
 });
+
+describe("type casting", () => {
+  const testCases = [
+    ["const a: number = (5: any);", "const a: number = (5: any);"],
+    ["const a = ((5: any): number);", "const a = ((5: any): number);"],
+  ];
+
+  runTestCases(testCases);
+});
