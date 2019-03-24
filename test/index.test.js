@@ -130,3 +130,12 @@ describe("utility types", () => {
 
   runTestCases(testCases);
 });
+
+describe("type casting", () => {
+  const testCases = [
+    // TODO: add support for TsTypeCastExpression to @babel/generator
+    // ["const a: number = (5 : any);", "const a: number = (5 : any);"],
+  ];
+
+  runTestCases(testCases);
+});

@@ -304,7 +304,20 @@ const transform = {
       path.replaceWith(
         t.tsUnionType(types));
     }
-  }
+  },
+  TypeCastExpression: {
+    exit(path) {
+      const {expression, typeAnnotation} = path.node;
+      const typeCastExpression = {
+        type: "TSTypeCastExpression",
+        expression,
+        typeAnnotation,
+      };
+      // TODO: add tsTypeCastExpression to @babel/types
+      // const typeCastExpression = t.tsTypeCastExpression(expression, typeAnnotation));
+      path.replaceWith(typeCastExpression);
+    }
+  },
 };
 
 module.exports = transform;
