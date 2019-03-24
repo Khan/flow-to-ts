@@ -14,8 +14,9 @@ Convert flow code to typescript.
 - handle cast/type coercion
 - intersection and union types
 - function predicates
-- utility types
-- convert spreads to intersection types
+- utility types (use https://github.com/piotrwitek/utility-types)
+- type spreads (see https://github.com/Microsoft/TypeScript/pull/28234)
 - rewrite imports
 - remove $FlowFixMe, $FlowIgnore, etc. type comments
+- other things (see https://github.com/niieani/typescript-vs-flowtype/blob/master/README.md)
 - cli to rewrite .js files as .ts(x) files
