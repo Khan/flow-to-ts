@@ -6,7 +6,11 @@ const transform = {
     for (const stmt of body) {
       if (stmt.leadingComments) {
         stmt.leadingComments = stmt.leadingComments.filter(
-          comment => comment.value.trim() !== "@flow");
+          comment => {
+            const value = comment.value.trim();
+            return value !== "@flow" && !value.startsWith("$FlowFixMe");
+          }
+        );
       }
     }
   },
@@ -282,10 +286,9 @@ const transform = {
   TypeAlias: {
     exit(path) {
       const {id, typeParameters, right} = path.node;
-      const declare = undefined; // TODO: figure out what it's used for
 
       path.replaceWith(
-        t.tsTypeAliasDeclaration(id, typeParameters, right, declare));
+        t.tsTypeAliasDeclaration(id, typeParameters, right));
     }
   },
   IntersectionTypeAnnotation: {

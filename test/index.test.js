@@ -12,10 +12,17 @@ const runTestCases = (testCases, formatter) => {
   }
 };
 
+// babel's codegen outputs object types on multiple lines, this
+// formatter puts everything back on the same line.
+const formatter = (code) => {
+  return code.split("\n").map(line => line.trim()).join("");
+};
+
 describe("basic type annotations", () => {
   const testCases = [
     ["let a: string;", "let a: string;"],
     ["let a: number;", "let a: number;"],
+    ["let a: boolean;", "let a: boolean;"],
     ["let a: null;", "let a: null;"],
     ["let a: any;", "let a: any;"],
     ["let a: void;", "let a: void;"],
@@ -24,6 +31,25 @@ describe("basic type annotations", () => {
   ];
 
   runTestCases(testCases);
+});
+
+describe("flow comments", () => {
+  const testCases = [
+    ["// @flow\nlet a: string;", "let a: string;"],
+    ["// $FlowFixMe\nlet a: string;", "let a: string;"],
+    ["// $FlowFixMe: TODO\nlet a: string;", "let a: string;"],
+  ];
+
+  runTestCases(testCases);
+});
+
+describe("type aliases", () => {
+  const testCases = [
+    ["type T = string;", "type T = string;"],
+    ["type T<A> = {a: A;};", "type T<A> = {a: A;};"],
+  ];
+
+  runTestCases(testCases, formatter);
 });
 
 describe("function types", () => {
@@ -60,10 +86,6 @@ describe("nullable", () => {
 
   runTestCases(testCases);
 });
-
-const formatter = (code) => {
-  return code.split("\n").map(line => line.trim()).join("");
-};
 
 describe("objects", () => {
   const testCases = [

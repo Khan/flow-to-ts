@@ -15,6 +15,7 @@
     "prettier": "^1.16.4"
   },
   "scripts": {
-    "test": "jest"
+    "test": "jest",
+    "coverage": "jest --coverage --collectCoverageFrom=src/**/*.js"
   }
 }
