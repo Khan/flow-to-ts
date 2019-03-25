@@ -1,0 +1,1 @@
+const isString = y => typeof y === "isString";

@@ -1,5 +1,8 @@
 const t = require("@babel/types");
 
+const locToString = (loc) => 
+  `${loc.start.line}:${loc.start.column}-${loc.end.line}:${loc.end.column}`;
+
 const transform = {
   Program(path) {
     const {body} = path.node;
@@ -43,7 +46,23 @@ const transform = {
     path.replaceWith(t.tsAnyKeyword());
   },
 
-  // All non-leaf nodes must be processed on exit()
+  // It's okay to process these non-leaf nodes on enter()
+  // since we're modifying them in a way doesn't affect
+  // the processing of other nodes.
+  FunctionDeclaration(path) {
+    console.warn(`removing %checks at ${locToString(path.node.predicate.loc)}`);
+    delete path.node.predicate;
+  },
+  FunctionExpression(path) {
+    console.warn(`removing %checks at ${locToString(path.node.predicate.loc)}`);
+    delete path.node.predicate;
+  },
+  ArrowFunctionExpression(path) {
+    console.warn(`removing %checks at ${locToString(path.node.predicate.loc)}`);
+    delete path.node.predicate;
+  },
+
+  // All other non-leaf nodes must be processed on exit()
   TypeAnnotation: {
     exit(path) {
       const {typeAnnotation} = path.node;
