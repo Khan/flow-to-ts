@@ -1,0 +1,1 @@
+let a: Array<any>;
