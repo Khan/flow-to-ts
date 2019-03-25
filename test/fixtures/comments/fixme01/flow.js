@@ -1,0 +1,2 @@
+// $FlowFixMe
+let a: string;
