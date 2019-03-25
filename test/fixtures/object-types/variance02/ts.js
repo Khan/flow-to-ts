@@ -1,3 +1,3 @@
 let obj: {
-  readonly a: string;
+  a: string;
 };
