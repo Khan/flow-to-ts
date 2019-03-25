@@ -38,6 +38,10 @@ const transform = {
   NullLiteralTypeAnnotation(path) {
     path.replaceWith(t.tsNullKeyword());
   },
+  ExistsTypeAnnotation(path) {
+    console.warn("downgrading * to any");
+    path.replaceWith(t.tsAnyKeyword());
+  },
 
   // All non-leaf nodes must be processed on exit()
   TypeAnnotation: {
