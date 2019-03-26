@@ -41,9 +41,10 @@ class App extends React.Component<Props, State> {
     
     constructor(props) {
         super(props);
+        const {hash} = window.location;
 
         this.state = {
-            flowCode: initCode,
+            flowCode: hash ? decodeURIComponent(hash).slice(1) : initCode,
             tsCode: convert(initCode),
             error: null,
         };
@@ -69,6 +70,7 @@ class App extends React.Component<Props, State> {
                 const tsCode = convert(flowCode);
                 this.tsEditor.setValue(tsCode);
                 this.setState({error: null});
+                window.location.hash = encodeURIComponent(flowCode);
             } catch (e) {
                 this.setState({error: e.toString()});
                 console.log(e);
