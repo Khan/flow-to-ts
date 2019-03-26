@@ -1,0 +1,1 @@
+type a = typeof A;

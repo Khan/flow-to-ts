@@ -353,6 +353,15 @@ const transform = {
         t.tsUnionType(types));
     }
   },
+  TypeofTypeAnnotation: {
+    exit(path) {
+      const {argument} = path.node;
+      // argument has already been converted from GenericTypeAnnotation to
+      // TSTypeReference.
+      const exprName = argument.typeName;
+      path.replaceWith(t.tsTypeQuery(exprName));
+    }
+  },
   TypeCastExpression: {
     exit(path) {
       const {expression, typeAnnotation} = path.node;
