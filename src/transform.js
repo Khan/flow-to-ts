@@ -375,6 +375,29 @@ const transform = {
       path.replaceWith(typeCastExpression);
     }
   },
+  InterfaceDeclaration: {
+    exit(path) {
+      const {id, typeParameters} = path.node; // TODO: implements, mixins
+      const body = t.tsInterfaceBody(path.node.body.members);
+      const _extends = path.node.extends.length > 0 
+        ? path.node.extends 
+        : undefined;
+      path.replaceWith(
+        t.tsInterfaceDeclaration(id, typeParameters, _extends, body));
+    }
+  },
+  InterfaceExtends: {
+    exit(path) {
+      const {id, typeParameters} = path.node;
+      path.replaceWith(t.tsExpressionWithTypeArguments(id, typeParameters));
+    }
+  },
+  ClassImplements: {
+    exit(path) {
+      const {id, typeParameters} = path.node;
+      path.replaceWith(t.tsExpressionWithTypeArguments(id, typeParameters));
+    }
+  },
 };
 
 module.exports = transform;
