@@ -1,7 +1,19 @@
 import * as React from "react";
-import MonacoEditor from 'react-monaco-editor';
+import * as monaco from "monaco-editor/esm/vs/editor/editor.main.js";
 
 import convert from "../../src/convert.js";
+
+// @ts-ignore
+self.MonacoEnvironment = {
+	getWorkerUrl: function (moduleId, label) {
+		if (label === 'typescript' || label === 'javascript') {
+			return './ts.worker.js';
+		}
+		return './editor.worker.js';
+	},
+};
+
+monaco.languages.register({ id: 'flow' });
 
 const initCode = `// @flow
 let a: number = 5;
@@ -13,49 +25,109 @@ type Foo<T> = {
 };
 `;
 
-class App extends React.Component {
-    editor: any;
-    
-    state = {
-        flowCode: initCode,
-        tsCode: convert(initCode),
-    };
+type Props = {};
+type State = {
+    flowCode: string,
+    tsCode: string,
+    error: string | null,
+};
 
-    editorDidMount = (editor, monaco) =>{
-        console.log('editorDidMount', editor);
-        editor.focus();
-        this.editor = editor;
+class App extends React.Component<Props, State> {
+    editor: any;
+    flowRef: React.RefObject<HTMLDivElement>;
+    tsRef: React.RefObject<HTMLDivElement>;
+    flowEditor: monaco.editor.IStandaloneCodeEditor;
+    tsEditor: monaco.editor.IStandaloneCodeEditor;
+    
+    constructor(props) {
+        super(props);
+
+        this.state = {
+            flowCode: initCode,
+            tsCode: convert(initCode),
+            error: null,
+        };
+    
+        this.flowRef = React.createRef();
+        this.tsRef = React.createRef();
     }
 
     componentDidMount() {
-		window.addEventListener('resize', () => {
-            if (this.editor) {
-                this.editor.layout();
+        this.flowEditor = monaco.editor.create(this.flowRef.current, {
+            value: this.state.flowCode,
+            selectOnLineNumbers: true,
+            language: "flow",
+            fontSize: 16,
+            minimap: {
+                enabled: false,
+            },
+        });
+
+        this.flowEditor.onDidChangeModelContent((e) => {
+            try {
+                const flowCode = this.flowEditor.getValue();
+                const tsCode = convert(flowCode);
+                this.tsEditor.setValue(tsCode);
+                this.setState({error: null});
+            } catch (e) {
+                this.setState({error: e.toString()});
+                console.log(e);
             }
-        });
-	}
-
-    onChange = (newValue: string, e) => {
-        const flowCode = newValue;
-        const tsCode = convert(newValue);
-
-        this.setState({
-            flowCode,
-            tsCode,
-        });
-    }
-
-    render() {
-        const options = {
+        })
+        
+        this.tsEditor = monaco.editor.create(this.tsRef.current, {
+            value: this.state.tsCode,
+            language: "typescript",
             selectOnLineNumbers: true,
             fontSize: 16,
             minimap: {
                 enabled: false,
             },
+            readOnly: true,
+        });
+        
+		window.addEventListener('resize', () => {
+            if (this.flowEditor) {
+                this.flowEditor.layout();
+            }
+            if (this.tsEditor) {
+                this.tsEditor.layout();
+            }
+        });
+	}
+
+    render() {
+        const {error} = this.state;
+
+        const editorStyle = {
+            position: "absolute",
+            left: 0, top: 0, right: 0, bottom: 0,
         };
 
-        const {flowCode, tsCode} = this.state;
-        
+        const flowOverlayStyle = {
+            position: "absolute", 
+            left: 0, right: 0, bottom: 0,
+            pointerEvents: error ? "" : "none",
+            backgroundColor: error ? "rgba(255, 0, 0, 0.5)" : "",
+            padding: 16,
+            fontSize: 16,
+            fontFamily: "sans-serif",
+        };
+
+        const tsOverlayStyle = {
+            position: "absolute", 
+            left: 0, top: 0, right: 0, bottom: 0,
+            pointerEvents: "none",
+            backgroundColor: error ? "rgba(255, 255, 255, 0.5)" : "",
+        };
+
+        const headerStyle = {
+            fontFamily: "sans-serif",
+            margin: 8,
+            fontSize: 24,
+            fontWeight: 300,
+        };
+
         return <div 
             style={{
                 display: "grid", 
@@ -64,28 +136,22 @@ class App extends React.Component {
                 height: "100%",
             }}
         >
-            <div>
-                <h1>Flow (input)</h1>
+            <div style={{backgroundColor: "#DDD"}}>
+                <h1 style={headerStyle}>Flow (input)</h1>
             </div>
-            <div>
-                <h1>TypeScript (output)</h1>
+            <div style={{backgroundColor: "#DDD"}}>
+                <h1 style={headerStyle}>TypeScript (output)</h1>
             </div>
-            <MonacoEditor
-                language="flow" // TODO: enable syntax highlighting
-                theme="vs"
-                value={flowCode}
-                options={options}
-                onChange={this.onChange}
-                editorDidMount={this.editorDidMount}
-            />
-            <MonacoEditor
-                language="typescript" // TODO: enable syntax highlighting
-                theme="vs"
-                value={tsCode}
-                options={{...options, readOnly: true}}
-                onChange={this.onChange}
-                editorDidMount={this.editorDidMount}
-            />            
+            <div style={{position: "relative"}}>
+                <div ref={this.flowRef} style={editorStyle}></div>
+                <div style={flowOverlayStyle}>
+                    {error}
+                </div>
+            </div>
+            <div style={{position: "relative", display: "flex"}}>
+                <div ref={this.tsRef} style={editorStyle}></div>
+                <div style={tsOverlayStyle}></div>
+            </div>
         </div>;
     }
 }
