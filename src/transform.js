@@ -17,6 +17,8 @@ const transform = {
       }
     }
   },
+
+  // Basic Types
   StringTypeAnnotation(path) {
     path.replaceWith(t.tsStringKeyword());
   },
@@ -38,28 +40,51 @@ const transform = {
   EmptyTypeAnnotation(path) {
     path.replaceWith(t.tsNeverKeyword());
   },
-  NullLiteralTypeAnnotation(path) {
-    path.replaceWith(t.tsNullKeyword());
-  },
   ExistsTypeAnnotation(path) {
     console.warn("downgrading * to any");
     path.replaceWith(t.tsAnyKeyword());
+  },
+
+  // Literals
+  StringLiteralTypeAnnotation(path) {
+    path.replaceWith(
+      t.tsLiteralType(t.stringLiteral(path.node.value))
+    );
+  },
+  BooleanLiteralTypeAnnotation(path) {
+    path.replaceWith(
+      t.tsLiteralType(t.booleanLiteral(path.node.value))
+    );
+  },
+  NumberLiteralTypeAnnotation(path) {
+    path.replaceWith(
+      t.tsLiteralType(t.numericLiteral(path.node.value))
+    );
+  },
+  NullLiteralTypeAnnotation(path) {
+    path.replaceWith(t.tsNullKeyword());
   },
 
   // It's okay to process these non-leaf nodes on enter()
   // since we're modifying them in a way doesn't affect
   // the processing of other nodes.
   FunctionDeclaration(path) {
-    console.warn(`removing %checks at ${locToString(path.node.predicate.loc)}`);
-    delete path.node.predicate;
+    if (path.node.predicate) {
+      console.warn(`removing %checks at ${locToString(path.node.predicate.loc)}`);
+      delete path.node.predicate;
+    }
   },
   FunctionExpression(path) {
-    console.warn(`removing %checks at ${locToString(path.node.predicate.loc)}`);
-    delete path.node.predicate;
+    if (path.node.predicate) {
+      console.warn(`removing %checks at ${locToString(path.node.predicate.loc)}`);
+      delete path.node.predicate;
+    }
   },
   ArrowFunctionExpression(path) {
-    console.warn(`removing %checks at ${locToString(path.node.predicate.loc)}`);
-    delete path.node.predicate;
+    if (path.node.predicate) {
+      console.warn(`removing %checks at ${locToString(path.node.predicate.loc)}`);
+      delete path.node.predicate;
+    }
   },
 
   // All other non-leaf nodes must be processed on exit()
@@ -167,8 +192,8 @@ const transform = {
       }
       const typeParameter = {
         type: "TSTypeParameter",
-        constraint: undefined, // TODO
-        default: undefined, // TODO
+        constraint: bound && bound.typeAnnotation,
+        default: path.node.default,
         name,
       };
       // TODO: patch @babel/types - tsTypeParameter omits name
