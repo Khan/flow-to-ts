@@ -43,11 +43,23 @@ class App extends React.Component<Props, State> {
         super(props);
         const {hash} = window.location;
 
-        this.state = {
-            flowCode: hash ? decodeURIComponent(hash).slice(1) : initCode,
-            tsCode: convert(initCode),
-            error: null,
-        };
+        const flowCode = hash ? decodeURIComponent(hash).slice(1) : initCode;
+
+        try {
+            this.state = {
+                flowCode,
+                tsCode: convert(flowCode),
+                error: null,
+            };
+        } catch (e) {
+            // This shouldn't happen b/c we don't update the permalink when
+            // there's a parse error.
+            this.state = {
+                flowCode,
+                tsCode: "",
+                error: e,
+            };
+        }
     
         this.flowRef = React.createRef();
         this.tsRef = React.createRef();
