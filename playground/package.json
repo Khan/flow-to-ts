@@ -4,11 +4,12 @@
   "main": "index.js",
   "license": "MIT",
   "dependencies": {
+    "monaco-editor": "^0.16.2",
     "react": "^16.8.5",
-    "react-dom": "^16.8.5",
-    "react-monaco-editor": "^0.25.1"
+    "react-dom": "^16.8.5"
   },
   "devDependencies": {
+    "@types/parcel-env": "^0.0.0",
     "@types/react": "^16.8.8",
     "@types/react-dom": "^16.8.3",
     "@types/react-monaco-editor": "^0.16.0",
@@ -16,7 +17,11 @@
     "typescript": "^3.3.4000"
   },
   "scripts": {
-    "build": "parcel build --no-content-hash --no-source-maps --out-dir ../docs src/index.tsx",
-    "start": "parcel index.html"
+    "build": "yarn build:ts-worker && yarn build:editor-worker && parcel build --no-content-hash --no-source-maps --out-dir ../docs src/index.tsx",
+    "build:ts-worker": "parcel build node_modules/monaco-editor/esm/vs/language/typescript/ts.worker.js --no-content-hash --no-source-maps --out-dir ../docs ",
+    "build:editor-worker": "parcel build node_modules/monaco-editor/esm/vs/editor/editor.worker.js --no-content-hash --no-source-maps --out-dir ../docs ",
+    "ts-worker": "parcel build node_modules/monaco-editor/esm/vs/language/typescript/ts.worker.js --no-source-maps",
+    "editor-worker": "parcel build node_modules/monaco-editor/esm/vs/editor/editor.worker.js --no-source-maps",
+    "start": "yarn ts-worker && yarn editor-worker && parcel index.html"
   }
 }
