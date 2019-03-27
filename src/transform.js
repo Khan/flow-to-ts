@@ -3,20 +3,55 @@ const t = require("@babel/types");
 const locToString = (loc) => 
   `${loc.start.line}:${loc.start.column}-${loc.end.line}:${loc.end.column}`;
 
-const utilityTypes = new Set([
-  "$Keys", 
-  "$Values", 
-  // TODO: introduce options so that people can pick between using
-  // utility-types or doing an inline conversion
-  // "$ReadOnly", 
-  "$Diff", 
-  "$PropertyType", 
-  "$ElementType", 
-  "$Call", 
-  "$Shape", 
-  "$NonMaybeType", 
-  "Class", 
-]);
+// TODO: figure out how to template these inline definitions
+const utilityTypes = {
+  "$Keys": (typeAnnotation) => {
+    // TODO: patch @babel/types - tsTypeOperator should accept two arguments
+    // return t.tsTypeOperator(typeAnnotation, "keyof");
+    return {
+      type: "TSTypeOperator",
+      typeAnnotation,
+      operator: "keyof",
+    };
+  },
+  "$Values": (typeAnnotation) => {
+    return t.tsIndexedAccessType(
+      typeAnnotation, 
+      {
+        type: "TSTypeOperator",
+        typeAnnotation,
+        operator: "keyof",
+      },
+      // TODO: patch @babel/types - tsTypeOperator should accept two arguments
+      //t.tsTypeOperator(typeAnnotation, "keyof"),
+    );
+  },
+  "$ReadOnly": (typeAnnotation) => {
+    const typeName = t.identifier("Readonly");
+    const typeParameters = 
+      t.tsTypeParameterInstantiation([typeAnnotation])
+    return t.tsTypeReference(typeName, typeParameters);
+  },
+  "$Shape": (typeAnnotation) => {
+    const typeName = t.identifier("Partial");
+    const typeParameters = 
+      t.tsTypeParameterInstantiation([typeAnnotation])
+    return t.tsTypeReference(typeName, typeParameters);
+  },
+  "$NonMaybeType": (typeAnnotation) => {
+    const typeName = t.identifier("NonNullable");
+    const typeParameters = 
+      t.tsTypeParameterInstantiation([typeAnnotation])
+    return t.tsTypeReference(typeName, typeParameters);
+  },
+  "Class": null, // TODO
+
+  // These are two complicate to inline so we'll leave them as imports
+  "$Diff": null,
+  "$PropertyType": null,
+  "$ElementType": null,
+  "$Call": null,
+};
 
 const transform = {
   Program: {
@@ -233,18 +268,21 @@ const transform = {
     exit(path, state) {
       const {id, typeParameters} = path.node;
 
-      const specialTypes = {
-        "$ReadOnly": "Readonly",
-        "$ReadOnlyArray": "ReadonlyArray",
-      };
-
       const typeName = id;
-      if (typeName.name in specialTypes) {
-        typeName.name = specialTypes[typeName.name];
+      // utility-types doesn't have a definition for $ReadOnlyArray
+      // TODO: add one
+      if (typeName.name === "$ReadOnlyArray") {
+        typeName.name = "ReadonlyArray";
       }
 
-      if (utilityTypes.has(typeName.name)) {
-        state.usedUtilityTypes.add(typeName.name);
+      if (typeName.name in utilityTypes) {
+        if (state.options.inlineUtilityTypes && typeof utilityTypes[typeName.name] === "function") {
+          const inline = utilityTypes[typeName.name];
+          path.replaceWith(inline(...typeParameters.params));
+          return;
+        } else {
+          state.usedUtilityTypes.add(typeName.name);
+        }
       }
 
       path.replaceWith(

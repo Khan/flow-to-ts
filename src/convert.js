@@ -5,7 +5,7 @@ const generate = require("../babel-generator/lib/index.js").default;
 
 const transform = require("./transform.js");
 
-const options = {
+const parseOptions = {
     sourceType: "module",
     plugins: [
         // enable jsx and flow syntax
@@ -18,16 +18,19 @@ const options = {
     ],
 };
 
-const convert = (flowCode, debug) => {
-    const ast = parse(flowCode, options);
+const convert = (flowCode, options) => {
+    const ast = parse(flowCode, parseOptions);
 
     // apply our transforms, traverse mutates the ast
     const state = {
         usedUtilityTypes: new Set(),
+        options: options || {
+            inlineUtilityTypes: false,
+        },
     };
     traverse(ast, transform, null, state);
 
-    if (debug) {
+    if (options && options.debug) {
         console.log(JSON.stringify(ast, null, 4));
     }
 
