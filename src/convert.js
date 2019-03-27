@@ -22,7 +22,10 @@ const convert = (flowCode, debug) => {
     const ast = parse(flowCode, options);
 
     // apply our transforms, traverse mutates the ast
-    traverse(ast, transform);
+    const state = {
+        usedUtilityTypes: new Set(),
+    };
+    traverse(ast, transform, null, state);
 
     if (debug) {
         console.log(JSON.stringify(ast, null, 4));
