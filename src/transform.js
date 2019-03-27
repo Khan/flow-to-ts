@@ -3,19 +3,47 @@ const t = require("@babel/types");
 const locToString = (loc) => 
   `${loc.start.line}:${loc.start.column}-${loc.end.line}:${loc.end.column}`;
 
+const utilityTypes = new Set([
+  "$Keys", 
+  "$Values", 
+  // TODO: introduce options so that people can pick between using
+  // utility-types or doing an inline conversion
+  // "$ReadOnly", 
+  "$Diff", 
+  "$PropertyType", 
+  "$ElementType", 
+  "$Call", 
+  "$Shape", 
+  "$NonMaybeType", 
+  "Class", 
+]);
+
 const transform = {
-  Program(path) {
-    const {body} = path.node;
-    for (const stmt of body) {
-      if (stmt.leadingComments) {
-        stmt.leadingComments = stmt.leadingComments.filter(
-          comment => {
-            const value = comment.value.trim();
-            return value !== "@flow" && !value.startsWith("$FlowFixMe");
-          }
-        );
+  Program: {
+    exit(path, state) {
+      const {body} = path.node;
+      for (const stmt of body) {
+        if (stmt.leadingComments) {
+          stmt.leadingComments = stmt.leadingComments.filter(
+            comment => {
+              const value = comment.value.trim();
+              return value !== "@flow" && !value.startsWith("$FlowFixMe");
+            }
+          );
+        }
       }
-    }
+
+      if (state.usedUtilityTypes.size > 0) {
+        const specifiers = [...state.usedUtilityTypes].map(name => {
+          const imported = t.identifier(name);
+          const local = t.identifier(name);
+          return t.importSpecifier(local, imported);
+        }); 
+        const source = t.stringLiteral("utility-types");
+        const importDeclaration = t.importDeclaration(specifiers, source);
+        path.node.body = [importDeclaration, ...path.node.body];
+      }
+    },
   },
 
   // Basic Types
@@ -202,7 +230,7 @@ const transform = {
     }
   },
   GenericTypeAnnotation: {
-    exit(path) {
+    exit(path, state) {
       const {id, typeParameters} = path.node;
 
       const specialTypes = {
@@ -213,6 +241,10 @@ const transform = {
       const typeName = id;
       if (typeName.name in specialTypes) {
         typeName.name = specialTypes[typeName.name];
+      }
+
+      if (utilityTypes.has(typeName.name)) {
+        state.usedUtilityTypes.add(typeName.name);
       }
 
       path.replaceWith(
