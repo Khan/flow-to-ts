@@ -2,6 +2,8 @@ const fs = require("fs");
 const {parse} = require("@babel/parser");
 const traverse = require("../babel-traverse/lib/index.js").default;
 const generate = require("../babel-generator/lib/index.js").default;
+const prettier = require("prettier/standalone");
+const plugins = [require("prettier/parser-typescript")];
 
 const transform = require("./transform.js");
 
@@ -24,9 +26,10 @@ const convert = (flowCode, options) => {
     // apply our transforms, traverse mutates the ast
     const state = {
         usedUtilityTypes: new Set(),
-        options: options || {
-            inlineUtilityTypes: false,
-        },
+        options: Object.assign(
+            { inlineUtilityTypes: false },
+            options,
+        ),
     };
     traverse(ast, transform, null, state);
 
@@ -38,7 +41,11 @@ const convert = (flowCode, options) => {
     // if we ever decide to
     const tsCode = generate(ast, {}, flowCode).code;
     
-    return tsCode;
+    const prettierOptions = Object.assign(
+        { parser: "typescript", plugins }, 
+        options && options.prettier,
+    );
+    return prettier.format(tsCode, prettierOptions).trim();
 }
 
 module.exports = convert;

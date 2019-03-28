@@ -434,16 +434,18 @@ const transform = {
     }
   },
   TypeCastExpression: {
-    exit(path) {
+    exit(path, state) {
       const {expression, typeAnnotation} = path.node;
-      const typeCastExpression = {
-        type: "TSTypeCastExpression",
-        expression,
-        typeAnnotation,
-      };
+      // TODO: figure out how to get this working with prettier and make it configurable
+      // const typeCastExpression = {
+      //   type: "TSTypeCastExpression",
+      //   expression,
+      //   typeAnnotation,
+      // };
       // TODO: add tsTypeCastExpression to @babel/types
-      // const typeCastExpression = t.tsTypeCastExpression(expression, typeAnnotation));
-      path.replaceWith(typeCastExpression);
+      // const typeCastExpression = t.tsTypeCastExpression(expression, typeAnnotation);
+      const tsAsExpression = t.tsAsExpression(expression, typeAnnotation.typeAnnotation);
+      path.replaceWith(tsAsExpression);
     }
   },
   InterfaceDeclaration: {
