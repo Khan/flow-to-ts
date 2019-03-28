@@ -1,3 +1,4 @@
+const path = require("path");
 const t = require("@babel/types");
 
 const locToString = (loc) => 
@@ -466,6 +467,21 @@ const transform = {
     exit(path) {
       const {id, typeParameters} = path.node;
       path.replaceWith(t.tsExpressionWithTypeArguments(id, typeParameters));
+    }
+  },
+  ImportDeclaration: {
+    exit(path) {
+      path.node.importKind = "value";
+      // TODO: make this configurable so we can output .ts[x]?
+      const src = path.node.source.value.startsWith("./")
+        ? path.node.source.value.replace(/\.js[x]?$/, "")
+        : path.node.source.value;
+      path.node.source = t.stringLiteral(src)
+    }
+  },
+  ImportSpecifier: {
+    exit(path) {
+      path.node.importKind = "value";
     }
   },
 };

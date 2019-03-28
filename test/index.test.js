@@ -5,7 +5,7 @@ const convert = require("../src/convert.js");
 
 const failingTestNames = ["spread03", "spread04"];
 
-describe("laminar", () => {
+describe("flow-to-ts", () => {
   const suites = fs.readdirSync(path.join(__dirname, "fixtures"));
   for (const suiteName of suites) {
     describe(suiteName, () => {
