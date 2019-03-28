@@ -1,1 +1,1 @@
-const a: number = (5: any);
+const a: number = 5 as any;

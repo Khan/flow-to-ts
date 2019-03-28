@@ -22,6 +22,6 @@
     "build:editor-worker": "parcel build node_modules/monaco-editor/esm/vs/editor/editor.worker.js --no-content-hash --no-source-maps --out-dir ../docs ",
     "ts-worker": "parcel build node_modules/monaco-editor/esm/vs/language/typescript/ts.worker.js --no-source-maps",
     "editor-worker": "parcel build node_modules/monaco-editor/esm/vs/editor/editor.worker.js --no-source-maps",
-    "start": "yarn ts-worker && yarn editor-worker && parcel index.html"
+    "start": "yarn ts-worker && yarn editor-worker && parcel index.html --no-source-maps"
   }
 }
