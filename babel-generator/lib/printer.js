@@ -358,7 +358,17 @@ class Printer {
     for (let i = 0; i < nodes.length; i++) {
       const node = nodes[i];
       if (!node) continue;
-      if (opts.statement) this._printNewline(true, node, parent, newlineOpts);
+      if (opts.statement) {
+        const gap = (parent.gaps && parent.gaps[i]);
+        // print any leading spaces before a statement inside a BlockStatement or Program
+        if (gap) {
+          for (let j = 0; j < gap; j++) {
+            this._newline();
+          }
+        } else {
+          this._printNewline(true, node, parent, newlineOpts);
+        }
+      }
       this.print(node, parent);
 
       if (opts.iterator) {
@@ -369,7 +379,18 @@ class Printer {
         opts.separator.call(this);
       }
 
-      if (opts.statement) this._printNewline(false, node, parent, newlineOpts);
+      if (opts.statement) {
+        const gap = (parent.gaps && parent.gaps[i+1]);
+        // print any trailing spaces at the end of BlockStatement
+        if (gap && i + 1 === nodes.length) {
+          for (let j = 0; j < gap; j++) {
+            this._newline();
+          }
+        }
+        if (!gap) {
+          this._printNewline(false, node, parent, newlineOpts);
+        }
+      }
     }
 
     if (opts.indent) this.dedent();
