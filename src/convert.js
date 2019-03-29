@@ -39,13 +39,20 @@ const convert = (flowCode, options) => {
 
     // we pass flowCode so that generate can compute source maps
     // if we ever decide to
-    const tsCode = generate(ast, {}, flowCode).code;
+    let tsCode = generate(ast, flowCode).code;
+    for (let i = 0; i < state.trailingLines; i++) {
+        tsCode += "\n";
+    }
     
-    const prettierOptions = Object.assign(
-        { parser: "typescript", plugins }, 
-        options && options.prettier,
-    );
-    return prettier.format(tsCode, prettierOptions).trim();
+    if (options && options.prettier) {
+        const prettierOptions = Object.assign(
+            { parser: "typescript", plugins }, 
+            typeof options.prettier === "object" ? options.prettier : {},
+        );
+        return prettier.format(tsCode, prettierOptions).trim();
+    } else {
+        return tsCode;
+    }
 }
 
 module.exports = convert;

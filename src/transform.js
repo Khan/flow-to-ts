@@ -56,6 +56,22 @@ const utilityTypes = {
 
 const transform = {
   Program: {
+    enter(path, state) {
+      const {body} = path.node;
+
+      const gaps = [body[0].loc.start.line - path.node.loc.start.line];      
+      for (let i = 0; i < body.length - 1; i++) {
+        const gap = body[i+1].loc.start.line - body[i].loc.end.line;
+        gaps.push(gap);
+      }
+      path.node.gaps = gaps;
+
+      if (body.length > 0) {
+        // Attach the number of trailing spaces to the state so that convert.js
+        // can add those back since babel-generator/lib/buffer.js removes them.
+        state.trailingLines = path.node.loc.end.line - body[body.length - 1].loc.end.line;
+      }
+    },
     exit(path, state) {
       const {body} = path.node;
       for (const stmt of body) {
@@ -79,6 +95,25 @@ const transform = {
         const importDeclaration = t.importDeclaration(specifiers, source);
         path.node.body = [importDeclaration, ...path.node.body];
       }
+    },
+  },
+  BlockStatement: {
+    // TODO: deal with empty functions
+    enter(path, state) {
+      const {body} = path.node;
+      const gaps = [];      
+      if (body.length > 0) {
+        gaps.push(body[0].loc.start.line - path.node.loc.start.line - 1);
+      }
+      for (let i = 0; i < body.length - 1; i++) {
+        const gap = body[i+1].loc.start.line - body[i].loc.end.line;
+        gaps.push(gap);
+      }
+      if (body.length > 0) {
+        const gap = path.node.loc.end.line - body[body.length - 1].loc.end.line + 1;
+        gaps.push(gap);
+      }
+      path.node.gaps = gaps;
     },
   },
 
@@ -294,7 +329,7 @@ const transform = {
     exit(path) {
       const {key, value, optional, variance, kind, method} = path.node; // TODO: static, kind
       const typeAnnotation = t.tsTypeAnnotation(value);
-      const initializer = null;  // TODO: figure out when this used
+      const initializer = undefined;  // TODO: figure out when this used
       const computed = false;  // TODO: maybe set this to true for indexers
       const readonly = variance && variance.kind === "plus";
 
@@ -325,9 +360,9 @@ const transform = {
           type: "TSPropertySignature",
           key,
           typeAnnotation,
-          initializer,
+          // initializer,
           computed,
-          optional,
+          // optional,
           readonly,
         }
         // TODO: patch @babel/types - tsPropertySignature ignores typeAnnotation, optional, and readonly
