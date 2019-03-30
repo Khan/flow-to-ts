@@ -186,6 +186,16 @@ class Printer {
     this._append("\n", true);
   }
 
+  _printNewlines(newlines) {
+    for (const line of newlines) {
+      if (line) {
+        this._printComment(line);
+      } else {
+        this._newline();
+      }
+    }
+  }
+
   _append(str, queue = false) {
     this._maybeAddParen(str);
 
@@ -292,19 +302,10 @@ class Printer {
 
     if (needsParens) this.token("(");
 
-    if (parent && ["Program", "BlockStatement"].includes(parent.type) && parent.gaps) {
+    if (parent && parent.newlines) {
       const index = parent.body.indexOf(node);
-      const gap = parent.gaps[index];
-      if (gap) {
-        const lines = gap;
-        for (const line of lines) {
-          if (line) {
-            this._printComment(line);
-          } else {
-            this._newline();
-          }
-        }
-      }
+      const newlines = parent.newlines[index];
+      if (newlines) this._printNewlines(newlines);
     } else {
       this._printLeadingComments(node);
     }
@@ -314,23 +315,14 @@ class Printer {
       printMethod.call(this, node, parent);
     });
 
-    if (parent && ["Program", "BlockStatement"].includes(parent.type) && parent.gaps) {
-      const index = parent.body.indexOf(node);
-      if (index === parent.body.length - 1) {
-        const gap = parent.gaps[parent.body.length];
-        if (gap) {
-          const lines = gap;
-          for (const line of lines) {
-            if (line) {
-              this._printComment(line);
-            } else {
-              this._newline();
-            }
-          }
-        }
+    if (parent && parent.newlines) {
+      // All newlines move trailing comments to be part of the previous 
+      // statement's newlines.  The final statement's trailing comments
+      // are stored in an extra array of newlines which are printed here.
+      if (parent.body.indexOf(node) === parent.body.length - 1) {
+        const newlines = parent.newlines[parent.body.length];
+        if (newlines) this._printNewlines(newlines);
       }
-      // we move trailing comments that appear between lines in the "gap" that
-      // appears before the next line
     } else {
       this._printTrailingComments(node);
     }
@@ -393,9 +385,8 @@ class Printer {
       const node = nodes[i];
       if (!node) continue;
       if (opts.statement) {
-        const gap = (parent.gaps && parent.gaps[i]);
-        // print any leading spaces before a statement inside a BlockStatement or Program
-        if (!gap) {
+        const hasNewlines = parent.newlines && parent.newlines[i];
+        if (!hasNewlines) {
           this._printNewline(true, node, parent, newlineOpts);
         }
       }
@@ -410,9 +401,8 @@ class Printer {
       }
 
       if (opts.statement) {
-        const gap = (parent.gaps && parent.gaps[i+1]);
-        // print any trailing spaces at the end of BlockStatement
-        if (!gap) {
+        const hasNewlines = parent.newlines && parent.newlines[i+1];
+        if (!hasNewlines) {
           this._printNewline(false, node, parent, newlineOpts);
         }
       }

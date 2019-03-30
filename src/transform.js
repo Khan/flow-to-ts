@@ -1,6 +1,8 @@
 const path = require("path");
 const t = require("@babel/types");
 
+const computeNewlines = require("./compute-newlines.js");
+
 const locToString = (loc) => 
   `${loc.start.line}:${loc.start.column}-${loc.end.line}:${loc.end.column}`;
 
@@ -79,46 +81,7 @@ const transform = {
       }
 
       if (body.length > 0) {
-        const gaps = [];
-
-        // TODO: filter out @flow and $FlowFixMe comments before adding them
-
-        const leadingLines = new Array(body[0].loc.start.line - path.node.loc.start.line);
-        if (body[0].leadingComments) {
-          for (const comment of body[0].leadingComments) {
-            const offset = comment.loc.start.line - path.node.loc.start.line;
-            leadingLines[offset] = comment;
-          }
-        }
-        gaps.push(leadingLines);
-
-        for (let i = 0; i < body.length - 1; i++) {
-          const lines = new Array(body[i+1].loc.start.line - body[i].loc.end.line);
-          if (body[i].trailingComments) {
-            for (const comment of body[i].trailingComments) {
-              const offset = comment.loc.start.line - body[i].loc.end.line;
-              lines[offset] = comment;
-            }
-          }
-          if (body[i+1].leadingComments) {
-            for (const comment of body[i+1].leadingComments) {
-              const offset = comment.loc.start.line - body[i].loc.end.line;
-              lines[offset] = comment;
-            }
-          }
-          gaps.push(lines);
-        }
-
-        const trailingLines = new Array(path.node.loc.end.line - body[body.length - 1].loc.end.line);
-        if (body[body.length - 1].trailingComments) {
-          for (const comment of body[body.length - 1].trailingComments) {
-            const offset = comment.loc.start.line - body[body.length - 1].loc.end.line;
-            trailingLines[offset] = comment;
-          }
-        }
-        gaps.push(trailingLines);
-
-        path.node.gaps = gaps;
+        path.node.newlines = computeNewlines(path.node);
 
         // Attach the number of trailing spaces to the state so that convert.js
         // can add those back since babel-generator/lib/buffer.js removes them.
@@ -137,7 +100,11 @@ const transform = {
         const source = t.stringLiteral("utility-types");
         const importDeclaration = t.importDeclaration(specifiers, source);
         path.node.body = [importDeclaration, ...path.node.body];
-        path.node.gaps = [[], [undefined, ...path.node.gaps[0]], ...path.node.gaps.slice(1)];
+        path.node.newlines = [
+          [], // place the new import at the start of the file
+          [undefined, ...path.node.newlines[0]], 
+          ...path.node.newlines.slice(1),
+        ];
       }
     },
   },
@@ -147,48 +114,7 @@ const transform = {
       const {body} = path.node;
 
       if (body.length > 0) {
-        const gaps = [];      
-
-        // babel-generator/lib/base.js adds a leading new line after the "{" at 
-        // the start of a BlockStatement so we subtract 1 here to remove it.
-        const leadingLines = new Array(body[0].loc.start.line - path.node.loc.start.line - 1);
-        if (body[0].leadingComments) {
-          for (const comment of body[0].leadingComments) {
-            const offset = comment.loc.start.line - path.node.loc.start.line - 1;
-            leadingLines[offset] = comment;
-          }
-        }
-        gaps.push(leadingLines);
-
-        for (let i = 0; i < body.length - 1; i++) {
-          const lines = new Array(body[i+1].loc.start.line - body[i].loc.end.line);
-          if (body[i].trailingComments) {
-            for (const comment of body[i].trailingComments) {
-              const offset = comment.loc.start.line - body[i].loc.end.line;
-              lines[offset] = comment;
-            }
-          }
-          if (body[i+1].leadingComments) {
-            for (const comment of body[i+1].leadingComments) {
-              const offset = comment.loc.start.line - body[i].loc.end.line;
-              lines[offset] = comment;
-            }
-          }
-          gaps.push(lines);
-        }
-
-        // babel-generator/lib/base.js removes a trailing new line before the "}" at 
-        // the end of a BlockStatement so we add 1 to add it back in
-        const trailingLines = new Array(path.node.loc.end.line - body[body.length - 1].loc.end.line + 1);
-        if (body[body.length - 1].trailingComments) {
-          for (const comment of body[body.length - 1].trailingComments) {
-            const offset = comment.loc.start.line - body[body.length - 1].loc.end.line;
-            trailingLines[offset] = comment;
-          }
-        }
-        gaps.push(trailingLines);
-
-        path.node.gaps = gaps;
+        path.node.newlines = computeNewlines(path.node);
       }
     },
   },
