@@ -292,14 +292,50 @@ class Printer {
 
     if (needsParens) this.token("(");
 
-    this._printLeadingComments(node);
+    if (parent && ["Program", "BlockStatement"].includes(parent.type) && parent.gaps) {
+      const index = parent.body.indexOf(node);
+      const gap = parent.gaps[index];
+      if (gap) {
+        const lines = gap;
+        for (const line of lines) {
+          if (line) {
+            this._printComment(line);
+          } else {
+            this._newline();
+          }
+        }
+      }
+    } else {
+      this._printLeadingComments(node);
+    }
 
     const loc = t().isProgram(node) || t().isFile(node) ? null : node.loc;
     this.withSource("start", loc, () => {
       printMethod.call(this, node, parent);
     });
 
-    this._printTrailingComments(node);
+    if (parent && ["Program", "BlockStatement"].includes(parent.type) && parent.gaps) {
+      const index = parent.body.indexOf(node);
+      if (parent.type === "BlockStatement" && index === parent.body.length - 1) {
+        const gap = parent.gaps[parent.body.length];
+        if (gap) {
+          const lines = gap;
+          console.log("TRAILING LINES");
+          console.log(lines);
+          for (const line of lines) {
+            if (line) {
+              this._printComment(line);
+            } else {
+              this._newline();
+            }
+          }
+        }
+      }
+      // we move trailing comments that appear between lines in the "gap" that
+      // appears before the next line
+    } else {
+      this._printTrailingComments(node);
+    }
 
     if (needsParens) this.token(")");
 
@@ -361,11 +397,7 @@ class Printer {
       if (opts.statement) {
         const gap = (parent.gaps && parent.gaps[i]);
         // print any leading spaces before a statement inside a BlockStatement or Program
-        if (gap) {
-          for (let j = 0; j < gap; j++) {
-            this._newline();
-          }
-        } else {
+        if (!gap) {
           this._printNewline(true, node, parent, newlineOpts);
         }
       }
@@ -382,11 +414,6 @@ class Printer {
       if (opts.statement) {
         const gap = (parent.gaps && parent.gaps[i+1]);
         // print any trailing spaces at the end of BlockStatement
-        if (gap && i + 1 === nodes.length) {
-          for (let j = 0; j < gap; j++) {
-            this._newline();
-          }
-        }
         if (!gap) {
           this._printNewline(false, node, parent, newlineOpts);
         }
