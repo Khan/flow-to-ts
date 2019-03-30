@@ -1,5 +1,5 @@
-
-// foo
+// first leading comment
+// second leading comment
 const a = 5;
 
 // bar

@@ -61,7 +61,24 @@ const transform = {
     enter(path, state) {
       const {body} = path.node;
 
-      for (const stmt of body) {
+      for (let i = 0; i < body.length; i++) {
+        const stmt = body[i];
+
+        // Workaround babylon bug where only the first leading comment is 
+        // attached VariableDeclarations.
+        // TODO: file a ticket for this bug
+        if (i === 0 && t.isVariableDeclaration(stmt)) {
+          if (stmt.leadingComments && stmt.leadingComments[0]) {
+            const firstComment = stmt.leadingComments[0];
+            for (let i = firstComment.loc.end.line + 1; i < stmt.loc.start.line; i++) {
+              if (state.comments.startLine[i]) {
+                stmt.leadingComments.push(state.comments.startLine[i]);
+              }
+            }
+          }
+        }
+
+        // filter out flow specific comments
         if (stmt.leadingComments) {
           stmt.leadingComments = stmt.leadingComments.filter(
             comment => {
@@ -410,9 +427,21 @@ const transform = {
     }
   },
   ObjectTypeAnnotation: {
-    enter(path) {
+    enter(path, state) {
       const {properties} = path.node;
-      if (properties.length > 0) {
+      if (properties.length > 0) {        
+        // Workaround babylon bug where the last ObjectTypeProperty in an
+        // ObjectTypeAnnotation doesn't have its trailingComments.
+        // TODO: file a ticket for this bug
+        const trailingComments = [];
+        const lastProp = properties[properties.length - 1];
+        for (let i = lastProp.loc.end.line; i < path.node.loc.end.line; i++) {
+          if (state.comments.startLine[i]) {
+            trailingComments.push(state.comments.startLine[i]);
+          }
+        }
+        lastProp.trailingComments = trailingComments;
+
         path.node.newlines = computeNewlines(path.node);
       }
     },

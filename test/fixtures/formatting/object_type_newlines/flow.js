@@ -5,5 +5,6 @@ type Point = {
 
     // y
     y: number,
+    // trailing newline
 
 };

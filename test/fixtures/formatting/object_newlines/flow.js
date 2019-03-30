@@ -5,5 +5,6 @@ const obj = {
 
     // y
     y: 10,
+    // trailing comment
 
 };

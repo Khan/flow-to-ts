@@ -74,7 +74,7 @@ const computeNewlines = (node) => {
     }
     newlines.push(lines);
   }
-  
+
   const trailingLines = new Array(node.loc.end.line - children[children.length - 1].loc.end.line);
   if (children[children.length - 1].trailingComments) {
     for (const comment of children[children.length - 1].trailingComments) {
