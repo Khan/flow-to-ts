@@ -185,7 +185,7 @@ class App extends React.Component<Props, State> {
                 >
                     <picture>
                         <source srcSet={`${smallLogo}, ${largeLogo} 2x`} />
-                        <img src={smallLogo} />
+                        <img src={smallLogo} alt="github" />
                     </picture>
                 </a>
             </div>
