@@ -48,6 +48,8 @@ function getChildren(node) {
       return node.properties;
     case "TSTypeLiteral":
       return node.members;
+    case "SwitchStatement":
+      return node.cases;
     default:
       throw new Error(`cannot computed newlines on ${node.type} node`);
   }
@@ -418,7 +420,7 @@ class Printer {
 
       if (opts.statement) {
         const hasNewlines = parent.newlines && parent.newlines[i+1];
-        if (!hasNewlines) {
+        if (!hasNewlines) { // && i !== nodes.length - 1) {
           this._printNewline(false, node, parent, newlineOpts);
         }
       }

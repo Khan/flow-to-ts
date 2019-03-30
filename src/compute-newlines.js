@@ -6,6 +6,8 @@ const getChildren = (node) => {
     case "ObjectExpression":
     case "ObjectTypeAnnotation":
       return node.properties;
+    case "SwitchStatement":
+      return node.cases;
     default:
       throw new Error(`cannot computed newlines on ${node.type} node`);
   }
@@ -53,7 +55,8 @@ const computeNewlines = (node) => {
   if (children[0].leadingComments) {
     for (const comment of children[0].leadingComments) {
       const offset = comment.loc.start.line - node.loc.start.line;
-      leadingLines[offset] = comment;
+      const count = comment.loc.end.line - comment.loc.start.line + 1;
+      leadingLines.splice(offset, count, comment);
     }
   }
   newlines.push(leadingLines);
@@ -63,27 +66,41 @@ const computeNewlines = (node) => {
     if (children[i].trailingComments) {
       for (const comment of children[i].trailingComments) {
         const offset = comment.loc.start.line - children[i].loc.end.line;
-        lines[offset] = comment;
+        const count = comment.loc.end.line - comment.loc.start.line + 1;
+        lines.splice(offset, count, comment);
       }
     }
     if (children[i+1].leadingComments) {
       for (const comment of children[i+1].leadingComments) {
         const offset = comment.loc.start.line - children[i].loc.end.line;
-        lines[offset] = comment;
+        const count = comment.loc.end.line - comment.loc.start.line + 1;
+        lines.splice(offset, count, comment);
       }
+    }
+    // SwitchCase statements get a trailing newline, we remove it from the front
+    // of the `newlines` following the SwitchCase.
+    if (node.type === "SwitchStatement") {
+      lines.shift();
     }
     newlines.push(lines);
   }
 
   const trailingLines = new Array(node.loc.end.line - children[children.length - 1].loc.end.line);
+
   if (children[children.length - 1].trailingComments) {
     for (const comment of children[children.length - 1].trailingComments) {
       const offset = comment.loc.start.line - children[children.length - 1].loc.end.line;
-      trailingLines[offset] = comment;
+      const count = comment.loc.end.line - comment.loc.start.line + 1;
+      if (comment.type === "CommentBlock") {
+        // printer.js::_printComment() includes a newline before and after block comments
+        trailingLines.splice(offset - 1, count + 1, comment);
+      } else {
+        trailingLines.splice(offset, count, comment);
+      }
     }
   }
   newlines.push(trailingLines);
-  
+
   return newlines;
 };
 
