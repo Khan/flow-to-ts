@@ -39,6 +39,20 @@ function t() {
   return data;
 }
 
+function getChildren(node) {
+  switch (node.type) {
+    case "Program":
+    case "BlockStatement":
+      return node.body;
+    case "ObjectExpression":
+      return node.properties;
+    case "TSTypeLiteral":
+      return node.members;
+    default:
+      throw new Error(`cannot computed newlines on ${node.type} node`);
+  }
+}
+
 var generatorFunctions = _interopRequireWildcard(require("./generators"));
 
 function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = Object.defineProperty && Object.getOwnPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : {}; if (desc.get || desc.set) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } } newObj.default = obj; return newObj; } }
@@ -303,7 +317,8 @@ class Printer {
     if (needsParens) this.token("(");
 
     if (parent && parent.newlines) {
-      const index = parent.body.indexOf(node);
+      const children = getChildren(parent);
+      const index = children.indexOf(node);
       const newlines = parent.newlines[index];
       if (newlines) this._printNewlines(newlines);
     } else {
@@ -316,11 +331,12 @@ class Printer {
     });
 
     if (parent && parent.newlines) {
+      const children = getChildren(parent);
       // All newlines move trailing comments to be part of the previous 
       // statement's newlines.  The final statement's trailing comments
       // are stored in an extra array of newlines which are printed here.
-      if (parent.body.indexOf(node) === parent.body.length - 1) {
-        const newlines = parent.newlines[parent.body.length];
+      if (children.indexOf(node) === children.length - 1) {
+        const newlines = parent.newlines[children.length];
         if (newlines) this._printNewlines(newlines);
       }
     } else {

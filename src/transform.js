@@ -110,13 +110,20 @@ const transform = {
   },
   BlockStatement: {
     // TODO: deal with empty functions
-    enter(path, state) {
+    enter(path) {
       const {body} = path.node;
-
       if (body.length > 0) {
         path.node.newlines = computeNewlines(path.node);
       }
     },
+  },
+  ObjectExpression: {
+    enter(path) {
+      const {properties} = path.node;
+      if (properties.length > 0) {
+        path.node.newlines = computeNewlines(path.node);
+      }
+    }
   },
 
   // Basic Types
@@ -403,6 +410,12 @@ const transform = {
     }
   },
   ObjectTypeAnnotation: {
+    enter(path) {
+      const {properties} = path.node;
+      if (properties.length > 0) {
+        path.node.newlines = computeNewlines(path.node);
+      }
+    },
     exit(path) {
       const {exact, properties, indexers} = path.node; // TODO: callProperties, inexact
 
@@ -434,8 +447,9 @@ const transform = {
         path.replaceWith(
           t.tsIntersectionType(spreads));
       } else {
-        path.replaceWith(
-          t.tsTypeLiteral(elements));
+        const typeLiteral = t.tsTypeLiteral(elements);
+        typeLiteral.newlines = path.node.newlines;
+        path.replaceWith(typeLiteral);
       }
     }
   },
