@@ -1,7 +1,3 @@
 node_modules
 coverage
-docs/*.js
-!docs/index.js
-!docs/editor.worker.js
-!docs/ts.worker.js
-!docs/tsMode.*.js
+docs
