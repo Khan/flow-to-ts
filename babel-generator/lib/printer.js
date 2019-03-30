@@ -39,7 +39,7 @@ function t() {
   return data;
 }
 
-function getContainerProperty(node) {
+function getChildren(node) {
   switch (node.type) {
     case "Program":
     case "BlockStatement":
@@ -317,8 +317,8 @@ class Printer {
     if (needsParens) this.token("(");
 
     if (parent && parent.newlines) {
-      const container = getContainerProperty(parent);
-      const index = container.indexOf(node);
+      const children = getChildren(parent);
+      const index = children.indexOf(node);
       const newlines = parent.newlines[index];
       if (newlines) this._printNewlines(newlines);
     } else {
@@ -331,12 +331,12 @@ class Printer {
     });
 
     if (parent && parent.newlines) {
-      const container = getContainerProperty(parent);
+      const children = getChildren(parent);
       // All newlines move trailing comments to be part of the previous 
       // statement's newlines.  The final statement's trailing comments
       // are stored in an extra array of newlines which are printed here.
-      if (container.indexOf(node) === container.length - 1) {
-        const newlines = parent.newlines[container.length];
+      if (children.indexOf(node) === children.length - 1) {
+        const newlines = parent.newlines[children.length];
         if (newlines) this._printNewlines(newlines);
       }
     } else {

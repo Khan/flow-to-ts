@@ -1,4 +1,4 @@
-const getContainerProperty = (node) => {
+const getChildren = (node) => {
   switch (node.type) {
     case "Program":
     case "BlockStatement":
@@ -46,39 +46,39 @@ const getContainerProperty = (node) => {
  * @param {BlockStatment|Program} node 
  */
 const computeNewlines = (node) => {
-  const body = getContainerProperty(node);
+  const children = getChildren(node);
   const newlines = [];
   
-  const leadingLines = new Array(body[0].loc.start.line - node.loc.start.line);
-  if (body[0].leadingComments) {
-    for (const comment of body[0].leadingComments) {
+  const leadingLines = new Array(children[0].loc.start.line - node.loc.start.line);
+  if (children[0].leadingComments) {
+    for (const comment of children[0].leadingComments) {
       const offset = comment.loc.start.line - node.loc.start.line;
       leadingLines[offset] = comment;
     }
   }
   newlines.push(leadingLines);
   
-  for (let i = 0; i < body.length - 1; i++) {
-    const lines = new Array(body[i+1].loc.start.line - body[i].loc.end.line);
-    if (body[i].trailingComments) {
-      for (const comment of body[i].trailingComments) {
-        const offset = comment.loc.start.line - body[i].loc.end.line;
+  for (let i = 0; i < children.length - 1; i++) {
+    const lines = new Array(children[i+1].loc.start.line - children[i].loc.end.line);
+    if (children[i].trailingComments) {
+      for (const comment of children[i].trailingComments) {
+        const offset = comment.loc.start.line - children[i].loc.end.line;
         lines[offset] = comment;
       }
     }
-    if (body[i+1].leadingComments) {
-      for (const comment of body[i+1].leadingComments) {
-        const offset = comment.loc.start.line - body[i].loc.end.line;
+    if (children[i+1].leadingComments) {
+      for (const comment of children[i+1].leadingComments) {
+        const offset = comment.loc.start.line - children[i].loc.end.line;
         lines[offset] = comment;
       }
     }
     newlines.push(lines);
   }
   
-  const trailingLines = new Array(node.loc.end.line - body[body.length - 1].loc.end.line);
-  if (body[body.length - 1].trailingComments) {
-    for (const comment of body[body.length - 1].trailingComments) {
-      const offset = comment.loc.start.line - body[body.length - 1].loc.end.line;
+  const trailingLines = new Array(node.loc.end.line - children[children.length - 1].loc.end.line);
+  if (children[children.length - 1].trailingComments) {
+    for (const comment of children[children.length - 1].trailingComments) {
+      const offset = comment.loc.start.line - children[children.length - 1].loc.end.line;
       trailingLines[offset] = comment;
     }
   }
