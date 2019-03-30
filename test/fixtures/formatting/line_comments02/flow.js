@@ -4,5 +4,6 @@ const c = () => {
 
     // bar
     const b = 10;
+    // baz
 
 };

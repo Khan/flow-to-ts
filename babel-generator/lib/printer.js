@@ -316,7 +316,7 @@ class Printer {
 
     if (parent && ["Program", "BlockStatement"].includes(parent.type) && parent.gaps) {
       const index = parent.body.indexOf(node);
-      if (parent.type === "BlockStatement" && index === parent.body.length - 1) {
+      if (index === parent.body.length - 1) {
         const gap = parent.gaps[parent.body.length];
         if (gap) {
           const lines = gap;

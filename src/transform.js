@@ -69,7 +69,7 @@ const transform = {
           );
         }
         if (stmt.trailingComments) {
-          stmt.trailingComments = stmt.leadingComments.filter(
+          stmt.trailingComments = stmt.trailingComments.filter(
             comment => {
               const value = comment.value.trim();
               return value !== "@flow" && !value.startsWith("$FlowFixMe");
@@ -83,14 +83,14 @@ const transform = {
 
         // TODO: filter out @flow and $FlowFixMe comments before adding them
 
-        const lines = new Array(body[0].loc.start.line - path.node.loc.start.line);
+        const leadingLines = new Array(body[0].loc.start.line - path.node.loc.start.line);
         if (body[0].leadingComments) {
           for (const comment of body[0].leadingComments) {
             const offset = comment.loc.start.line - path.node.loc.start.line;
-            lines[offset] = comment;
+            leadingLines[offset] = comment;
           }
         }
-        gaps.push(lines);
+        gaps.push(leadingLines);
 
         for (let i = 0; i < body.length - 1; i++) {
           const lines = new Array(body[i+1].loc.start.line - body[i].loc.end.line);
@@ -109,13 +109,21 @@ const transform = {
           gaps.push(lines);
         }
 
-        path.node.gaps = gaps;
-      }
+        const trailingLines = new Array(path.node.loc.end.line - body[body.length - 1].loc.end.line);
+        if (body[body.length - 1].trailingComments) {
+          for (const comment of body[body.length - 1].trailingComments) {
+            const offset = comment.loc.start.line - body[body.length - 1].loc.end.line;
+            trailingLines[offset] = comment;
+          }
+        }
+        gaps.push(trailingLines);
 
-      if (body.length > 0) {
+        path.node.gaps = gaps;
+
         // Attach the number of trailing spaces to the state so that convert.js
         // can add those back since babel-generator/lib/buffer.js removes them.
-        state.trailingLines = path.node.loc.end.line - body[body.length - 1].loc.end.line;
+        // TODO: compute this properly
+        state.trailingLines = 0;
       }
     },
     exit(path, state) {
@@ -129,6 +137,7 @@ const transform = {
         const source = t.stringLiteral("utility-types");
         const importDeclaration = t.importDeclaration(specifiers, source);
         path.node.body = [importDeclaration, ...path.node.body];
+        path.node.gaps = [[], [undefined, ...path.node.gaps[0]], ...path.node.gaps.slice(1)];
       }
     },
   },
