@@ -1,5 +1,7 @@
 import * as React from "react";
 import * as monaco from "monaco-editor/esm/vs/editor/editor.main.js";
+import smallLogo from "../images/GitHub-Mark-32px.png";
+import largeLogo from "../images/GitHub-Mark-64px.png";
 
 import convert from "../../src/convert.js";
 
@@ -38,8 +40,6 @@ class App extends React.Component<Props, State> {
     tsRef: React.RefObject<HTMLDivElement>;
     flowEditor: monaco.editor.IStandaloneCodeEditor;
     tsEditor: monaco.editor.IStandaloneCodeEditor;
-    flowScrollDispose: monaco.IDisposable;
-    tsScrollDispose: monaco.IDisposable;
     
     constructor(props: Props) {
         super(props);
@@ -102,14 +102,14 @@ class App extends React.Component<Props, State> {
             readOnly: true,
         });
 
-        this.flowScrollDispose = this.flowEditor.onDidScrollChange(e => {
+        this.flowEditor.onDidScrollChange(e => {
             const scrollTop = this.flowEditor.getScrollTop();
             this.tsEditor.setScrollTop(scrollTop);
             const scrollLeft = this.flowEditor.getScrollLeft();
             this.tsEditor.setScrollLeft(scrollLeft);
         });
 
-        this.tsScrollDispose = this.tsEditor.onDidScrollChange(e => {
+        this.tsEditor.onDidScrollChange(e => {
             const scrollTop = this.tsEditor.getScrollTop();
             this.flowEditor.setScrollTop(scrollTop);
             const scrollLeft = this.tsEditor.getScrollLeft();
@@ -124,11 +124,6 @@ class App extends React.Component<Props, State> {
                 this.tsEditor.layout();
             }
         });
-    }
-    
-    componentWillUnmount() {
-        this.flowScrollDispose();
-        this.tsScrollDispose();
     }
 
     render() {
@@ -163,6 +158,14 @@ class App extends React.Component<Props, State> {
             fontWeight: 300,
         };
 
+        const tsHeaderContainer = {
+            backgroundColor: "#DDD", 
+            display: "flex", 
+            justifyContent: "space-between", 
+            alignItems: "center", 
+            paddingRight: 8,
+        };
+
         return <div 
             style={{
                 display: "grid", 
@@ -174,8 +177,17 @@ class App extends React.Component<Props, State> {
             <div style={{backgroundColor: "#DDD"}}>
                 <h1 style={headerStyle}>Flow (input)</h1>
             </div>
-            <div style={{backgroundColor: "#DDD"}}>
+            <div style={tsHeaderContainer}>
                 <h1 style={headerStyle}>TypeScript (output)</h1>
+                <a 
+                    href="https://github.com/Khan/flow-to-ts"
+                    target="_blank"
+                >
+                    <picture>
+                        <source srcSet={`${smallLogo}, ${largeLogo} 2x`} />
+                        <img src={smallLogo} alt="github" />
+                    </picture>
+                </a>
             </div>
             <div style={{position: "relative"}}>
                 <div ref={this.flowRef} style={editorStyle}></div>
