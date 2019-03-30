@@ -320,11 +320,15 @@ function tsPrintBraced(members, node) {
 
   if (members.length) {
     this.indent();
-    this.newline();
+    if (!node.newlines) {
+      this.newline();
+    }
 
     for (const member of members) {
       this.print(member, node);
-      this.newline();
+      if (!node.newlines) {
+        this.newline();
+      }
     }
 
     this.dedent();

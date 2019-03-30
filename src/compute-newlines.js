@@ -1,3 +1,16 @@
+const getContainerProperty = (node) => {
+  switch (node.type) {
+    case "Program":
+    case "BlockStatement":
+      return node.body;
+    case "ObjectExpression":
+    case "ObjectTypeAnnotation":
+      return node.properties;
+    default:
+      throw new Error(`cannot computed newlines on ${node.type} node`);
+  }
+}
+
 /**
  * Since we don't know how many lines an updated statement will take before we codegen
  * it with babel-generator, it's hard to know how to update the loc(ation) data.  Also,
@@ -33,7 +46,7 @@
  * @param {BlockStatment|Program} node 
  */
 const computeNewlines = (node) => {
-  const {body} = node;
+  const body = getContainerProperty(node);
   const newlines = [];
   
   const leadingLines = new Array(body[0].loc.start.line - node.loc.start.line);
