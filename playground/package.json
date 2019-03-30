@@ -17,7 +17,7 @@
     "typescript": "^3.3.4000"
   },
   "scripts": {
-    "build": "yarn build:ts-worker && yarn build:editor-worker && parcel build --no-content-hash --no-source-maps src/index.tsx",
+    "build": "yarn build:ts-worker && yarn build:editor-worker && parcel build --no-content-hash --no-source-maps index.html",
     "build:ts-worker": "parcel build node_modules/monaco-editor/esm/vs/language/typescript/ts.worker.js --no-content-hash --no-source-maps",
     "build:editor-worker": "parcel build node_modules/monaco-editor/esm/vs/editor/editor.worker.js --no-content-hash --no-source-maps",
     "ts-worker": "parcel build node_modules/monaco-editor/esm/vs/language/typescript/ts.worker.js --no-source-maps",

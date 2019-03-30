@@ -38,8 +38,10 @@ class App extends React.Component<Props, State> {
     tsRef: React.RefObject<HTMLDivElement>;
     flowEditor: monaco.editor.IStandaloneCodeEditor;
     tsEditor: monaco.editor.IStandaloneCodeEditor;
+    flowScrollDispose: monaco.IDisposable;
+    tsScrollDispose: monaco.IDisposable;
     
-    constructor(props) {
+    constructor(props: Props) {
         super(props);
         const {hash} = window.location;
 
@@ -99,6 +101,20 @@ class App extends React.Component<Props, State> {
             },
             readOnly: true,
         });
+
+        this.flowScrollDispose = this.flowEditor.onDidScrollChange(e => {
+            const scrollTop = this.flowEditor.getScrollTop();
+            this.tsEditor.setScrollTop(scrollTop);
+            const scrollLeft = this.flowEditor.getScrollLeft();
+            this.tsEditor.setScrollLeft(scrollLeft);
+        });
+
+        this.tsScrollDispose = this.tsEditor.onDidScrollChange(e => {
+            const scrollTop = this.tsEditor.getScrollTop();
+            this.flowEditor.setScrollTop(scrollTop);
+            const scrollLeft = this.tsEditor.getScrollLeft();
+            this.flowEditor.setScrollLeft(scrollLeft);
+        });
         
 		window.addEventListener('resize', () => {
             if (this.flowEditor) {
@@ -108,7 +124,12 @@ class App extends React.Component<Props, State> {
                 this.tsEditor.layout();
             }
         });
-	}
+    }
+    
+    componentWillUnmount() {
+        this.flowScrollDispose();
+        this.tsScrollDispose();
+    }
 
     render() {
         const {error} = this.state;
