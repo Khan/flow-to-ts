@@ -9,6 +9,6 @@ Convert flow code to typescript.
 - yarn
 - yarn test
 
-# Demo
+# Playground
 
-https://khan.github.io/flow-to-ts
+https://flow-to-ts.netlify.com
