@@ -23,6 +23,15 @@ const parseOptions = {
 const convert = (flowCode, options) => {
     const ast = parse(flowCode, parseOptions);
 
+    const comments = {
+        startLine: {},
+        endLine: {},
+    };
+    for (const comment of ast.comments) {
+        comments.startLine[comment.loc.start.line] = comment;
+        comments.endLine[comment.loc.end.line] = comment;
+    }
+
     // apply our transforms, traverse mutates the ast
     const state = {
         usedUtilityTypes: new Set(),
@@ -30,6 +39,7 @@ const convert = (flowCode, options) => {
             { inlineUtilityTypes: false },
             options,
         ),
+        comments,
     };
     traverse(ast, transform, null, state);
 
