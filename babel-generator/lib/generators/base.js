@@ -33,7 +33,11 @@ function BlockStatement(node) {
   const hasDirectives = node.directives && node.directives.length;
 
   if (node.body.length || hasDirectives) {
-    this.newline();
+    // Skip any newlines if the node has gaps.  These are handled in the
+    // print() method of printer.js.
+    if (!node.newlines) {
+      this.newline();
+    }
     this.printSequence(node.directives, node, {
       indent: true
     });
@@ -41,9 +45,13 @@ function BlockStatement(node) {
     this.printSequence(node.body, node, {
       indent: true
     });
-    this.removeTrailingNewline();
+    if (!node.newlines) {
+      this.removeTrailingNewline();
+    }
     this.source("end", node.loc);
-    if (!this.endsWith("\n")) this.newline();
+    if (!node.newlines) {
+      if (!this.endsWith("\n")) this.newline();
+    }
     this.rightBrace();
   } else {
     this.source("end", node.loc);

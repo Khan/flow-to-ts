@@ -1,6 +1,8 @@
 const path = require("path");
 const t = require("@babel/types");
 
+const computeNewlines = require("./compute-newlines.js");
+
 const locToString = (loc) => 
   `${loc.start.line}:${loc.start.column}-${loc.end.line}:${loc.end.column}`;
 
@@ -59,21 +61,6 @@ const transform = {
     enter(path, state) {
       const {body} = path.node;
 
-      const gaps = [body[0].loc.start.line - path.node.loc.start.line];      
-      for (let i = 0; i < body.length - 1; i++) {
-        const gap = body[i+1].loc.start.line - body[i].loc.end.line;
-        gaps.push(gap);
-      }
-      path.node.gaps = gaps;
-
-      if (body.length > 0) {
-        // Attach the number of trailing spaces to the state so that convert.js
-        // can add those back since babel-generator/lib/buffer.js removes them.
-        state.trailingLines = path.node.loc.end.line - body[body.length - 1].loc.end.line;
-      }
-    },
-    exit(path, state) {
-      const {body} = path.node;
       for (const stmt of body) {
         if (stmt.leadingComments) {
           stmt.leadingComments = stmt.leadingComments.filter(
@@ -83,8 +70,27 @@ const transform = {
             }
           );
         }
+        if (stmt.trailingComments) {
+          stmt.trailingComments = stmt.trailingComments.filter(
+            comment => {
+              const value = comment.value.trim();
+              return value !== "@flow" && !value.startsWith("$FlowFixMe");
+            }
+          );
+        }
       }
 
+      if (body.length > 0) {
+        path.node.newlines = computeNewlines(path.node);
+
+        // Attach the number of trailing spaces to the state so that convert.js
+        // can add those back since babel-generator/lib/buffer.js removes them.
+        // TODO: compute this properly
+        state.trailingLines = 0;
+      }
+    },
+    exit(path, state) {
+      const {body} = path.node;
       if (state.usedUtilityTypes.size > 0) {
         const specifiers = [...state.usedUtilityTypes].map(name => {
           const imported = t.identifier(name);
@@ -94,6 +100,11 @@ const transform = {
         const source = t.stringLiteral("utility-types");
         const importDeclaration = t.importDeclaration(specifiers, source);
         path.node.body = [importDeclaration, ...path.node.body];
+        path.node.newlines = [
+          [], // place the new import at the start of the file
+          [undefined, ...path.node.newlines[0]], 
+          ...path.node.newlines.slice(1),
+        ];
       }
     },
   },
@@ -101,19 +112,10 @@ const transform = {
     // TODO: deal with empty functions
     enter(path, state) {
       const {body} = path.node;
-      const gaps = [];      
+
       if (body.length > 0) {
-        gaps.push(body[0].loc.start.line - path.node.loc.start.line - 1);
+        path.node.newlines = computeNewlines(path.node);
       }
-      for (let i = 0; i < body.length - 1; i++) {
-        const gap = body[i+1].loc.start.line - body[i].loc.end.line;
-        gaps.push(gap);
-      }
-      if (body.length > 0) {
-        const gap = path.node.loc.end.line - body[body.length - 1].loc.end.line + 1;
-        gaps.push(gap);
-      }
-      path.node.gaps = gaps;
     },
   },
 
