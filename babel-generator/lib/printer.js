@@ -320,8 +320,6 @@ class Printer {
         const gap = parent.gaps[parent.body.length];
         if (gap) {
           const lines = gap;
-          console.log("TRAILING LINES");
-          console.log(lines);
           for (const line of lines) {
             if (line) {
               this._printComment(line);
