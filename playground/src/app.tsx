@@ -1,9 +1,10 @@
 import * as React from "react";
 import * as monaco from "monaco-editor/esm/vs/editor/editor.main.js";
-import smallLogo from "../images/GitHub-Mark-32px.png";
-import largeLogo from "../images/GitHub-Mark-64px.png";
+import smallLogo from "../images/GitHub-Mark-Light-32px.png";
+import largeLogo from "../images/GitHub-Mark-Light-64px.png";
 
 import convert from "../../src/convert.js";
+import OptionsPanel, {Options} from "./options-panel";
 
 // @ts-ignore
 self.MonacoEnvironment = {
@@ -32,7 +33,30 @@ type State = {
     flowCode: string,
     tsCode: string,
     error: string | null,
+    focusedEditor: monaco.editor.IStandaloneCodeEditor;
+    options: Options;
 };
+
+const defaultOptions: Options = {
+    prettier: {
+        semi: true,
+        singleQuote: false,
+        tabWidth: 4,
+        trailingComma: "all",
+        bracketSpacing: false,
+        arrowParens: "avoid",
+        printWidth: 80,
+    },
+    inlineUtilityTypes: false,
+};
+
+const maybeDecodeHash = (hash: string) => {
+    try {
+        return JSON.parse(decodeURIComponent(hash).slice(1));
+    } catch (e) {
+        return;
+    }
+}
 
 class App extends React.Component<Props, State> {
     editor: any;
@@ -45,13 +69,18 @@ class App extends React.Component<Props, State> {
         super(props);
         const {hash} = window.location;
 
-        const flowCode = hash ? decodeURIComponent(hash).slice(1) : initCode;
+        const data = maybeDecodeHash(hash);
+        
+        const flowCode = (data && data.code) || initCode;
+        const options = (data && data.options) || defaultOptions;
 
         try {
             this.state = {
                 flowCode,
-                tsCode: convert(flowCode),
+                tsCode: convert(flowCode, options),
                 error: null,
+                focusedEditor: null,
+                options,
             };
         } catch (e) {
             // This shouldn't happen b/c we don't update the permalink when
@@ -60,6 +89,8 @@ class App extends React.Component<Props, State> {
                 flowCode,
                 tsCode: "",
                 error: e,
+                focusedEditor: null,
+                options: defaultOptions,
             };
         }
     
@@ -81,10 +112,13 @@ class App extends React.Component<Props, State> {
         this.flowEditor.onDidChangeModelContent((e) => {
             try {
                 const flowCode = this.flowEditor.getValue();
-                const tsCode = convert(flowCode);
+                const tsCode = convert(flowCode, this.state.options);
                 this.tsEditor.setValue(tsCode);
                 this.setState({error: null});
-                window.location.hash = encodeURIComponent(flowCode);
+                window.location.hash = encodeURIComponent(JSON.stringify({
+                    code: flowCode,
+                    options: this.state.options,
+                }));
             } catch (e) {
                 this.setState({error: e.toString()});
                 console.log(e);
@@ -102,6 +136,8 @@ class App extends React.Component<Props, State> {
             readOnly: true,
         });
 
+        this.flowEditor.focus();
+
         this.flowEditor.onDidScrollChange(e => {
             const scrollTop = this.flowEditor.getScrollTop();
             this.tsEditor.setScrollTop(scrollTop);
@@ -115,6 +151,18 @@ class App extends React.Component<Props, State> {
             const scrollLeft = this.tsEditor.getScrollLeft();
             this.flowEditor.setScrollLeft(scrollLeft);
         });
+
+        this.flowEditor.onDidFocusEditorText(() => {
+            this.setState({
+                focusedEditor: this.flowEditor,
+            });
+        });
+
+        this.tsEditor.onDidFocusEditorText(() => {
+            this.setState({
+                focusedEditor: this.tsEditor,
+            });
+        });
         
 		window.addEventListener('resize', () => {
             if (this.flowEditor) {
@@ -124,6 +172,28 @@ class App extends React.Component<Props, State> {
                 this.tsEditor.layout();
             }
         });
+
+        this.setState({
+            focusedEditor: this.flowEditor,
+        });
+    }
+
+    componentDidUpdate(prevProps: Props, prevState: State) {
+        if (JSON.stringify(prevState.options) !== JSON.stringify(this.state.options)) {
+            const flowCode = this.flowEditor.getValue();
+            const tsCode = convert(flowCode, this.state.options);
+            this.tsEditor.setValue(tsCode);
+            this.tsEditor.getModel().updateOptions({tabSize: this.state.options.prettier.tabWidth});
+            try {
+                window.location.hash = encodeURIComponent(JSON.stringify({
+                    code: flowCode,
+                    options: this.state.options,
+                }));
+            } catch (e) {
+                this.setState({error: e.toString()});
+                console.log(e);
+            }
+        }
     }
 
     render() {
@@ -153,32 +223,48 @@ class App extends React.Component<Props, State> {
 
         const headerStyle = {
             fontFamily: "sans-serif",
-            margin: 8,
+            margin: 0,
             fontSize: 24,
+            fontWeight: 500,
+        };
+
+        const globalHeader = {
+            backgroundColor: "#444", 
+            gridColumn: "1 / span 3",
+            display: "flex",
+            flexDirection: "row",
+            justifyContent: "space-between",
+            alignItems: "center",
+            padding: 8,
+            color: "white",
+        };
+
+        const tabStyle = {
+            padding: "8px 16px 8px 16px",
+            backgroundColor: "#FFF",
+            fontFamily: "sans-serif",
             fontWeight: 300,
         };
 
-        const tsHeaderContainer = {
-            backgroundColor: "#DDD", 
-            display: "flex", 
-            justifyContent: "space-between", 
-            alignItems: "center", 
-            paddingRight: 8,
+        const tabContainerStyle = {
+            backgroundColor: "#DDD",
+            display: "flex",
+            borderBottom: "solid 1px #DDD",
         };
 
         return <div 
             style={{
                 display: "grid", 
-                gridTemplateColumns: "50% 50%",
-                gridTemplateRows: "auto minmax(0, 1fr)",
+                gridTemplateColumns: "250px calc(50% - 125px) calc(50% - 125px)",
+                gridTemplateRows: "auto auto minmax(0, 1fr)",
                 height: "100%",
+                overflow: "hidden",
             }}
         >
-            <div style={{backgroundColor: "#DDD"}}>
-                <h1 style={headerStyle}>Flow (input)</h1>
-            </div>
-            <div style={tsHeaderContainer}>
-                <h1 style={headerStyle}>TypeScript (output)</h1>
+            <div style={globalHeader}>
+                <h1 style={headerStyle}>
+                    flow-to-ts
+                </h1>
                 <a 
                     href="https://github.com/Khan/flow-to-ts"
                     target="_blank"
@@ -188,6 +274,20 @@ class App extends React.Component<Props, State> {
                         <img src={smallLogo} alt="github" />
                     </picture>
                 </a>
+            </div>
+            <OptionsPanel 
+                options={this.state.options}
+                onOptionsChange={(options) => this.setState({options})}
+            />
+            <div style={tabContainerStyle}>
+                <div style={{...tabStyle, color: this.state.focusedEditor === this.flowEditor ? "black" : "#777"}}>
+                    input.js
+                </div>
+            </div>
+            <div style={tabContainerStyle}>
+                <div style={{...tabStyle, color: this.state.focusedEditor === this.tsEditor ? "black" : "#777"}}>
+                    output.ts [readonly]
+                </div>
             </div>
             <div style={{position: "relative"}}>
                 <div ref={this.flowRef} style={editorStyle}></div>
