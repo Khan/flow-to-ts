@@ -142,6 +142,14 @@ const transform = {
       }
     }
   },
+  SwitchStatement: {
+    enter(path) {
+      const {cases} = path.node;
+      if (cases.length > 0) {
+        path.node.newlines = computeNewlines(path.node);
+      }
+    }
+  },
 
   // Basic Types
   StringTypeAnnotation(path) {

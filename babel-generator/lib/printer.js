@@ -48,6 +48,8 @@ function getChildren(node) {
       return node.properties;
     case "TSTypeLiteral":
       return node.members;
+    case "SwitchStatement":
+      return node.cases;
     default:
       throw new Error(`cannot computed newlines on ${node.type} node`);
   }

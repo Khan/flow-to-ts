@@ -6,6 +6,8 @@ const getChildren = (node) => {
     case "ObjectExpression":
     case "ObjectTypeAnnotation":
       return node.properties;
+    case "SwitchStatement":
+      return node.cases;
     default:
       throw new Error(`cannot computed newlines on ${node.type} node`);
   }
@@ -74,6 +76,11 @@ const computeNewlines = (node) => {
         const count = comment.loc.end.line - comment.loc.start.line + 1;
         lines.splice(offset, count, comment);
       }
+    }
+    // SwitchCase statements get a trailing newline, we remove it from the front
+    // of the `newlines` following the SwitchCase.
+    if (node.type === "SwitchStatement") {
+      lines.shift();
     }
     newlines.push(lines);
   }
