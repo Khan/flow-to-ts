@@ -420,7 +420,7 @@ class Printer {
 
       if (opts.statement) {
         const hasNewlines = parent.newlines && parent.newlines[i+1];
-        if (!hasNewlines) { // && i !== nodes.length - 1) {
+        if (!hasNewlines) {
           this._printNewline(false, node, parent, newlineOpts);
         }
       }
