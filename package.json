@@ -1,7 +1,7 @@
 {
-  "name": "flow-to-ts",
+  "name": "@khanacademy/flow-to-ts",
   "version": "0.0.1",
-  "main": "convert.js",
+  "main": "src/convert.js",
   "license": "MIT",
   "dependencies": {
     "@babel/core": "^7.4.0",
