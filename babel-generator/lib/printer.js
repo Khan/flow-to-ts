@@ -43,6 +43,7 @@ function getChildren(node) {
   switch (node.type) {
     case "Program":
     case "BlockStatement":
+    case "ClassBody":
       return node.body;
     case "ObjectExpression":
       return node.properties;

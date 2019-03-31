@@ -2,6 +2,7 @@ const getChildren = (node) => {
   switch (node.type) {
     case "Program":
     case "BlockStatement":
+    case "ClassBody":
       return node.body;
     case "ObjectExpression":
     case "ObjectTypeAnnotation":
@@ -57,6 +58,13 @@ const computeNewlines = (node) => {
       const offset = comment.loc.start.line - node.loc.start.line;
       const count = comment.loc.end.line - comment.loc.start.line + 1;
       leadingLines.splice(offset, count, comment);
+      // ClassBody statements get printed with an extra newline after the opening
+      // brace so we remove it here.
+      // TODO: remove the changes we made to babel-generator/lib/base.js for
+      // BlockStatement by adding extra logic here.
+      if (node.type === "ClassBody") {
+        leadingLines.shift();
+      }
     }
   }
   newlines.push(leadingLines);
