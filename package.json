@@ -1,6 +1,10 @@
 {
   "name": "@khanacademy/flow-to-ts",
-  "version": "0.0.1",
+  "version": "0.1.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/khan/flow-to-ts"
+  },
   "main": "src/convert.js",
   "license": "MIT",
   "dependencies": {
