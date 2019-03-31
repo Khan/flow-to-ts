@@ -150,6 +150,14 @@ const transform = {
       }
     }
   },
+  ClassBody: {
+    enter(path) {
+      const {body} = path.node;
+      if (body.length > 0) {
+        path.node.newlines = computeNewlines(path.node);
+      }
+    }
+  },
 
   // Basic Types
   StringTypeAnnotation(path) {
