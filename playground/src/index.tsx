@@ -12,7 +12,5 @@ if (module.hot) {
     // module is about to be replaced
   });
 
-  module.hot.accept(function() {
-    // module or one of its dependencies was just updated
-  });
+  module.hot.accept();
 }

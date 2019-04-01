@@ -56,7 +56,7 @@ class OptionsPanel extends React.Component<Props> {
       color: "#333",
       display: "flex",
       flexDirection: "column"
-    };
+    } as React.CSSProperties;
 
     const { options, onOptionsChange } = this.props;
     const prettier = options.prettier ? options.prettier : this.prettierOptions;
