@@ -59,7 +59,6 @@ const maybeDecodeHash = (hash: string) => {
 };
 
 class App extends React.Component<Props, State> {
-  editor: any;
   flowRef: React.RefObject<HTMLDivElement>;
   tsRef: React.RefObject<HTMLDivElement>;
   flowEditor: monaco.editor.IStandaloneCodeEditor;
@@ -187,9 +186,10 @@ class App extends React.Component<Props, State> {
       const flowCode = this.flowEditor.getValue();
       const tsCode = convert(flowCode, this.state.options);
       this.tsEditor.setValue(tsCode);
+      const prettier = this.state.options.prettier;
       this.tsEditor
         .getModel()
-        .updateOptions({ tabSize: this.state.options.prettier.tabWidth });
+        .updateOptions({ tabSize: prettier ? prettier.tabWidth : 2 });
       try {
         window.location.hash = encodeURIComponent(
           JSON.stringify({
@@ -213,7 +213,7 @@ class App extends React.Component<Props, State> {
       top: 0,
       right: 0,
       bottom: 0
-    };
+    } as React.CSSProperties;
 
     const flowOverlayStyle = {
       position: "absolute",
@@ -225,7 +225,7 @@ class App extends React.Component<Props, State> {
       padding: 16,
       fontSize: 16,
       fontFamily: "sans-serif"
-    };
+    } as React.CSSProperties;
 
     const tsOverlayStyle = {
       position: "absolute",
@@ -235,14 +235,14 @@ class App extends React.Component<Props, State> {
       bottom: 0,
       pointerEvents: "none",
       backgroundColor: error ? "rgba(255, 255, 255, 0.5)" : ""
-    };
+    } as React.CSSProperties;
 
     const headerStyle = {
       fontFamily: "sans-serif",
       margin: 0,
       fontSize: 24,
       fontWeight: 500
-    };
+    } as React.CSSProperties;
 
     const globalHeader = {
       backgroundColor: "#444",
@@ -253,20 +253,20 @@ class App extends React.Component<Props, State> {
       alignItems: "center",
       padding: 8,
       color: "white"
-    };
+    } as React.CSSProperties;
 
     const tabStyle = {
       padding: "8px 16px 8px 16px",
       backgroundColor: "#FFF",
       fontFamily: "sans-serif",
       fontWeight: 300
-    };
+    } as React.CSSProperties;
 
     const tabContainerStyle = {
       backgroundColor: "#DDD",
       display: "flex",
       borderBottom: "solid 1px #DDD"
-    };
+    } as React.CSSProperties;
 
     return (
       <div
