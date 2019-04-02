@@ -1,0 +1,1 @@
+let node: React.Node;
