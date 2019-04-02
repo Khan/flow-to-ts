@@ -407,7 +407,7 @@ const transform = {
           typeAnnotation,
           // initializer,
           computed,
-          // optional,
+          optional,
           readonly
         };
         // TODO: patch @babel/types - tsPropertySignature ignores typeAnnotation, optional, and readonly
