@@ -361,6 +361,15 @@ const transform = {
       path.replaceWith(t.tsTypeReference(typeName, typeParameters));
     }
   },
+  QualifiedTypeIdentifier: {
+    exit(path) {
+      const { qualification, id } = path.node;
+      const left = qualification;
+      const right = id;
+
+      path.replaceWith(t.tsQualifiedName(left, right));
+    }
+  },
   ObjectTypeProperty: {
     exit(path) {
       const { key, value, optional, variance, kind, method } = path.node; // TODO: static, kind
