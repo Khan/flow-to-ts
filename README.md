@@ -30,19 +30,6 @@ https://flow-to-ts.netlify.com
   always possible so warn in those situations where we can't, e.g. converting
   object type spreads to intersection types.
 
-# Roadmap
-
-- improve conversion
-  - convert Flow types for React to TypeScript types
-  - handle declare syntax
-  - handle function/method overloading
-- improve command line tool
-  - add utilty-types to package.json
-  - add @types/* for project dependencies
-  - create tsconfig.json
-  - remove flow-typed, .flowconfig, etc.
-- convert TypeScript to Flow
-
 # Contibuting
 
 ## Bugs
