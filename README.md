@@ -12,8 +12,8 @@ afterwards, e.g. changing `SyntheticEvent` to `React.Event`.
 
 # Quick start
 
-- yarn global add @khanacademy/flow-to-ts
-- flow-to-ts [options] <file globs>
+- `yarn global add @khanacademy/flow-to-ts`
+- `flow-to-ts [options] <file globs>`
 
 # Playground
 
@@ -51,7 +51,7 @@ test cases and should have 100% diff coverage.
 
 ## Dev quick start
 
-- git clone git@github.com:Khan/flow-to-ts.git
-- cd flow-to-ts
-- yarn
-- yarn test
+- `git clone git@github.com:Khan/flow-to-ts.git`
+- `cd flow-to-ts`
+- `yarn`
+- `yarn test`
