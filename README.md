@@ -12,9 +12,8 @@ afterwards, e.g. changing `SyntheticEvent` to `React.Event`.
 
 # Quick start
 
-- yarn add @khanacademy/flow-to-ts
-- yarn
-- yarn test
+- yarn global add @khanacademy/flow-to-ts
+- flow-to-ts [options] <file globs>
 
 # Playground
 
@@ -33,15 +32,16 @@ https://flow-to-ts.netlify.com
 
 # Roadmap
 
-- publish to npm
-- convert Flow types for React to TypeScript types
-- command line tool to convert an entire project
-  - convert .js/.jsx to .ts/.tsx files
+- improve conversion
+  - convert Flow types for React to TypeScript types
+  - handle declare syntax
+  - handle function/method overloading
+- improve command line tool
   - add utilty-types to package.json
-  - add @types/* for imports
+  - add @types/* for project dependencies
   - create tsconfig.json
   - remove flow-typed, .flowconfig, etc.
-- eventually convert TypeScript to Flow
+- convert TypeScript to Flow
 
 # Contibuting
 
@@ -61,3 +61,10 @@ except for small things.  Also, please sign our [Contributor License Agreement](
 
 Pull requests that fix a bug in the conversion code should include one or more
 test cases and should have 100% diff coverage.
+
+## Dev quick start
+
+- git clone git@github.com:Khan/flow-to-ts.git
+- cd flow-to-ts
+- yarn
+- yarn test
