@@ -7,7 +7,7 @@
   },
   "main": "src/convert.js",
   "bin": {
-    "flow-to-js": "./src/flow-to-ts.js"
+    "flow-to-ts": "./src/flow-to-ts.js"
   },
   "license": "MIT",
   "dependencies": {
@@ -23,6 +23,7 @@
     "husky": "^1.3.1",
     "jest": "^24.5.0",
     "jest-mock-console": "^0.4.2",
+    "jest-mock-process": "^1.2.0",
     "prettier": "^1.16.4",
     "pretty-quick": "^1.10.0",
     "tmp": "^0.1.0"

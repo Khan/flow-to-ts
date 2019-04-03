@@ -2,6 +2,7 @@ const path = require("path");
 const tmp = require("tmp");
 const fs = require("fs");
 const mockConsole = require("jest-mock-console").default;
+const mockProcess = require("jest-mock-process");
 
 const cli = require("../src/cli.js");
 
@@ -20,6 +21,19 @@ describe("cli", () => {
   afterEach(() => {
     // cleanup temp dir
     tmpobj.removeCallback();
+  });
+
+  it("should exit with code one when no files have been provided", () => {
+    // Arrange
+    mockConsole();
+    const mockExit = mockProcess.mockProcessExit();
+
+    // Act
+    cli(["node", path.join(__dirname, "../flow-to-ts.js")]);
+
+    // Assert
+    expect(mockExit).toHaveBeenCalledWith(1);
+    mockExit.mockRestore();
   });
 
   it("should console.log output", () => {

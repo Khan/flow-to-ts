@@ -42,6 +42,11 @@ const cli = argv => {
 
   program.parse(argv);
 
+  if (program.args.length === 0) {
+    program.outputHelp();
+    process.exit(1);
+  }
+
   const options = {
     inlineUtilityTypes: Boolean(program.inlineUtilityTypes),
     prettier: program.prettier
