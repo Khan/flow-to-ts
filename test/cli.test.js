@@ -27,6 +27,7 @@ describe("cli", () => {
     // Arrange
     mockConsole();
     const mockExit = mockProcess.mockProcessExit();
+    const mockStdout = mockProcess.mockProcessStdout();
 
     // Act
     cli(["node", path.join(__dirname, "../flow-to-ts.js")]);
@@ -34,6 +35,7 @@ describe("cli", () => {
     // Assert
     expect(mockExit).toHaveBeenCalledWith(1);
     mockExit.mockRestore();
+    mockStdout.mockRestore();
   });
 
   it("should console.log output", () => {

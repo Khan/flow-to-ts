@@ -82,12 +82,10 @@ class App extends React.Component<Props, State> {
         options
       };
     } catch (e) {
-      // This shouldn't happen b/c we don't update the permalink when
-      // there's a parse error.
       this.state = {
         flowCode,
         tsCode: "",
-        error: e,
+        error: e.toString(),
         focusedEditor: null,
         options: defaultOptions
       };
@@ -109,17 +107,19 @@ class App extends React.Component<Props, State> {
     });
 
     this.flowEditor.onDidChangeModelContent(e => {
+      const flowCode = this.flowEditor.getValue();
+      // update the permalink regardless of whether conversion succeeds
+      window.location.hash = encodeURIComponent(
+        JSON.stringify({
+          code: flowCode,
+          options: this.state.options
+        })
+      );
+
       try {
-        const flowCode = this.flowEditor.getValue();
         const tsCode = convert(flowCode, this.state.options);
         this.tsEditor.setValue(tsCode);
         this.setState({ error: null });
-        window.location.hash = encodeURIComponent(
-          JSON.stringify({
-            code: flowCode,
-            options: this.state.options
-          })
-        );
       } catch (e) {
         this.setState({ error: e.toString() });
         console.log(e);
@@ -184,20 +184,22 @@ class App extends React.Component<Props, State> {
       JSON.stringify(prevState.options) !== JSON.stringify(this.state.options)
     ) {
       const flowCode = this.flowEditor.getValue();
-      const tsCode = convert(flowCode, this.state.options);
-      this.tsEditor.setValue(tsCode);
-      const prettier = this.state.options.prettier;
-      this.tsEditor
-        .getModel()
-        .updateOptions({ tabSize: prettier ? prettier.tabWidth : 2 });
+      // update the permalink regardless of whether conversion succeeds
+      window.location.hash = encodeURIComponent(
+        JSON.stringify({
+          code: flowCode,
+          options: this.state.options
+        })
+      );
       try {
-        window.location.hash = encodeURIComponent(
-          JSON.stringify({
-            code: flowCode,
-            options: this.state.options
-          })
-        );
+        const tsCode = convert(flowCode, this.state.options);
+        this.tsEditor.setValue(tsCode);
+        const prettier = this.state.options.prettier;
+        this.tsEditor
+          .getModel()
+          .updateOptions({ tabSize: prettier ? prettier.tabWidth : 2 });
       } catch (e) {
+        debugger;
         this.setState({ error: e.toString() });
         console.log(e);
       }
