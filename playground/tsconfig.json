@@ -1,0 +1,6 @@
+{
+  "compilerOptions": {
+    "types": ["webpack-env"],
+    "jsx": "react"
+  }
+}

@@ -1,20 +1,12 @@
 import * as React from "react";
-import * as monaco from "monaco-editor/esm/vs/editor/editor.main.js";
-import smallLogo from "../images/GitHub-Mark-Light-32px.png";
-import largeLogo from "../images/GitHub-Mark-Light-64px.png";
+import * as monaco from "monaco-editor";
 
 import convert from "../../src/convert.js";
 import OptionsPanel, { Options } from "./options-panel";
 
-// @ts-ignore
-self.MonacoEnvironment = {
-  getWorkerUrl: function(moduleId, label) {
-    if (label === "typescript" || label === "javascript") {
-      return "./ts.worker.js";
-    }
-    return "./editor.worker.js";
-  }
-};
+// images
+import smallLogo from "../images/GitHub-Mark-Light-32px.png";
+import largeLogo from "../images/GitHub-Mark-Light-64px.png";
 
 monaco.languages.register({ id: "flow" });
 
@@ -285,13 +277,14 @@ class App extends React.Component<Props, State> {
           <a href="https://github.com/Khan/flow-to-ts" target="_blank">
             <picture>
               <source srcSet={`${smallLogo}, ${largeLogo} 2x`} />
-              <img src={smallLogo} alt="github" />
+              <img src={smallLogo} alt="github" width={32} height={32} />
             </picture>
           </a>
         </div>
         <OptionsPanel
           options={this.state.options}
           onOptionsChange={options => this.setState({ options })}
+          onCodeChange={code => this.flowEditor.setValue(code)}
         />
         <div style={tabContainerStyle}>
           <div
