@@ -55,3 +55,8 @@ test cases and should have 100% diff coverage.
 - `cd flow-to-ts`
 - `yarn`
 - `yarn test`
+
+## Helpful resources
+
+- https://github.com/niieani/typescript-vs-flowtype
+- https://astexplorer.net/
