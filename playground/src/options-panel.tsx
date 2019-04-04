@@ -1,5 +1,24 @@
 import * as React from "react";
 
+// examples
+import basicTypes from "!!raw-loader!../examples/basic-types.js";
+import functionTypes from "!!raw-loader!../examples/function-types.js";
+import generics from "!!raw-loader!../examples/generics.js";
+import imports from "!!raw-loader!../examples/imports.js";
+import objectTypes from "!!raw-loader!../examples/object-types.js";
+import utilityTypes from "!!raw-loader!../examples/utility-types.js";
+
+const examples = {
+  basicTypes,
+  functionTypes,
+  generics,
+  imports,
+  objectTypes,
+  utilityTypes
+};
+
+console.log(examples);
+
 type PrettierOptions = {
   semi: boolean;
   singleQuote: boolean;
@@ -18,6 +37,7 @@ export type Options = {
 type Props = {
   options: Options;
   onOptionsChange: (newOptions: Options) => unknown;
+  onCodeChange: (newCode: string) => unknown;
 };
 
 const defaultPrettierOptions = {
@@ -47,6 +67,13 @@ class OptionsPanel extends React.Component<Props> {
     }
   }
 
+  handleExampleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const value = e.currentTarget.value;
+    if (value in examples) {
+      this.props.onCodeChange(examples[value]);
+    }
+  };
+
   render() {
     const optionsPanel = {
       gridRow: "2 / span 3",
@@ -63,7 +90,20 @@ class OptionsPanel extends React.Component<Props> {
 
     return (
       <div style={optionsPanel}>
-        <div style={{ marginTop: 8, fontWeight: 700 }}>Output Options</div>
+        <div style={{ marginTop: 8, marginBottom: 8, fontWeight: 700 }}>
+          Example:
+        </div>
+        <select onChange={this.handleExampleChange}>
+          <option>Select...</option>
+          <option value="basicTypes">Basic types</option>
+          <option value="objectTypes">Object types</option>
+          <option value="generics">Generics</option>
+          <option value="utilityTypes">Utility types</option>
+          <option value="functionTypes">Function types</option>
+          <option value="imports">Imports</option>
+        </select>
+
+        <div style={{ marginTop: 24, fontWeight: 700 }}>Output Options</div>
         <form
           style={{
             display: "grid",
