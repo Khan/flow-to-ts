@@ -4,7 +4,7 @@
 
 Convert Flow code to TypeScript.
 
-The goal of thiis project is to provide a tool that can translate 95% of Flow 
+The goal of this project is to provide a tool that can translate 95% of Flow 
 to TypeScript while maintaining a high percentage of the existing type 
 information.  We don't want to convert code and end up with everything using
 `any`.  We also want to avoid having to make a lot of manual changes to files
@@ -12,8 +12,8 @@ afterwards, e.g. changing `SyntheticEvent` to `React.Event`.
 
 # Quick start
 
-- yarn global add @khanacademy/flow-to-ts
-- flow-to-ts [options] <file globs>
+- `yarn global add @khanacademy/flow-to-ts`
+- `flow-to-ts [options] <file globs>`
 
 # Playground
 
@@ -51,7 +51,7 @@ test cases and should have 100% diff coverage.
 
 ## Dev quick start
 
-- git clone git@github.com:Khan/flow-to-ts.git
-- cd flow-to-ts
-- yarn
-- yarn test
+- `git clone git@github.com:Khan/flow-to-ts.git`
+- `cd flow-to-ts`
+- `yarn`
+- `yarn test`
