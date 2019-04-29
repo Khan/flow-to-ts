@@ -29,6 +29,7 @@ type State = {
   options: Options;
 };
 
+// TODO: stop nest params
 const defaultOptions: Options = {
   prettier: {
     semi: true,
@@ -42,12 +43,84 @@ const defaultOptions: Options = {
   inlineUtilityTypes: false
 };
 
-const maybeDecodeHash = (hash: string) => {
+const maybeDecodeHash = (hash: string): { code: string; options: Options } => {
   try {
-    return JSON.parse(decodeURIComponent(hash).slice(1));
+    const urlParams = hash
+      .slice(1)
+      .split("&")
+      .reduce((params, param) => {
+        const [key, value] = param.split("=");
+        return {
+          ...params,
+          [key]: value === undefined ? true : value
+        };
+      }, {}) as any;
+
+    if (!urlParams.code) {
+      return;
+    }
+
+    const options = {} as Options;
+
+    if (urlParams.prettier && defaultOptions.prettier) {
+      options.prettier = { ...defaultOptions.prettier };
+      if (urlParams.semi) {
+        options.prettier.semi = Boolean(parseInt(urlParams.semi));
+      }
+      if (urlParams.singleQuote) {
+        options.prettier.singleQuote = Boolean(parseInt(urlParams.singleQuote));
+      }
+      if (urlParams.tabWidth) {
+        options.prettier.tabWidth = parseInt(urlParams.tabWidth);
+      }
+      if (urlParams.trailingComma) {
+        options.prettier.trailingComma = urlParams.trailingComma;
+      }
+      if (urlParams.bracketSpacing) {
+        options.prettier.bracketSpacing = Boolean(
+          parseInt(urlParams.bracketSpacing)
+        );
+      }
+      if (urlParams.arrowParens) {
+        options.prettier.arrowParens = urlParams.arrowParams;
+      }
+      if (urlParams.printWidth) {
+        options.prettier.printWidth = parseInt(urlParams.printWidth);
+      }
+    }
+    if (urlParams.inlineUtilityTypes) {
+      options.inlineUtilityTypes = urlParams.inlineUtilityTypes;
+    }
+
+    const code = atob(urlParams.code);
+
+    return { code, options };
   } catch (e) {
     return;
   }
+};
+
+const encodeHash = (code: string, options: Options) => {
+  const urlParams = {
+    code: btoa(code)
+  } as any;
+
+  const { prettier, ...restOptions } = options;
+  if (prettier) {
+    urlParams.prettier = true;
+    for (const [key, value] of Object.entries(prettier)) {
+      urlParams[key] = value;
+    }
+  }
+  for (const [key, value] of Object.entries(restOptions)) {
+    urlParams[key] = value;
+  }
+
+  return Object.entries(urlParams)
+    .map(([key, value]) =>
+      typeof value === "boolean" ? `${key}=${value ? 1 : 0}` : `${key}=${value}`
+    )
+    .join("&");
 };
 
 class App extends React.Component<Props, State> {
@@ -101,12 +174,7 @@ class App extends React.Component<Props, State> {
     this.flowEditor.onDidChangeModelContent(e => {
       const flowCode = this.flowEditor.getValue();
       // update the permalink regardless of whether conversion succeeds
-      window.location.hash = encodeURIComponent(
-        JSON.stringify({
-          code: flowCode,
-          options: this.state.options
-        })
-      );
+      window.location.hash = encodeHash(flowCode, this.state.options);
 
       try {
         const tsCode = convert(flowCode, this.state.options);
@@ -177,12 +245,7 @@ class App extends React.Component<Props, State> {
     ) {
       const flowCode = this.flowEditor.getValue();
       // update the permalink regardless of whether conversion succeeds
-      window.location.hash = encodeURIComponent(
-        JSON.stringify({
-          code: flowCode,
-          options: this.state.options
-        })
-      );
+      window.location.hash = encodeHash(flowCode, this.state.options);
       try {
         const tsCode = convert(flowCode, this.state.options);
         this.tsEditor.setValue(tsCode);
