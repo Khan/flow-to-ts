@@ -29,17 +29,15 @@ type State = {
   options: Options;
 };
 
-// TODO: stop nest params
 const defaultOptions: Options = {
-  prettier: {
-    semi: true,
-    singleQuote: false,
-    tabWidth: 4,
-    trailingComma: "all",
-    bracketSpacing: false,
-    arrowParens: "avoid",
-    printWidth: 80
-  },
+  prettier: true,
+  semi: true,
+  singleQuote: false,
+  tabWidth: 4,
+  trailingComma: "all",
+  bracketSpacing: false,
+  arrowParens: "avoid",
+  printWidth: 80,
   inlineUtilityTypes: false
 };
 
@@ -62,34 +60,34 @@ const maybeDecodeHash = (hash: string): { code: string; options: Options } => {
 
     const options = {} as Options;
 
-    if (urlParams.prettier && defaultOptions.prettier) {
-      options.prettier = { ...defaultOptions.prettier };
-      if (urlParams.semi) {
-        options.prettier.semi = Boolean(parseInt(urlParams.semi));
-      }
-      if (urlParams.singleQuote) {
-        options.prettier.singleQuote = Boolean(parseInt(urlParams.singleQuote));
-      }
-      if (urlParams.tabWidth) {
-        options.prettier.tabWidth = parseInt(urlParams.tabWidth);
-      }
-      if (urlParams.trailingComma) {
-        options.prettier.trailingComma = urlParams.trailingComma;
-      }
-      if (urlParams.bracketSpacing) {
-        options.prettier.bracketSpacing = Boolean(
-          parseInt(urlParams.bracketSpacing)
-        );
-      }
-      if (urlParams.arrowParens) {
-        options.prettier.arrowParens = urlParams.arrowParams;
-      }
-      if (urlParams.printWidth) {
-        options.prettier.printWidth = parseInt(urlParams.printWidth);
-      }
+    if (urlParams.prettier) {
+      options.prettier = Boolean(parseInt(urlParams.prettier));
+    }
+    if (urlParams.semi) {
+      options.semi = Boolean(parseInt(urlParams.semi));
+    }
+    if (urlParams.singleQuote) {
+      options.singleQuote = Boolean(parseInt(urlParams.singleQuote));
+    }
+    if (urlParams.tabWidth) {
+      options.tabWidth = parseInt(urlParams.tabWidth);
+    }
+    if (urlParams.trailingComma) {
+      options.trailingComma = urlParams.trailingComma;
+    }
+    if (urlParams.bracketSpacing) {
+      options.bracketSpacing = Boolean(parseInt(urlParams.bracketSpacing));
+    }
+    if (urlParams.arrowParens) {
+      options.arrowParens = urlParams.arrowParams;
+    }
+    if (urlParams.printWidth) {
+      options.printWidth = parseInt(urlParams.printWidth);
     }
     if (urlParams.inlineUtilityTypes) {
-      options.inlineUtilityTypes = urlParams.inlineUtilityTypes;
+      options.inlineUtilityTypes = Boolean(
+        parseInt(urlParams.inlineUtilityTypes)
+      );
     }
 
     const code = atob(urlParams.code);
@@ -105,14 +103,7 @@ const encodeHash = (code: string, options: Options) => {
     code: btoa(code)
   } as any;
 
-  const { prettier, ...restOptions } = options;
-  if (prettier) {
-    urlParams.prettier = true;
-    for (const [key, value] of Object.entries(prettier)) {
-      urlParams[key] = value;
-    }
-  }
-  for (const [key, value] of Object.entries(restOptions)) {
+  for (const [key, value] of Object.entries(options)) {
     urlParams[key] = value;
   }
 
@@ -249,10 +240,8 @@ class App extends React.Component<Props, State> {
       try {
         const tsCode = convert(flowCode, this.state.options);
         this.tsEditor.setValue(tsCode);
-        const prettier = this.state.options.prettier;
-        this.tsEditor
-          .getModel()
-          .updateOptions({ tabSize: prettier ? prettier.tabWidth : 2 });
+        const { options } = this.state;
+        this.tsEditor.getModel().updateOptions({ tabSize: options.tabWidth });
       } catch (e) {
         debugger;
         this.setState({ error: e.toString() });
