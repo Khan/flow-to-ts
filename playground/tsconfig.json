@@ -1,6 +1,7 @@
 {
   "compilerOptions": {
     "types": ["webpack-env"],
-    "jsx": "react"
+    "jsx": "react",
+    "lib": ["es2017", "dom"]
   }
 }
