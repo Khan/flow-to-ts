@@ -17,9 +17,8 @@ const examples = {
   utilityTypes
 };
 
-console.log(examples);
-
-type PrettierOptions = {
+export type Options = {
+  prettier: boolean;
   semi: boolean;
   singleQuote: boolean;
   tabWidth: number;
@@ -27,10 +26,6 @@ type PrettierOptions = {
   bracketSpacing: boolean;
   arrowParens: "avoid" | "always";
   printWidth: number;
-};
-
-export type Options = {
-  prettier: PrettierOptions | false;
   inlineUtilityTypes: boolean;
 };
 
@@ -40,31 +35,9 @@ type Props = {
   onCodeChange: (newCode: string) => unknown;
 };
 
-const defaultPrettierOptions = {
-  semi: true,
-  singleQuote: false,
-  tabWidth: 4,
-  trailingComma: "all",
-  bracketSpacing: false,
-  arrowParens: "avoid",
-  printWidth: 80
-} as PrettierOptions;
-
 class OptionsPanel extends React.Component<Props> {
-  prettierOptions: PrettierOptions;
-
   constructor(props: Props) {
     super(props);
-
-    this.prettierOptions = props.options.prettier || defaultPrettierOptions;
-  }
-
-  componentDidUpdate() {
-    // Store the most recent copy of prettier options so that we can show
-    // them as disabled if someone disables prettier.
-    if (this.props.options.prettier) {
-      this.prettierOptions = this.props.options.prettier;
-    }
   }
 
   handleExampleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -86,7 +59,6 @@ class OptionsPanel extends React.Component<Props> {
     } as React.CSSProperties;
 
     const { options, onOptionsChange } = this.props;
-    const prettier = options.prettier ? options.prettier : this.prettierOptions;
 
     return (
       <div style={optionsPanel}>
@@ -121,7 +93,7 @@ class OptionsPanel extends React.Component<Props> {
             onChange={e => {
               onOptionsChange({
                 ...options,
-                prettier: e.currentTarget.checked ? this.prettierOptions : false
+                prettier: e.currentTarget.checked
               });
             }}
           />
@@ -132,15 +104,12 @@ class OptionsPanel extends React.Component<Props> {
           <input
             id="semicolons"
             type="checkbox"
-            checked={prettier.semi}
+            checked={options.semi}
             disabled={!options.prettier}
             onChange={e => {
               onOptionsChange({
                 ...options,
-                prettier: {
-                  ...prettier,
-                  semi: e.currentTarget.checked
-                }
+                semi: e.currentTarget.checked
               });
             }}
           />
@@ -150,15 +119,12 @@ class OptionsPanel extends React.Component<Props> {
           <input
             id="single-quotes"
             type="checkbox"
-            checked={prettier.singleQuote}
+            checked={options.singleQuote}
             disabled={!options.prettier}
             onChange={e => {
               onOptionsChange({
                 ...options,
-                prettier: {
-                  ...prettier,
-                  singleQuote: e.currentTarget.checked
-                }
+                singleQuote: e.currentTarget.checked
               });
             }}
           />
@@ -168,14 +134,12 @@ class OptionsPanel extends React.Component<Props> {
           <input
             id="bracket-spacing"
             type="checkbox"
-            checked={prettier.bracketSpacing}
+            checked={options.bracketSpacing}
+            disabled={!options.prettier}
             onChange={e => {
               onOptionsChange({
                 ...options,
-                prettier: {
-                  ...prettier,
-                  bracketSpacing: e.currentTarget.checked
-                }
+                bracketSpacing: e.currentTarget.checked
               });
             }}
           />
@@ -184,15 +148,12 @@ class OptionsPanel extends React.Component<Props> {
           </label>
           <select
             id="tab-width"
-            value={prettier.tabWidth}
+            value={options.tabWidth}
             disabled={!options.prettier}
             onChange={e => {
               onOptionsChange({
                 ...options,
-                prettier: {
-                  ...prettier,
-                  tabWidth: Number(e.currentTarget.value)
-                }
+                tabWidth: Number(e.currentTarget.value)
               });
             }}
           >
@@ -204,15 +165,12 @@ class OptionsPanel extends React.Component<Props> {
           </label>
           <select
             id="arrow-parens"
-            value={prettier.arrowParens}
+            value={options.arrowParens}
             disabled={!options.prettier}
             onChange={e => {
               onOptionsChange({
                 ...options,
-                prettier: {
-                  ...prettier,
-                  arrowParens: e.currentTarget.value as "avoid" | "always"
-                }
+                arrowParens: e.currentTarget.value as "avoid" | "always"
               });
             }}
           >
@@ -224,15 +182,12 @@ class OptionsPanel extends React.Component<Props> {
           </label>
           <select
             id="trailing-commas"
-            value={prettier.trailingComma}
+            value={options.trailingComma}
             disabled={!options.prettier}
             onChange={e => {
               onOptionsChange({
                 ...options,
-                prettier: {
-                  ...prettier,
-                  trailingComma: e.currentTarget.value as "none" | "es5" | "all"
-                }
+                trailingComma: e.currentTarget.value as "none" | "es5" | "all"
               });
             }}
           >
@@ -246,15 +201,12 @@ class OptionsPanel extends React.Component<Props> {
           <input
             id="print-width"
             type="text"
-            value={prettier.printWidth}
+            value={options.printWidth}
             disabled={!options.prettier}
             onChange={e => {
               onOptionsChange({
                 ...options,
-                prettier: {
-                  ...prettier,
-                  printWidth: Number(e.currentTarget.value)
-                }
+                printWidth: Number(e.currentTarget.value)
               });
             }}
           />

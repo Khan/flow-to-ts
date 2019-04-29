@@ -51,10 +51,17 @@ const convert = (flowCode, options) => {
   }
 
   if (options && options.prettier) {
-    const prettierOptions = Object.assign(
-      { parser: "typescript", plugins },
-      typeof options.prettier === "object" ? options.prettier : {}
-    );
+    const prettierOptions = {
+      parser: "typescript",
+      plugins,
+      semi: options.semi,
+      singleQuote: options.singleQuote,
+      tabWidth: options.tabWidth,
+      trailingComma: options.trailingComma,
+      bracketSpacing: options.bracketSpacing,
+      arrowParens: options.arrowParens,
+      printWidth: options.printWidth
+    };
     return prettier.format(tsCode, prettierOptions).trim();
   } else {
     return tsCode;

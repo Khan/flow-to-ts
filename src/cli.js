@@ -15,6 +15,10 @@ const cli = argv => {
       "add semi-colons, defaults to 'false' (depends on --prettier)"
     )
     .option(
+      "--single-quote",
+      "use single quotes instead of double quotes, defaults to 'false' (depends on --prettier)"
+    )
+    .option(
       "--tab-width [width]",
       "size of tabs (depends on --prettier)",
       /2|4/,
@@ -49,16 +53,14 @@ const cli = argv => {
 
   const options = {
     inlineUtilityTypes: Boolean(program.inlineUtilityTypes),
-    prettier: program.prettier
-      ? {
-          semi: Boolean(program.semi),
-          tabWidth: parseInt(program.tabWidth),
-          trailingComma: program.trailingComma,
-          bracketSpacing: Boolean(program.bracketSpacing),
-          arrowParens: program.arrowParens,
-          printWidth: program.printWidth
-        }
-      : false
+    prettier: program.prettier,
+    semi: Boolean(program.semi),
+    singleQuote: Boolean(program.singleQuote),
+    tabWidth: parseInt(program.tabWidth),
+    trailingComma: program.trailingComma,
+    bracketSpacing: Boolean(program.bracketSpacing),
+    arrowParens: program.arrowParens,
+    printWidth: program.printWidth
   };
 
   const files = new Set();
