@@ -6,12 +6,14 @@ const convert = require("../src/convert.js");
 const failingTestNames = ["spread03", "spread04"];
 
 describe("convert", () => {
-  const suites = fs.readdirSync(path.join(__dirname, "fixtures/convert"));
+  const suites = false
+    ? ["react"]
+    : fs.readdirSync(path.join(__dirname, "fixtures/convert"));
   for (const suiteName of suites) {
     describe(suiteName, () => {
-      const tests = fs.readdirSync(
-        path.join(__dirname, "fixtures/convert", suiteName)
-      );
+      const tests = false
+        ? []
+        : fs.readdirSync(path.join(__dirname, "fixtures/convert", suiteName));
       for (const testName of tests.filter(
         testName => !failingTestNames.includes(testName)
       )) {

@@ -53,6 +53,40 @@ const utilityTypes = {
   $Call: null
 };
 
+// Mapping between React types for Flow and those for TypeScript.
+const UnqualifiedReactTypeNameMap = {
+  SyntheticEvent: "SyntheticEvent",
+  SyntheticAnimationEvent: "AnimationEvent",
+  SyntheticClipboardEvent: "ClipboardEvent",
+  SyntheticCompositionEvent: "CompositionEvent",
+  SyntheticInputEvent: "InputEvent",
+  SyntheticUIEvent: "UIEvent",
+  SyntheticFocusEvent: "FocusEvent",
+  SyntheticKeyboardEvent: "KeyboardEvent",
+  SyntheticMouseEvent: "MouseEvent",
+  SyntheticDragEvent: "DragEvent",
+  SyntheticWheelEvent: "WheelEvent",
+  SyntheticPointerEvent: "PointerEvent",
+  SyntheticTouchEvent: "TouchEvent",
+  SyntheticTransitionEvent: "TransitionEvent"
+};
+
+// Only types with different names are included.
+const QualifiedReactTypeNameMap = {
+  Node: "ReactNode",
+  Text: "ReactText",
+  Child: "ReactChild",
+  Children: "ReactChildren",
+  Element: "ReactElement",
+  Fragment: "ReactFragment",
+  Portal: "ReactPortal",
+  NodeArray: "ReactNodeArray"
+
+  // TODO: private types, e.g. React$ElementType, React$Node, etc.
+
+  // TODO: handle ComponentType, ElementConfig, ElementProps, etc.
+};
+
 const transform = {
   Program: {
     enter(path, state) {
@@ -358,7 +392,20 @@ const transform = {
         }
       }
 
-      path.replaceWith(t.tsTypeReference(typeName, typeParameters));
+      if (typeName.name in UnqualifiedReactTypeNameMap) {
+        // TODO: make sure that React was imported in this file
+        path.replaceWith(
+          t.tsTypeReference(
+            t.tsQualifiedName(
+              t.identifier("React"),
+              t.identifier(UnqualifiedReactTypeNameMap[typeName.name])
+            ),
+            typeParameters
+          )
+        );
+      } else {
+        path.replaceWith(t.tsTypeReference(typeName, typeParameters));
+      }
     }
   },
   QualifiedTypeIdentifier: {
@@ -367,7 +414,16 @@ const transform = {
       const left = qualification;
       const right = id;
 
-      path.replaceWith(t.tsQualifiedName(left, right));
+      if (left.name === "React" && right.name in QualifiedReactTypeNameMap) {
+        path.replaceWith(
+          t.tsQualifiedName(
+            left,
+            t.identifier(QualifiedReactTypeNameMap[right.name])
+          )
+        );
+      } else {
+        path.replaceWith(t.tsQualifiedName(left, right));
+      }
     }
   },
   ObjectTypeProperty: {
