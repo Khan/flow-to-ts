@@ -1,1 +1,1 @@
-let node: React.Node;
+let foobar: Foo.Bar;
