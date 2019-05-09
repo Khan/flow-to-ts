@@ -7,7 +7,7 @@ const failingTestNames = ["spread03", "spread04"];
 
 describe("convert", () => {
   const suites = false
-    ? ["react"]
+    ? []
     : fs.readdirSync(path.join(__dirname, "fixtures/convert"));
   for (const suiteName of suites) {
     describe(suiteName, () => {
