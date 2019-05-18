@@ -484,7 +484,7 @@ const transform = {
 
       const identifier = {
         type: "Identifier",
-        name: id.name,
+        name: id ? id.name : "key",
         typeAnnotation: t.tsTypeAnnotation(key)
       };
       // TODO: patch @babel/types - t.identifier omits typeAnnotation
