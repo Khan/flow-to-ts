@@ -1,3 +1,3 @@
 
 // Adds two numbers
-declare function foo(a: number, b: number): number;
+declare function foo(arg0: number, arg1: number): number;
