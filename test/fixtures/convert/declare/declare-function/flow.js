@@ -1,3 +1,3 @@
 // @flow
 // Adds two numbers
-declare function foo(a: number, b: number): number;
+declare function foo(number, number): number;
