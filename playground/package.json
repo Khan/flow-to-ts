@@ -4,8 +4,9 @@
   "main": "index.js",
   "license": "MIT",
   "dependencies": {
-    "monaco-editor": "^0.16.2",
+    "codemirror": "^5.46.0",
     "react": "^16.8.5",
+    "react-codemirror2": "^6.0.0",
     "react-dom": "^16.8.5"
   },
   "devDependencies": {
@@ -17,14 +18,12 @@
     "@babel/preset-typescript": "^7.3.3",
     "@types/react": "^16.8.8",
     "@types/react-dom": "^16.8.3",
-    "@types/react-monaco-editor": "^0.16.0",
     "@types/webpack-env": "^1.13.9",
     "babel-loader": "^8.0.5",
     "copy-webpack-plugin": "^5.0.3",
     "css-loader": "^2.1.1",
     "file-loader": "^3.0.1",
     "html-webpack-plugin": "^3.2.0",
-    "monaco-editor-webpack-plugin": "^1.7.0",
     "raw-loader": "^2.0.0",
     "style-loader": "^0.23.1",
     "typescript": "^3.3.4000",

@@ -1,5 +1,4 @@
 const path = require("path");
-const MonacoWebpackPlugin = require("monaco-editor-webpack-plugin");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 const CopyWebpackPlugin = require("copy-webpack-plugin");
 
@@ -41,7 +40,6 @@ module.exports = {
     extensions: [".ts", ".tsx", ".js", ".json"]
   },
   plugins: [
-    new MonacoWebpackPlugin(),
     new HtmlWebpackPlugin({
       template: "./templates/index.html"
     }),
