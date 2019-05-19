@@ -123,7 +123,7 @@ class App extends React.Component<Props, State> {
           }
 
           this.flow = flow;
-          this.typeCheck();
+          this.typeCheck(this.state.flowCode);
         });
     });
   }
@@ -138,7 +138,7 @@ class App extends React.Component<Props, State> {
       try {
         const tsCode = convert(flowCode, this.state.options);
         this.setState({ tsCode });
-        this.typeCheck();
+        this.typeCheck(flowCode);
       } catch (e) {
         this.setState({ errors: [e.toString()] });
         console.log(e);
@@ -152,16 +152,15 @@ class App extends React.Component<Props, State> {
       this.setState({ flowCode });
       const tsCode = convert(flowCode, this.state.options);
       this.setState({ tsCode });
-      this.typeCheck();
+      this.typeCheck(flowCode);
     } catch (e) {
       this.setState({ errors: [e.toString()] });
       console.log(e);
     }
   }
 
-  typeCheck() {
+  typeCheck(flowCode: string) {
     if (this.flow) {
-      const flowCode = this.state.flowCode;
       const errors = this.flow.checkContent("-", flowCode);
       console.log(errors);
       if (errors.length > 0) {
@@ -262,7 +261,7 @@ class App extends React.Component<Props, State> {
         <OptionsPanel
           options={this.state.options}
           onOptionsChange={options => this.setState({ options })}
-          onCodeChange={code => this.flowEditor.setValue(code)}
+          onCodeChange={code => this.update(code)}
         />
         <div style={tabContainerStyle}>
           <div
