@@ -3,6 +3,7 @@ import * as monaco from "monaco-editor";
 
 import convert from "../../src/convert.js";
 import OptionsPanel, { Options } from "./options-panel";
+import { maybeDecodeHash, encodeHash } from "./hash";
 
 // images
 import smallLogo from "../images/GitHub-Mark-Light-32px.png";
@@ -20,11 +21,24 @@ type Foo<T> = {
 };
 `;
 
+// Copied from https://github.com/facebook/flow/blob/master/website/_assets/js/flow-loader.js.es6
+const TRY_LIB_CONTENTS = `
+declare type $JSXIntrinsics = {
+  [string]: {
+    instance: any,
+    props: {
+      children?: React$Node,
+      [key: string]: any,
+    },
+  },
+};
+`.slice(1);
+
 type Props = {};
 type State = {
   flowCode: string;
   tsCode: string;
-  error: string | null;
+  errors: string[];
   focusedEditor: monaco.editor.IStandaloneCodeEditor;
   options: Options;
 };
@@ -41,84 +55,12 @@ const defaultOptions: Options = {
   inlineUtilityTypes: false
 };
 
-const maybeDecodeHash = (hash: string): { code: string; options: Options } => {
-  try {
-    const urlParams = hash
-      .slice(1)
-      .split("&")
-      .reduce((params, param) => {
-        const [key, value] = param.split("=");
-        return {
-          ...params,
-          [key]: value === undefined ? true : value
-        };
-      }, {}) as any;
-
-    if (!urlParams.code) {
-      return;
-    }
-
-    const options = {} as Options;
-
-    if (urlParams.prettier) {
-      options.prettier = Boolean(parseInt(urlParams.prettier));
-    }
-    if (urlParams.semi) {
-      options.semi = Boolean(parseInt(urlParams.semi));
-    }
-    if (urlParams.singleQuote) {
-      options.singleQuote = Boolean(parseInt(urlParams.singleQuote));
-    }
-    if (urlParams.tabWidth) {
-      options.tabWidth = parseInt(urlParams.tabWidth);
-    }
-    if (urlParams.trailingComma) {
-      options.trailingComma = urlParams.trailingComma;
-    }
-    if (urlParams.bracketSpacing) {
-      options.bracketSpacing = Boolean(parseInt(urlParams.bracketSpacing));
-    }
-    if (urlParams.arrowParens) {
-      options.arrowParens = urlParams.arrowParams;
-    }
-    if (urlParams.printWidth) {
-      options.printWidth = parseInt(urlParams.printWidth);
-    }
-    if (urlParams.inlineUtilityTypes) {
-      options.inlineUtilityTypes = Boolean(
-        parseInt(urlParams.inlineUtilityTypes)
-      );
-    }
-
-    const code = atob(urlParams.code);
-
-    return { code, options };
-  } catch (e) {
-    return;
-  }
-};
-
-const encodeHash = (code: string, options: Options) => {
-  const urlParams = {
-    code: btoa(code)
-  } as any;
-
-  for (const [key, value] of Object.entries(options)) {
-    urlParams[key] = value;
-  }
-
-  return Object.entries(urlParams)
-    .map(([key, value]) =>
-      typeof value === "boolean" ? `${key}=${value ? 1 : 0}` : `${key}=${value}`
-    )
-    .join("&");
-};
-
 class App extends React.Component<Props, State> {
   flowRef: React.RefObject<HTMLDivElement>;
   tsRef: React.RefObject<HTMLDivElement>;
   flowEditor: monaco.editor.IStandaloneCodeEditor;
   tsEditor: monaco.editor.IStandaloneCodeEditor;
+  flow: any;
 
   constructor(props: Props) {
     super(props);
@@ -133,7 +75,7 @@ class App extends React.Component<Props, State> {
       this.state = {
         flowCode,
         tsCode: convert(flowCode, options),
-        error: null,
+        errors: [],
         focusedEditor: null,
         options
       };
@@ -141,7 +83,7 @@ class App extends React.Component<Props, State> {
       this.state = {
         flowCode,
         tsCode: "",
-        error: e.toString(),
+        errors: [e.toString()],
         focusedEditor: null,
         options: defaultOptions
       };
@@ -152,6 +94,31 @@ class App extends React.Component<Props, State> {
   }
 
   componentDidMount() {
+    import("../static/0.98.1/flow.js").then(flow => {
+      Promise.all([
+        fetch("/static/0.98.1/flowlib/core.js"),
+        fetch("/static/0.98.1/flowlib/react.js"),
+        fetch("/static/0.98.1/flowlib/intl.js")
+      ])
+        .then(results => Promise.all(results.map(res => res.text())))
+        .then(values => {
+          const [core, react, intl] = values;
+          flow.registerFile("/static/0.98.1/flowlib/core.js", core);
+          flow.registerFile("/static/0.98.1/flowlib/react.js", react);
+          flow.registerFile("/static/0.98.1/flowlib/intl.js", intl);
+          flow.registerFile("try-lib.js", TRY_LIB_CONTENTS);
+          flow.setLibs([
+            "/static/0.98.1/flowlib/core.js",
+            "/static/0.98.1/flowlib/react.js",
+            "/static/0.98.1/flowlib/intl.js",
+            "try-lib.js"
+          ]);
+
+          this.flow = flow;
+          this.typeCheck();
+        });
+    });
+
     this.flowEditor = monaco.editor.create(this.flowRef.current, {
       value: this.state.flowCode,
       selectOnLineNumbers: true,
@@ -170,9 +137,10 @@ class App extends React.Component<Props, State> {
       try {
         const tsCode = convert(flowCode, this.state.options);
         this.tsEditor.setValue(tsCode);
-        this.setState({ error: null });
+        this.setState({ errors: [] });
+        this.typeCheck();
       } catch (e) {
-        this.setState({ error: e.toString() });
+        this.setState({ errors: [e.toString()] });
         console.log(e);
       }
     });
@@ -242,16 +210,27 @@ class App extends React.Component<Props, State> {
         this.tsEditor.setValue(tsCode);
         const { options } = this.state;
         this.tsEditor.getModel().updateOptions({ tabSize: options.tabWidth });
+        this.typeCheck();
       } catch (e) {
-        debugger;
-        this.setState({ error: e.toString() });
+        this.setState({ errors: [e.toString()] });
         console.log(e);
       }
     }
   }
 
+  typeCheck() {
+    if (this.flow) {
+      const flowCode = this.flowEditor.getValue();
+      const errors = this.flow.checkContent("-", flowCode);
+      console.log(errors);
+      if (errors.length > 0) {
+        this.setState({ errors: errors.map(error => error.message[0].descr) });
+      }
+    }
+  }
+
   render() {
-    const { error } = this.state;
+    const { errors } = this.state;
 
     const editorStyle = {
       position: "absolute",
@@ -266,12 +245,15 @@ class App extends React.Component<Props, State> {
       left: 0,
       right: 0,
       bottom: 0,
-      pointerEvents: error ? "" : "none",
-      backgroundColor: error ? "rgba(255, 0, 0, 0.5)" : "",
+      pointerEvents: errors.length > 0 ? "" : "none"
+    } as React.CSSProperties;
+
+    const errorStyle = {
+      backgroundColor: errors.length > 0 ? "rgba(255, 0, 0, 0.5)" : "",
       padding: 16,
       fontSize: 16,
       fontFamily: "sans-serif"
-    } as React.CSSProperties;
+    };
 
     const tsOverlayStyle = {
       position: "absolute",
@@ -280,7 +262,7 @@ class App extends React.Component<Props, State> {
       right: 0,
       bottom: 0,
       pointerEvents: "none",
-      backgroundColor: error ? "rgba(255, 255, 255, 0.5)" : ""
+      backgroundColor: errors.length > 0 ? "rgba(255, 255, 255, 0.5)" : ""
     } as React.CSSProperties;
 
     const headerStyle = {
@@ -362,7 +344,14 @@ class App extends React.Component<Props, State> {
         </div>
         <div style={{ position: "relative" }}>
           <div ref={this.flowRef} style={editorStyle} />
-          <div style={flowOverlayStyle}>{error}</div>
+          <div style={flowOverlayStyle}>
+            {errors.length > 0 &&
+              errors.map((error, index) => (
+                <div key={index} style={errorStyle}>
+                  {error}
+                </div>
+              ))}
+          </div>
         </div>
         <div style={{ position: "relative", display: "flex" }}>
           <div ref={this.tsRef} style={editorStyle} />
