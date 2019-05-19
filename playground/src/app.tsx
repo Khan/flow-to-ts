@@ -1,15 +1,16 @@
 import * as React from "react";
-import * as monaco from "monaco-editor";
+import "codemirror/lib/codemirror.css";
+import "codemirror/theme/material.css";
+import { Controlled as CodeMirror } from "react-codemirror2";
+import "codemirror/mode/jsx/jsx.js";
+import "codemirror/mode/javascript/javascript.js";
 
 import convert from "../../src/convert.js";
 import OptionsPanel, { Options } from "./options-panel";
 import { maybeDecodeHash, encodeHash } from "./hash";
 
-// images
 import smallLogo from "../images/GitHub-Mark-Light-32px.png";
 import largeLogo from "../images/GitHub-Mark-Light-64px.png";
-
-monaco.languages.register({ id: "flow" });
 
 const initCode = `// @flow
 let a: number = 5;
@@ -46,6 +47,7 @@ type State = {
   errors: string[];
   focusedEditor: monaco.editor.IStandaloneCodeEditor;
   options: Options;
+  scroll: { x: number; y: number };
 };
 
 const defaultOptions: Options = {
@@ -61,10 +63,8 @@ const defaultOptions: Options = {
 };
 
 class App extends React.Component<Props, State> {
-  flowRef: React.RefObject<HTMLDivElement>;
-  tsRef: React.RefObject<HTMLDivElement>;
-  flowEditor: monaco.editor.IStandaloneCodeEditor;
-  tsEditor: monaco.editor.IStandaloneCodeEditor;
+  flowEditor: any;
+  tsEditor: any;
   flow: any;
 
   constructor(props: Props) {
@@ -82,7 +82,8 @@ class App extends React.Component<Props, State> {
         tsCode: convert(flowCode, options),
         errors: [],
         focusedEditor: null,
-        options
+        options,
+        scroll: { x: 0, y: 0 }
       };
     } catch (e) {
       this.state = {
@@ -90,12 +91,10 @@ class App extends React.Component<Props, State> {
         tsCode: "",
         errors: [e.toString()],
         focusedEditor: null,
-        options: defaultOptions
+        options: defaultOptions,
+        scroll: { x: 0, y: 0 }
       };
     }
-
-    this.flowRef = React.createRef();
-    this.tsRef = React.createRef();
   }
 
   componentDidMount() {
@@ -108,98 +107,24 @@ class App extends React.Component<Props, State> {
         .then(results => Promise.all(results.map(res => res.text())))
         .then(values => {
           const [core, react, intl] = values;
-          flow.registerFile("/static/0.98.1/flowlib/core.js", core);
-          flow.registerFile("/static/0.98.1/flowlib/react.js", react);
-          flow.registerFile("/static/0.98.1/flowlib/intl.js", intl);
-          flow.registerFile("try-lib.js", TRY_LIB_CONTENTS);
-          flow.setLibs([
-            "/static/0.98.1/flowlib/core.js",
-            "/static/0.98.1/flowlib/react.js",
-            "/static/0.98.1/flowlib/intl.js",
-            "try-lib.js"
-          ]);
+          try {
+            flow.registerFile("/static/0.98.1/flowlib/core.js", core);
+            flow.registerFile("/static/0.98.1/flowlib/react.js", react);
+            flow.registerFile("/static/0.98.1/flowlib/intl.js", intl);
+            flow.registerFile("try-lib.js", TRY_LIB_CONTENTS);
+            flow.setLibs([
+              "/static/0.98.1/flowlib/core.js",
+              "/static/0.98.1/flowlib/react.js",
+              "/static/0.98.1/flowlib/intl.js",
+              "try-lib.js"
+            ]);
+          } catch (e) {
+            // ignore errors
+          }
 
           this.flow = flow;
           this.typeCheck();
         });
-    });
-
-    this.flowEditor = monaco.editor.create(this.flowRef.current, {
-      value: this.state.flowCode,
-      selectOnLineNumbers: true,
-      language: "flow",
-      fontSize: 16,
-      minimap: {
-        enabled: false
-      }
-    });
-
-    this.flowEditor.onDidChangeModelContent(e => {
-      const flowCode = this.flowEditor.getValue();
-      // update the permalink regardless of whether conversion succeeds
-      window.location.hash = encodeHash(flowCode, this.state.options);
-
-      try {
-        const tsCode = convert(flowCode, this.state.options);
-        this.tsEditor.setValue(tsCode);
-        this.setState({ errors: [] });
-        this.typeCheck();
-      } catch (e) {
-        this.setState({ errors: [e.toString()] });
-        console.log(e);
-      }
-    });
-
-    this.tsEditor = monaco.editor.create(this.tsRef.current, {
-      value: this.state.tsCode,
-      language: "typescript",
-      selectOnLineNumbers: true,
-      fontSize: 16,
-      minimap: {
-        enabled: false
-      },
-      readOnly: true
-    });
-
-    this.flowEditor.focus();
-
-    this.flowEditor.onDidScrollChange(e => {
-      const scrollTop = this.flowEditor.getScrollTop();
-      this.tsEditor.setScrollTop(scrollTop);
-      const scrollLeft = this.flowEditor.getScrollLeft();
-      this.tsEditor.setScrollLeft(scrollLeft);
-    });
-
-    this.tsEditor.onDidScrollChange(e => {
-      const scrollTop = this.tsEditor.getScrollTop();
-      this.flowEditor.setScrollTop(scrollTop);
-      const scrollLeft = this.tsEditor.getScrollLeft();
-      this.flowEditor.setScrollLeft(scrollLeft);
-    });
-
-    this.flowEditor.onDidFocusEditorText(() => {
-      this.setState({
-        focusedEditor: this.flowEditor
-      });
-    });
-
-    this.tsEditor.onDidFocusEditorText(() => {
-      this.setState({
-        focusedEditor: this.tsEditor
-      });
-    });
-
-    window.addEventListener("resize", () => {
-      if (this.flowEditor) {
-        this.flowEditor.layout();
-      }
-      if (this.tsEditor) {
-        this.tsEditor.layout();
-      }
-    });
-
-    this.setState({
-      focusedEditor: this.flowEditor
     });
   }
 
@@ -207,14 +132,12 @@ class App extends React.Component<Props, State> {
     if (
       JSON.stringify(prevState.options) !== JSON.stringify(this.state.options)
     ) {
-      const flowCode = this.flowEditor.getValue();
+      const { flowCode } = this.state;
       // update the permalink regardless of whether conversion succeeds
       window.location.hash = encodeHash(flowCode, this.state.options);
       try {
         const tsCode = convert(flowCode, this.state.options);
-        this.tsEditor.setValue(tsCode);
-        const { options } = this.state;
-        this.tsEditor.getModel().updateOptions({ tabSize: options.tabWidth });
+        this.setState({ tsCode });
         this.typeCheck();
       } catch (e) {
         this.setState({ errors: [e.toString()] });
@@ -223,13 +146,28 @@ class App extends React.Component<Props, State> {
     }
   }
 
+  update(flowCode: string) {
+    window.location.hash = encodeHash(flowCode, this.state.options);
+    try {
+      this.setState({ flowCode });
+      const tsCode = convert(flowCode, this.state.options);
+      this.setState({ tsCode });
+      this.typeCheck();
+    } catch (e) {
+      this.setState({ errors: [e.toString()] });
+      console.log(e);
+    }
+  }
+
   typeCheck() {
     if (this.flow) {
-      const flowCode = this.flowEditor.getValue();
+      const flowCode = this.state.flowCode;
       const errors = this.flow.checkContent("-", flowCode);
       console.log(errors);
       if (errors.length > 0) {
         this.setState({ errors: errors.map(error => error.message[0].descr) });
+      } else {
+        this.setState({ errors: [] });
       }
     }
   }
@@ -250,7 +188,8 @@ class App extends React.Component<Props, State> {
       left: 0,
       right: 0,
       bottom: 0,
-      pointerEvents: errors.length > 0 ? "" : "none"
+      pointerEvents: errors.length > 0 ? "" : "none",
+      zIndex: 3
     } as React.CSSProperties;
 
     const errorStyle = {
@@ -347,8 +286,32 @@ class App extends React.Component<Props, State> {
             output.ts [readonly]
           </div>
         </div>
-        <div style={{ position: "relative" }}>
-          <div ref={this.flowRef} style={editorStyle} />
+        <div
+          style={{
+            position: "relative",
+            display: "flex",
+            flexDirection: "column"
+          }}
+        >
+          <CodeMirror
+            value={this.state.flowCode}
+            options={{
+              mode: {
+                name: "jsx",
+                base: { name: "javascript", typescript: true }
+              },
+              lineNumbers: true,
+              scrollbarStyle: "native"
+            }}
+            editorDidMount={editor => (this.flowEditor = editor)}
+            onBeforeChange={(editor, data, value) => {
+              this.update(value);
+            }}
+            onScroll={(editor, data) => {
+              this.tsEditor.scrollTo(data.left, data.top);
+            }}
+            scroll={this.state.scroll}
+          />
           <div style={flowOverlayStyle}>
             {errors.length > 0 &&
               errors.map((error, index) => (
@@ -358,8 +321,32 @@ class App extends React.Component<Props, State> {
               ))}
           </div>
         </div>
-        <div style={{ position: "relative", display: "flex" }}>
-          <div ref={this.tsRef} style={editorStyle} />
+        <div
+          style={{
+            position: "relative",
+            display: "flex",
+            flexDirection: "column"
+          }}
+        >
+          <CodeMirror
+            value={this.state.tsCode}
+            options={{
+              mode: {
+                name: "jsx",
+                base: { name: "javascript", typescript: true }
+              },
+              lineNumbers: true,
+              scrollbarStyle: "native"
+            }}
+            editorDidMount={editor => (this.tsEditor = editor)}
+            onBeforeChange={(editor, data, value) => {
+              // we only want changes to flow editor to update the ts editor
+            }}
+            onScroll={(editor, data) => {
+              this.flowEditor && this.flowEditor.scrollTo(data.left, data.top);
+            }}
+            scroll={this.state.scroll}
+          />
           <div style={tsOverlayStyle} />
         </div>
       </div>

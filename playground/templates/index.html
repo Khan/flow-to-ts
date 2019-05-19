@@ -5,6 +5,23 @@
         overscroll-behavior: none;
         margin: 0;
       }
+      .react-codemirror2 {
+        display: flex;
+        flex-direction: column;
+        flex-grow: 1;
+      }
+      .CodeMirror {
+        font-size: 18px;
+        flex-grow: 1;
+      }
+      .CodeMirror-gutter {
+        min-width: 40px;
+      }
+      .CodeMirror-scroll {
+        height: 100%;
+        overflow-y: hidden;
+        overflow-x: auto;
+      }
     </style>
   </head>
   <body>
