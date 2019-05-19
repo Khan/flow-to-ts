@@ -2,7 +2,7 @@
 type NumDict = { [key: string]: number };
 
 let keys: $Keys<NumDict>;
-let values: $Keys<NumDict>;
+let values: $Values<NumDict>;
 
 const numDict: NumDict = {
   x: 5,
@@ -11,5 +11,5 @@ const numDict: NumDict = {
 
 let prop: $ElementType<NumDict, "x">;
 
-let Point = [number, number];
+type Point = [number, number];
 let x: $ElementType<Point, 0>;
