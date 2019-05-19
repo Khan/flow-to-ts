@@ -1,6 +1,7 @@
 const path = require("path");
 const MonacoWebpackPlugin = require("monaco-editor-webpack-plugin");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
+const CopyWebpackPlugin = require("copy-webpack-plugin");
 
 module.exports = {
   mode: "development",
@@ -18,7 +19,7 @@ module.exports = {
     rules: [
       {
         test: /\.(ts|tsx|js|jsx)$/,
-        exclude: /node_modules/,
+        exclude: [/node_modules/, /static/],
         use: {
           loader: "babel-loader"
         }
@@ -33,6 +34,9 @@ module.exports = {
       }
     ]
   },
+  node: {
+    fs: "empty"
+  },
   resolve: {
     extensions: [".ts", ".tsx", ".js", ".json"]
   },
@@ -40,7 +44,8 @@ module.exports = {
     new MonacoWebpackPlugin(),
     new HtmlWebpackPlugin({
       template: "./templates/index.html"
-    })
+    }),
+    new CopyWebpackPlugin([{ from: "static", to: "static" }])
   ],
   devtool: "none"
 };

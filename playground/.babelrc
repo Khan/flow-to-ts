@@ -1,4 +1,4 @@
 {
     "presets": ["@babel/typescript", "@babel/env", "@babel/react"],
-    "plugins": ["@babel/proposal-class-properties"]
+    "plugins": ["@babel/proposal-class-properties", "@babel/syntax-dynamic-import"]
 }
