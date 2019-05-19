@@ -21,6 +21,11 @@ type Foo<T> = {
 };
 `;
 
+type Flow = {
+  registerFile: (filename: string, contents: string) => void;
+  setLibs: (libs: string[]) => void;
+};
+
 // Copied from https://github.com/facebook/flow/blob/master/website/_assets/js/flow-loader.js.es6
 const TRY_LIB_CONTENTS = `
 declare type $JSXIntrinsics = {
@@ -94,7 +99,7 @@ class App extends React.Component<Props, State> {
   }
 
   componentDidMount() {
-    import("../static/0.98.1/flow.js").then(flow => {
+    import("../static/0.98.1/flow.js").then((flow: Flow) => {
       Promise.all([
         fetch("/static/0.98.1/flowlib/core.js"),
         fetch("/static/0.98.1/flowlib/react.js"),
