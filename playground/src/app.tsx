@@ -45,7 +45,7 @@ type State = {
   flowCode: string;
   tsCode: string;
   errors: string[];
-  focusedEditor: monaco.editor.IStandaloneCodeEditor;
+  focusedEditor: any;
   options: Options;
   scroll: { x: number; y: number };
 };
@@ -310,6 +310,9 @@ class App extends React.Component<Props, State> {
             onScroll={(editor, data) => {
               this.tsEditor.scrollTo(data.left, data.top);
             }}
+            onFocus={(editor, event) =>
+              this.setState({ focusedEditor: editor })
+            }
             scroll={this.state.scroll}
           />
           <div style={flowOverlayStyle}>
@@ -345,6 +348,9 @@ class App extends React.Component<Props, State> {
             onScroll={(editor, data) => {
               this.flowEditor && this.flowEditor.scrollTo(data.left, data.top);
             }}
+            onFocus={(editor, event) =>
+              this.setState({ focusedEditor: editor })
+            }
             scroll={this.state.scroll}
           />
           <div style={tsOverlayStyle} />
