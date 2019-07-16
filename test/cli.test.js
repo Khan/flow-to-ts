@@ -65,7 +65,7 @@ describe("cli", () => {
     expect(fs.existsSync(outputPath)).toBe(false);
   });
 
-  it("should log any files with errors", () => {
+  it("should error any files with errors", () => {
     // Arrange
     mockConsole();
     const inputPath = path.join(tmpdir, "test.js");
@@ -75,7 +75,7 @@ describe("cli", () => {
     cli(["node", path.join(__dirname, "../flow-to-ts.js"), inputPath]);
 
     // Assert
-    expect(console.log).toHaveBeenCalledWith(`error processing ${inputPath}`);
+    expect(console.error).toHaveBeenCalledWith(`error processing ${inputPath}`);
   });
 
   it("should write a file", () => {
