@@ -61,7 +61,7 @@ const cli = argv => {
     trailingComma: program.trailingComma,
     bracketSpacing: Boolean(program.bracketSpacing),
     arrowParens: program.arrowParens,
-    printWidth: program.printWidth
+    printWidth: parseInt(program.printWidth)
   };
 
   const files = new Set();
