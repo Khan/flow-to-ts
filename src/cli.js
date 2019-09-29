@@ -3,6 +3,7 @@ const fs = require("fs");
 const glob = require("glob");
 
 const convert = require("./convert.js");
+const detectJsx = require('./detect-jsx.js');
 const version = require("../package.json").version;
 
 const cli = argv => {
@@ -78,7 +79,8 @@ const cli = argv => {
       const outCode = convert(inCode, options);
 
       if (program.write) {
-        const outFile = file.replace(/\.js$/, ".ts");
+        const extension = detectJsx(outCode) ? ".tsx" : ".ts";
+        const outFile = file.replace(/\.js$/, extension);
         fs.writeFileSync(outFile, outCode);
       } else {
         console.log(outCode);
