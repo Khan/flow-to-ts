@@ -3,13 +3,16 @@ const fs = require("fs");
 const glob = require("glob");
 
 const convert = require("./convert.js");
-const detectJsx = require('./detect-jsx.js');
+const detectJsx = require("./detect-jsx.js");
 const version = require("../package.json").version;
 
 const cli = argv => {
   program
     .version(version)
-    .option("--inline-utility-types", "inline utility types when possible")
+    .option(
+      "--inline-utility-types",
+      "inline utility types when possible, defaults to 'false'"
+    )
     .option("--prettier", "use prettier for formatting")
     .option(
       "--semi",
@@ -33,7 +36,7 @@ const cli = argv => {
     )
     .option(
       "--bracket-spacing",
-      "put spaces between braces and contents (depends on --prettier)"
+      "put spaces between braces and contents, defaults to 'false' (depends on --prettier)"
     )
     .option(
       "--arrow-parens [avoid|always]",
