@@ -15,24 +15,49 @@ var parens = _interopRequireWildcard(require("./parentheses"));
 function t() {
   const data = _interopRequireWildcard(require("@babel/types"));
 
-  t = function () {
+  t = function() {
     return data;
   };
 
   return data;
 }
 
-function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = Object.defineProperty && Object.getOwnPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : {}; if (desc.get || desc.set) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } } newObj.default = obj; return newObj; } }
+function _interopRequireWildcard(obj) {
+  if (obj && obj.__esModule) {
+    return obj;
+  } else {
+    var newObj = {};
+    if (obj != null) {
+      for (var key in obj) {
+        if (Object.prototype.hasOwnProperty.call(obj, key)) {
+          var desc =
+            Object.defineProperty && Object.getOwnPropertyDescriptor
+              ? Object.getOwnPropertyDescriptor(obj, key)
+              : {};
+          if (desc.get || desc.set) {
+            Object.defineProperty(newObj, key, desc);
+          } else {
+            newObj[key] = obj[key];
+          }
+        }
+      }
+    }
+    newObj.default = obj;
+    return newObj;
+  }
+}
 
 function expandAliases(obj) {
   const newObj = {};
 
   function add(type, func) {
     const fn = newObj[type];
-    newObj[type] = fn ? function (node, parent, stack) {
-      const result = fn(node, parent, stack);
-      return result == null ? func(node, parent, stack) : result;
-    } : func;
+    newObj[type] = fn
+      ? function(node, parent, stack) {
+          const result = fn(node, parent, stack);
+          return result == null ? func(node, parent, stack) : result;
+        }
+      : func;
   }
 
   for (const type of Object.keys(obj)) {
@@ -65,7 +90,10 @@ function isOrHasCallExpression(node) {
   }
 
   if (t().isMemberExpression(node)) {
-    return isOrHasCallExpression(node.object) || !node.computed && isOrHasCallExpression(node.property);
+    return (
+      isOrHasCallExpression(node.object) ||
+      (!node.computed && isOrHasCallExpression(node.property))
+    );
   } else {
     return false;
   }
@@ -111,6 +139,10 @@ function needsParens(node, parent, printStack) {
 
   if (t().isNewExpression(parent) && parent.callee === node) {
     if (isOrHasCallExpression(node)) return true;
+  }
+
+  if (t().isLogicalExpression(node) && node.extra && node.extra.parenthesized) {
+    return true;
   }
 
   return find(expandedParens, node, parent, printStack);
