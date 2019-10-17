@@ -82,7 +82,7 @@ const cli = argv => {
       const outCode = convert(inCode, options);
 
       if (program.write) {
-        const extension = detectJsx(outCode) ? ".tsx" : ".ts";
+        const extension = detectJsx(inCode) ? ".tsx" : ".ts";
         const outFile = file.replace(/\.js$/, extension);
         fs.writeFileSync(outFile, outCode);
       } else {
