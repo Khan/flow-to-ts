@@ -3,6 +3,26 @@ name: Node CI
 on: [push]
 
 jobs:
+  coverage:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v1
+      - name: Use Node.js 12.x
+        uses: actions/setup-node@v1
+        with:
+          node-version: 12.x
+      - name: yarn install
+        run: yarn install
+      - name: yarn coverage
+        run: yarn coverage
+        env:
+          CI: true
+      - name: codecov
+        uses: codecov/codecov-action@v1.0.2
+        with:
+          token: ${{secrets.CODECOV_TOKEN}}
+
   build:
     runs-on: ubuntu-latest
 
@@ -18,11 +38,7 @@ jobs:
           node-version: ${{ matrix.node-version }}
       - name: yarn install
         run: yarn install
-      - name: yarn coverage
-        run: yarn coverage
+      - name: yarn test
+        run: yarn test
         env:
           CI: true
-      - name: codecov
-        uses: codecov/codecov-action@v1.0.2
-        with:
-          token: ${{secrets.CODECOV_TOKEN}}
