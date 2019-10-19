@@ -15,7 +15,8 @@ const parseOptions = {
 
     // handle esnext syntax
     "classProperties",
-    "objectRestSpread"
+    "objectRestSpread",
+    "dynamicImport"
   ]
 };
 
