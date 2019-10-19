@@ -70,3 +70,4 @@ const convert = (flowCode, options) => {
 };
 
 module.exports = convert;
+module.exports.parseOptions = parseOptions;
