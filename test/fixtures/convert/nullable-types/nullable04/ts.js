@@ -1,1 +1,1 @@
-let a: Array<string | null> | null;
+let a: Array<string | null | undefined> | null | undefined;
