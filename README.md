@@ -1,6 +1,7 @@
 # flow-to-ts
 
-[![CircleCI](https://circleci.com/gh/Khan/flow-to-ts.svg?style=svg)](https://circleci.com/gh/Khan/flow-to-ts) [![codecov](https://codecov.io/gh/Khan/flow-to-ts/branch/master/graph/badge.svg)](https://codecov.io/gh/Khan/flow-to-ts)
+[![Actions Status](https://github.com/Khan/flow-to-ts/workflows/Node%20CI/badge.svg)](https://github.com/Khan/flow-to-ts/actions)
+ [![codecov](https://codecov.io/gh/Khan/flow-to-ts/branch/master/graph/badge.svg)](https://codecov.io/gh/Khan/flow-to-ts)
 
 Convert Flow code to TypeScript.
 
