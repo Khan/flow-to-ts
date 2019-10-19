@@ -3,9 +3,9 @@ const traverse = require("../babel-traverse/lib/index.js").default;
 
 const { parseOptions } = require("./convert.js");
 
-const detectJsx = tsCode => {
+const detectJsx = code => {
   let jsx = false;
-  const ast = parse(tsCode, parseOptions);
+  const ast = parse(code, parseOptions);
 
   traverse(ast, {
     JSXOpeningElement({ node }) {
