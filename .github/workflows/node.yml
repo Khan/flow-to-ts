@@ -16,10 +16,13 @@ jobs:
         uses: actions/setup-node@v1
         with:
           node-version: ${{ matrix.node-version }}
-      - name: yarn install, build, and test
-        run: |
-          yarn install
-          yarn coverage
-          yarn run codecov
+      - name: yarn install
+        run: yarn install
+      - name: yarn coverage
+        run: yarn coverage
         env:
           CI: true
+      - name: codecov
+        uses: codecov/codecov-action@v1.0.2
+        with:
+          token: ${{secrets.CODECOV_TOKEN}}
