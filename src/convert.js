@@ -15,7 +15,8 @@ const parseOptions = {
 
     // handle esnext syntax
     "classProperties",
-    "objectRestSpread"
+    "objectRestSpread",
+    "dynamicImport"
   ]
 };
 
@@ -69,3 +70,4 @@ const convert = (flowCode, options) => {
 };
 
 module.exports = convert;
+module.exports.parseOptions = parseOptions;
