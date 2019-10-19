@@ -60,5 +60,3 @@ test cases and should have 100% diff coverage.
 
 - https://github.com/niieani/typescript-vs-flowtype
 - https://astexplorer.net/
-
-trivial change to trigger github actions
