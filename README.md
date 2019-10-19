@@ -4,10 +4,10 @@
 
 Convert Flow code to TypeScript.
 
-The goal of this project is to provide a tool that can translate 95% of Flow 
-to TypeScript while maintaining a high percentage of the existing type 
-information.  We don't want to convert code and end up with everything using
-`any`.  We also want to avoid having to make a lot of manual changes to files
+The goal of this project is to provide a tool that can translate 95% of Flow
+to TypeScript while maintaining a high percentage of the existing type
+information. We don't want to convert code and end up with everything using
+`any`. We also want to avoid having to make a lot of manual changes to files
 afterwards, e.g. changing `SyntheticEvent` to `React.Event`.
 
 # Quick start
@@ -44,7 +44,7 @@ Feature requests are welcome.
 ## Pull Requests
 
 Please make sure there is a GitHub issue first before creating a pull request
-except for small things.  Also, please sign our [Contributor License Agreement](https://docs.google.com/forms/d/e/1FAIpQLSdyXYrc8ogVoA46J9KXyIj5nKlZzNkOnQG-4A1R7X_BWGTShQ/viewform).
+except for small things. Also, please sign our [Contributor License Agreement](https://docs.google.com/forms/d/e/1FAIpQLSdyXYrc8ogVoA46J9KXyIj5nKlZzNkOnQG-4A1R7X_BWGTShQ/viewform).
 
 Pull requests that fix a bug in the conversion code should include one or more
 test cases and should have 100% diff coverage.
