@@ -283,7 +283,8 @@ const transform = {
           t.isTSTypeAnnotation(typeAnnotation)
             ? typeAnnotation.typeAnnotation
             : typeAnnotation,
-          t.tsNullKeyword()
+          t.tsNullKeyword(),
+          t.tsUndefinedKeyword()
         ])
       );
     }

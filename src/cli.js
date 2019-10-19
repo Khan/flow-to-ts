@@ -3,12 +3,16 @@ const fs = require("fs");
 const glob = require("glob");
 
 const convert = require("./convert.js");
+const detectJsx = require("./detect-jsx.js");
 const version = require("../package.json").version;
 
 const cli = argv => {
   program
     .version(version)
-    .option("--inline-utility-types", "inline utility types when possible")
+    .option(
+      "--inline-utility-types",
+      "inline utility types when possible, defaults to 'false'"
+    )
     .option("--prettier", "use prettier for formatting")
     .option(
       "--semi",
@@ -32,7 +36,7 @@ const cli = argv => {
     )
     .option(
       "--bracket-spacing",
-      "put spaces between braces and contents (depends on --prettier)"
+      "put spaces between braces and contents, defaults to 'false' (depends on --prettier)"
     )
     .option(
       "--arrow-parens [avoid|always]",
@@ -60,7 +64,7 @@ const cli = argv => {
     trailingComma: program.trailingComma,
     bracketSpacing: Boolean(program.bracketSpacing),
     arrowParens: program.arrowParens,
-    printWidth: program.printWidth
+    printWidth: parseInt(program.printWidth)
   };
 
   const files = new Set();
@@ -78,7 +82,8 @@ const cli = argv => {
       const outCode = convert(inCode, options);
 
       if (program.write) {
-        const outFile = file.replace(/\.js$/, ".ts");
+        const extension = detectJsx(inCode) ? ".tsx" : ".ts";
+        const outFile = file.replace(/\.js$/, extension);
         fs.writeFileSync(outFile, outCode);
       } else {
         console.log(outCode);
