@@ -561,9 +561,17 @@ const transform = {
         ) {
           elements.push(indexer);
         } else {
-          const typeName = t.identifier("Record");
-          const typeParameters = t.tsTypeParameterInstantiation([key, value]);
-          spreads.push(t.tsTypeReference(typeName, typeParameters));
+          const typeParameter = t.tsTypeParameter(key);
+          typeParameter.name = indexer.parameters[0].name;
+
+          const mappedType = {
+            type: "TSMappedType",
+            typeParameter: typeParameter,
+            typeAnnotation: value,
+            optional: true
+          };
+
+          spreads.push(mappedType);
         }
       });
 

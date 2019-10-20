@@ -1,2 +1,2 @@
 
-let obj: Record<A, string>;
+let obj: { [key in A]?: string };
