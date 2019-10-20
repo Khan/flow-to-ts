@@ -6,6 +6,14 @@ const computeNewlines = require("./compute-newlines.js");
 const locToString = loc =>
   `${loc.start.line}:${loc.start.column}-${loc.end.line}:${loc.end.column}`;
 
+const stripSuffixFromImportSource = path => {
+  // TODO: make this configurable so we can output .ts[x]?
+  const src = path.node.source.value.startsWith("./")
+    ? path.node.source.value.replace(/\.js[x]?$/, "")
+    : path.node.source.value;
+  path.node.source = t.stringLiteral(src);
+};
+
 // TODO: figure out how to template these inline definitions
 const utilityTypes = {
   $Keys: typeAnnotation => {
@@ -627,14 +635,21 @@ const transform = {
       path.replaceWith(t.tsExpressionWithTypeArguments(id, typeParameters));
     }
   },
+  ExportDeclaration: {
+    exit(path) {
+      if (path.node.exportKind == "type") {
+        path.node.exportKind = "value";
+      }
+
+      if (path.node.source) {
+        stripSuffixFromImportSource(path);
+      }
+    }
+  },
   ImportDeclaration: {
     exit(path) {
       path.node.importKind = "value";
-      // TODO: make this configurable so we can output .ts[x]?
-      const src = path.node.source.value.startsWith("./")
-        ? path.node.source.value.replace(/\.js[x]?$/, "")
-        : path.node.source.value;
-      path.node.source = t.stringLiteral(src);
+      stripSuffixFromImportSource(path);
     }
   },
   ImportSpecifier: {
