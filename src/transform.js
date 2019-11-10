@@ -125,13 +125,21 @@ const transform = {
         if (stmt.leadingComments) {
           stmt.leadingComments = stmt.leadingComments.filter(comment => {
             const value = comment.value.trim();
-            return value !== "@flow" && !value.startsWith("$FlowFixMe");
+            return (
+              !value.startsWith("@flow") &&
+              !value.startsWith("* @flow") &&
+              !value.startsWith("$FlowFixMe")
+            );
           });
         }
         if (stmt.trailingComments) {
           stmt.trailingComments = stmt.trailingComments.filter(comment => {
             const value = comment.value.trim();
-            return value !== "@flow" && !value.startsWith("$FlowFixMe");
+            return (
+              !value.startsWith("@flow") &&
+              !value.startsWith("* @flow") &&
+              !value.startsWith("$FlowFixMe")
+            );
           });
         }
       }

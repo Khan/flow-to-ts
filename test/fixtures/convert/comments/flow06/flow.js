@@ -1,0 +1,4 @@
+/*
+ * @flow
+ */
+let a: string;
