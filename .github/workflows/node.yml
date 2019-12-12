@@ -19,9 +19,7 @@ jobs:
         env:
           CI: true
       - name: codecov
-        uses: codecov/codecov-action@v1.0.2
-        with:
-          token: ${{secrets.CODECOV_TOKEN}}
+        run: yarn run codecov
 
   build:
     runs-on: ubuntu-latest
