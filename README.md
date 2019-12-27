@@ -52,10 +52,12 @@ test cases and should have 100% diff coverage.
 
 ## Dev quick start
 
-- `git clone git@github.com:Khan/flow-to-ts.git`
-- `cd flow-to-ts`
-- `yarn`
-- `yarn test`
+```bash
+git clone git@github.com:Khan/flow-to-ts.git
+cd flow-to-ts
+yarn
+yarn test
+```
 
 ## Helpful resources
 
