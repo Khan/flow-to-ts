@@ -551,7 +551,29 @@ const transform = {
       }
 
       // TODO: maintain the position of indexers
-      elements.push(...indexers);
+      indexers.forEach(indexer => {
+        const value = indexer.typeAnnotation.typeAnnotation;
+        const key = indexer.parameters[0].typeAnnotation.typeAnnotation;
+        if (
+          t.isTSSymbolKeyword(key) ||
+          t.isTSStringKeyword(key) ||
+          t.isTSNumberKeyword(key)
+        ) {
+          elements.push(indexer);
+        } else {
+          const typeParameter = t.tsTypeParameter(key);
+          typeParameter.name = indexer.parameters[0].name;
+
+          const mappedType = {
+            type: "TSMappedType",
+            typeParameter: typeParameter,
+            typeAnnotation: value,
+            optional: true
+          };
+
+          spreads.push(mappedType);
+        }
+      });
 
       if (spreads.length > 0 && elements.length > 0) {
         path.replaceWith(
