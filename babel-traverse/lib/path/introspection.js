@@ -27,7 +27,7 @@ exports.is = void 0;
 function _includes() {
   const data = _interopRequireDefault(require("lodash/includes"));
 
-  _includes = function () {
+  _includes = function() {
     return data;
   };
 
@@ -37,16 +37,41 @@ function _includes() {
 function t() {
   const data = _interopRequireWildcard(require("@babel/types"));
 
-  t = function () {
+  t = function() {
     return data;
   };
 
   return data;
 }
 
-function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = Object.defineProperty && Object.getOwnPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : {}; if (desc.get || desc.set) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } } newObj.default = obj; return newObj; } }
+function _interopRequireWildcard(obj) {
+  if (obj && obj.__esModule) {
+    return obj;
+  } else {
+    var newObj = {};
+    if (obj != null) {
+      for (var key in obj) {
+        if (Object.prototype.hasOwnProperty.call(obj, key)) {
+          var desc =
+            Object.defineProperty && Object.getOwnPropertyDescriptor
+              ? Object.getOwnPropertyDescriptor(obj, key)
+              : {};
+          if (desc.get || desc.set) {
+            Object.defineProperty(newObj, key, desc);
+          } else {
+            newObj[key] = obj[key];
+          }
+        }
+      }
+    }
+    newObj.default = obj;
+    return newObj;
+  }
+}
 
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+function _interopRequireDefault(obj) {
+  return obj && obj.__esModule ? obj : { default: obj };
+}
 
 function matchesPattern(pattern, allowPartial) {
   return t().matchesPattern(this.node, pattern, allowPartial);
@@ -82,7 +107,9 @@ function isNodeType(type) {
 }
 
 function canHaveVariableDeclarationOrExpression() {
-  return (this.key === "init" || this.key === "left") && this.parentPath.isFor();
+  return (
+    (this.key === "init" || this.key === "left") && this.parentPath.isFor()
+  );
 }
 
 function canSwapBetweenExpressionAndStatement(replacement) {
@@ -121,7 +148,10 @@ function isCompletionRecord(allowInsideFunction) {
 }
 
 function isStatementOrBlock() {
-  if (this.parentPath.isLabeledStatement() || t().isBlockStatement(this.container)) {
+  if (
+    this.parentPath.isLabeledStatement() ||
+    t().isBlockStatement(this.container)
+  ) {
     return false;
   } else {
     return (0, _includes().default)(t().STATEMENT_OR_BLOCK_KEYS, this.key);
@@ -173,11 +203,15 @@ function willIMaybeExecuteBefore(target) {
 }
 
 function _guessExecutionStatusRelativeTo(target) {
-  const targetFuncParent = target.scope.getFunctionParent() || target.scope.getProgramParent();
-  const selfFuncParent = this.scope.getFunctionParent() || target.scope.getProgramParent();
+  const targetFuncParent =
+    target.scope.getFunctionParent() || target.scope.getProgramParent();
+  const selfFuncParent =
+    this.scope.getFunctionParent() || target.scope.getProgramParent();
 
   if (targetFuncParent.node !== selfFuncParent.node) {
-    const status = this._guessExecutionStatusRelativeToDifferentFunctions(targetFuncParent);
+    const status = this._guessExecutionStatusRelativeToDifferentFunctions(
+      targetFuncParent
+    );
 
     if (status) {
       return status;
@@ -214,7 +248,10 @@ function _guessExecutionStatusRelativeTo(target) {
     return "before";
   }
 
-  if (targetRelationship.listKey && targetRelationship.container === selfRelationship.container) {
+  if (
+    targetRelationship.listKey &&
+    targetRelationship.container === selfRelationship.container
+  ) {
     return targetRelationship.key > selfRelationship.key ? "before" : "after";
   }
 
@@ -240,7 +277,9 @@ function _guessExecutionStatusRelativeToDifferentFunctions(targetFuncParent) {
   let allStatus;
 
   for (const path of referencePaths) {
-    const childOfFunction = !!path.find(path => path.node === targetFuncPath.node);
+    const childOfFunction = !!path.find(
+      path => path.node === targetFuncPath.node
+    );
     if (childOfFunction) continue;
 
     const status = this._guessExecutionStatusRelativeTo(path);
@@ -267,7 +306,8 @@ function _resolve(dangerous, resolved) {
   if (this.isVariableDeclarator()) {
     if (this.get("id").isIdentifier()) {
       return this.get("init").resolve(dangerous, resolved);
-    } else {}
+    } else {
+    }
   } else if (this.isReferencedIdentifier()) {
     const binding = this.scope.getBinding(this.node.name);
     if (!binding) return;
@@ -293,12 +333,16 @@ function _resolve(dangerous, resolved) {
       for (const prop of props) {
         if (!prop.isProperty()) continue;
         const key = prop.get("key");
-        let match = prop.isnt("computed") && key.isIdentifier({
-          name: targetName
-        });
-        match = match || key.isLiteral({
-          value: targetName
-        });
+        let match =
+          prop.isnt("computed") &&
+          key.isIdentifier({
+            name: targetName
+          });
+        match =
+          match ||
+          key.isLiteral({
+            value: targetName
+          });
         if (match) return prop.get("value").resolve(dangerous, resolved);
       }
     } else if (target.isArrayExpression() && !isNaN(+targetName)) {
@@ -322,7 +366,9 @@ function isConstantExpression() {
     }
 
     if (this.isTemplateLiteral()) {
-      return this.get("expressions").every(expression => expression.isConstantExpression());
+      return this.get("expressions").every(expression =>
+        expression.isConstantExpression()
+      );
     }
 
     return true;
@@ -337,7 +383,10 @@ function isConstantExpression() {
   }
 
   if (this.isBinaryExpression()) {
-    return this.get("left").isConstantExpression() && this.get("right").isConstantExpression();
+    return (
+      this.get("left").isConstantExpression() &&
+      this.get("right").isConstantExpression()
+    );
   }
 
   return false;
@@ -346,19 +395,23 @@ function isConstantExpression() {
 function isInStrictMode() {
   const start = this.isProgram() ? this : this.parentPath;
   const strictParent = start.find(path => {
-    if (path.isProgram({
-      sourceType: "module"
-    })) return true;
+    if (
+      path.isProgram({
+        sourceType: "module"
+      })
+    )
+      return true;
     if (path.isClass()) return true;
     if (!path.isProgram() && !path.isFunction()) return false;
 
-    if (path.isArrowFunctionExpression() && !path.get("body").isBlockStatement()) {
+    if (
+      path.isArrowFunctionExpression() &&
+      !path.get("body").isBlockStatement()
+    ) {
       return false;
     }
 
-    let {
-      node
-    } = path;
+    let { node } = path;
     if (path.isFunction()) node = node.body;
 
     for (const directive of node.directives) {

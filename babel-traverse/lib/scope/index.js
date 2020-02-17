@@ -8,7 +8,7 @@ exports.default = void 0;
 function _includes() {
   const data = _interopRequireDefault(require("lodash/includes"));
 
-  _includes = function () {
+  _includes = function() {
     return data;
   };
 
@@ -18,7 +18,7 @@ function _includes() {
 function _repeat() {
   const data = _interopRequireDefault(require("lodash/repeat"));
 
-  _repeat = function () {
+  _repeat = function() {
     return data;
   };
 
@@ -32,7 +32,7 @@ var _index = _interopRequireDefault(require("../index"));
 function _defaults() {
   const data = _interopRequireDefault(require("lodash/defaults"));
 
-  _defaults = function () {
+  _defaults = function() {
     return data;
   };
 
@@ -44,7 +44,7 @@ var _binding = _interopRequireDefault(require("./binding"));
 function _globals() {
   const data = _interopRequireDefault(require("globals"));
 
-  _globals = function () {
+  _globals = function() {
     return data;
   };
 
@@ -54,7 +54,7 @@ function _globals() {
 function t() {
   const data = _interopRequireWildcard(require("@babel/types"));
 
-  t = function () {
+  t = function() {
     return data;
   };
 
@@ -63,9 +63,34 @@ function t() {
 
 var _cache = require("../cache");
 
-function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = Object.defineProperty && Object.getOwnPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : {}; if (desc.get || desc.set) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } } newObj.default = obj; return newObj; } }
+function _interopRequireWildcard(obj) {
+  if (obj && obj.__esModule) {
+    return obj;
+  } else {
+    var newObj = {};
+    if (obj != null) {
+      for (var key in obj) {
+        if (Object.prototype.hasOwnProperty.call(obj, key)) {
+          var desc =
+            Object.defineProperty && Object.getOwnPropertyDescriptor
+              ? Object.getOwnPropertyDescriptor(obj, key)
+              : {};
+          if (desc.get || desc.set) {
+            Object.defineProperty(newObj, key, desc);
+          } else {
+            newObj[key] = obj[key];
+          }
+        }
+      }
+    }
+    newObj.default = obj;
+    return newObj;
+  }
+}
 
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+function _interopRequireDefault(obj) {
+  return obj && obj.__esModule ? obj : { default: obj };
+}
 
 function gatherNodeParts(node, parts) {
   if (t().isModuleDeclaration(node)) {
@@ -108,7 +133,8 @@ const collectorVisitor = {
       const declar = path.get(key);
 
       if (declar.isVar()) {
-        const parentScope = path.scope.getFunctionParent() || path.scope.getProgramParent();
+        const parentScope =
+          path.scope.getFunctionParent() || path.scope.getProgramParent();
         parentScope.registerBinding("var", declar);
       }
     }
@@ -121,7 +147,8 @@ const collectorVisitor = {
       return;
     }
 
-    const parent = path.scope.getFunctionParent() || path.scope.getProgramParent();
+    const parent =
+      path.scope.getFunctionParent() || path.scope.getProgramParent();
     parent.registerDeclaration(path);
   },
 
@@ -139,10 +166,7 @@ const collectorVisitor = {
 
   ExportDeclaration: {
     exit(path) {
-      const {
-        node,
-        scope
-      } = path;
+      const { node, scope } = path;
       const declar = node.declaration;
 
       if (t().isClassDeclaration(declar) || t().isFunctionDeclaration(declar)) {
@@ -159,7 +183,6 @@ const collectorVisitor = {
         }
       }
     }
-
   },
 
   LabeledStatement(path) {
@@ -203,15 +226,12 @@ const collectorVisitor = {
       }
     }
   }
-
 };
 let uid = 0;
 
 class Scope {
   constructor(path) {
-    const {
-      node
-    } = path;
+    const { node } = path;
 
     const cached = _cache.scope.get(node);
 
@@ -257,14 +277,22 @@ class Scope {
   }
 
   generateUid(name = "temp") {
-    name = t().toIdentifier(name).replace(/^_+/, "").replace(/[0-9]+$/g, "");
+    name = t()
+      .toIdentifier(name)
+      .replace(/^_+/, "")
+      .replace(/[0-9]+$/g, "");
     let uid;
     let i = 0;
 
     do {
       uid = this._generateUid(name, i);
       i++;
-    } while (this.hasLabel(uid) || this.hasBinding(uid) || this.hasGlobal(uid) || this.hasReference(uid));
+    } while (
+      this.hasLabel(uid) ||
+      this.hasBinding(uid) ||
+      this.hasGlobal(uid) ||
+      this.hasReference(uid)
+    );
 
     const program = this.getProgramParent();
     program.references[uid] = true;
@@ -338,10 +366,19 @@ class Scope {
   checkBlockScopedCollisions(local, kind, name, id) {
     if (kind === "param") return;
     if (local.kind === "local") return;
-    const duplicate = kind === "let" || local.kind === "let" || local.kind === "const" || local.kind === "module" || local.kind === "param" && (kind === "let" || kind === "const");
+    const duplicate =
+      kind === "let" ||
+      local.kind === "let" ||
+      local.kind === "const" ||
+      local.kind === "module" ||
+      (local.kind === "param" && (kind === "let" || kind === "const"));
 
     if (duplicate) {
-      throw this.hub.buildError(id, `Duplicate declaration "${name}"`, TypeError);
+      throw this.hub.buildError(
+        id,
+        `Duplicate declaration "${name}"`,
+        TypeError
+      );
     }
   }
 
@@ -378,7 +415,7 @@ class Scope {
           kind: binding.kind
         });
       }
-    } while (scope = scope.parent);
+    } while ((scope = scope.parent));
 
     console.log(sep);
   }
@@ -396,10 +433,24 @@ class Scope {
       return node;
     }
 
-    if (t().isIdentifier(node, {
-      name: "arguments"
-    })) {
-      return t().callExpression(t().memberExpression(t().memberExpression(t().memberExpression(t().identifier("Array"), t().identifier("prototype")), t().identifier("slice")), t().identifier("call")), [node]);
+    if (
+      t().isIdentifier(node, {
+        name: "arguments"
+      })
+    ) {
+      return t().callExpression(
+        t().memberExpression(
+          t().memberExpression(
+            t().memberExpression(
+              t().identifier("Array"),
+              t().identifier("prototype")
+            ),
+            t().identifier("slice")
+          ),
+          t().identifier("call")
+        ),
+        [node]
+      );
     }
 
     let helperName;
@@ -451,7 +502,11 @@ class Scope {
     } else if (path.isExportDeclaration()) {
       const declar = path.get("declaration");
 
-      if (declar.isClassDeclaration() || declar.isFunctionDeclaration() || declar.isVariableDeclaration()) {
+      if (
+        declar.isClassDeclaration() ||
+        declar.isFunctionDeclaration() ||
+        declar.isVariableDeclaration()
+      ) {
         this.registerDeclaration(declar);
       }
     } else {
@@ -526,7 +581,7 @@ class Scope {
 
     do {
       if (scope.uids[name]) return true;
-    } while (scope = scope.parent);
+    } while ((scope = scope.parent));
 
     return false;
   }
@@ -536,7 +591,7 @@ class Scope {
 
     do {
       if (scope.globals[name]) return true;
-    } while (scope = scope.parent);
+    } while ((scope = scope.parent));
 
     return false;
   }
@@ -546,7 +601,7 @@ class Scope {
 
     do {
       if (scope.references[name]) return true;
-    } while (scope = scope.parent);
+    } while ((scope = scope.parent));
 
     return false;
   }
@@ -570,7 +625,10 @@ class Scope {
 
       return true;
     } else if (t().isBinary(node)) {
-      return this.isPure(node.left, constantsOnly) && this.isPure(node.right, constantsOnly);
+      return (
+        this.isPure(node.left, constantsOnly) &&
+        this.isPure(node.right, constantsOnly)
+      );
     } else if (t().isArrayExpression(node)) {
       for (const elem of node.elements) {
         if (!this.isPure(elem, constantsOnly)) return false;
@@ -593,7 +651,11 @@ class Scope {
     } else if (t().isUnaryExpression(node)) {
       return this.isPure(node.argument, constantsOnly);
     } else if (t().isTaggedTemplateExpression(node)) {
-      return t().matchesPattern(node.tag, "String.raw") && !this.hasBinding("String", true) && this.isPure(node.quasi, constantsOnly);
+      return (
+        t().matchesPattern(node.tag, "String.raw") &&
+        !this.hasBinding("String", true) &&
+        this.isPure(node.quasi, constantsOnly)
+      );
     } else if (t().isTemplateLiteral(node)) {
       for (const expression of node.expressions) {
         if (!this.isPure(expression, constantsOnly)) return false;
@@ -606,7 +668,7 @@ class Scope {
   }
 
   setData(key, val) {
-    return this.data[key] = val;
+    return (this.data[key] = val);
   }
 
   getData(key) {
@@ -615,7 +677,7 @@ class Scope {
     do {
       const data = scope.data[key];
       if (data != null) return data;
-    } while (scope = scope.parent);
+    } while ((scope = scope.parent));
   }
 
   removeData(key) {
@@ -624,7 +686,7 @@ class Scope {
     do {
       const data = scope.data[key];
       if (data != null) scope.data[key] = null;
-    } while (scope = scope.parent);
+    } while ((scope = scope.parent));
   }
 
   init() {
@@ -750,7 +812,7 @@ class Scope {
       if (scope.path.isProgram()) {
         return scope;
       }
-    } while (scope = scope.parent);
+    } while ((scope = scope.parent));
 
     throw new Error("Couldn't find a Program");
   }
@@ -762,7 +824,7 @@ class Scope {
       if (scope.path.isFunctionParent()) {
         return scope;
       }
-    } while (scope = scope.parent);
+    } while ((scope = scope.parent));
 
     return null;
   }
@@ -774,9 +836,11 @@ class Scope {
       if (scope.path.isBlockParent()) {
         return scope;
       }
-    } while (scope = scope.parent);
+    } while ((scope = scope.parent));
 
-    throw new Error("We couldn't find a BlockStatement, For, Switch, Function, Loop or Program...");
+    throw new Error(
+      "We couldn't find a BlockStatement, For, Switch, Function, Loop or Program..."
+    );
   }
 
   getAllBindings() {
@@ -820,7 +884,7 @@ class Scope {
     do {
       const binding = scope.getOwnBinding(name);
       if (binding) return binding;
-    } while (scope = scope.parent);
+    } while ((scope = scope.parent));
   }
 
   getOwnBinding(name) {
@@ -846,8 +910,10 @@ class Scope {
     if (this.hasOwnBinding(name)) return true;
     if (this.parentHasBinding(name, noGlobals)) return true;
     if (this.hasUid(name)) return true;
-    if (!noGlobals && (0, _includes().default)(Scope.globals, name)) return true;
-    if (!noGlobals && (0, _includes().default)(Scope.contextVariables, name)) return true;
+    if (!noGlobals && (0, _includes().default)(Scope.globals, name))
+      return true;
+    if (!noGlobals && (0, _includes().default)(Scope.contextVariables, name))
+      return true;
     return false;
   }
 
@@ -882,9 +948,8 @@ class Scope {
       if (scope.uids[name]) {
         scope.uids[name] = false;
       }
-    } while (scope = scope.parent);
+    } while ((scope = scope.parent));
   }
-
 }
 
 exports.default = Scope;

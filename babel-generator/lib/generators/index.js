@@ -6,11 +6,11 @@ Object.defineProperty(exports, "__esModule", {
 
 var _templateLiterals = require("./template-literals");
 
-Object.keys(_templateLiterals).forEach(function (key) {
+Object.keys(_templateLiterals).forEach(function(key) {
   if (key === "default" || key === "__esModule") return;
   Object.defineProperty(exports, key, {
     enumerable: true,
-    get: function () {
+    get: function() {
       return _templateLiterals[key];
     }
   });
@@ -18,11 +18,11 @@ Object.keys(_templateLiterals).forEach(function (key) {
 
 var _expressions = require("./expressions");
 
-Object.keys(_expressions).forEach(function (key) {
+Object.keys(_expressions).forEach(function(key) {
   if (key === "default" || key === "__esModule") return;
   Object.defineProperty(exports, key, {
     enumerable: true,
-    get: function () {
+    get: function() {
       return _expressions[key];
     }
   });
@@ -30,11 +30,11 @@ Object.keys(_expressions).forEach(function (key) {
 
 var _statements = require("./statements");
 
-Object.keys(_statements).forEach(function (key) {
+Object.keys(_statements).forEach(function(key) {
   if (key === "default" || key === "__esModule") return;
   Object.defineProperty(exports, key, {
     enumerable: true,
-    get: function () {
+    get: function() {
       return _statements[key];
     }
   });
@@ -42,11 +42,11 @@ Object.keys(_statements).forEach(function (key) {
 
 var _classes = require("./classes");
 
-Object.keys(_classes).forEach(function (key) {
+Object.keys(_classes).forEach(function(key) {
   if (key === "default" || key === "__esModule") return;
   Object.defineProperty(exports, key, {
     enumerable: true,
-    get: function () {
+    get: function() {
       return _classes[key];
     }
   });
@@ -54,11 +54,11 @@ Object.keys(_classes).forEach(function (key) {
 
 var _methods = require("./methods");
 
-Object.keys(_methods).forEach(function (key) {
+Object.keys(_methods).forEach(function(key) {
   if (key === "default" || key === "__esModule") return;
   Object.defineProperty(exports, key, {
     enumerable: true,
-    get: function () {
+    get: function() {
       return _methods[key];
     }
   });
@@ -66,11 +66,11 @@ Object.keys(_methods).forEach(function (key) {
 
 var _modules = require("./modules");
 
-Object.keys(_modules).forEach(function (key) {
+Object.keys(_modules).forEach(function(key) {
   if (key === "default" || key === "__esModule") return;
   Object.defineProperty(exports, key, {
     enumerable: true,
-    get: function () {
+    get: function() {
       return _modules[key];
     }
   });
@@ -78,11 +78,11 @@ Object.keys(_modules).forEach(function (key) {
 
 var _types = require("./types");
 
-Object.keys(_types).forEach(function (key) {
+Object.keys(_types).forEach(function(key) {
   if (key === "default" || key === "__esModule") return;
   Object.defineProperty(exports, key, {
     enumerable: true,
-    get: function () {
+    get: function() {
       return _types[key];
     }
   });
@@ -90,11 +90,11 @@ Object.keys(_types).forEach(function (key) {
 
 var _flow = require("./flow");
 
-Object.keys(_flow).forEach(function (key) {
+Object.keys(_flow).forEach(function(key) {
   if (key === "default" || key === "__esModule") return;
   Object.defineProperty(exports, key, {
     enumerable: true,
-    get: function () {
+    get: function() {
       return _flow[key];
     }
   });
@@ -102,11 +102,11 @@ Object.keys(_flow).forEach(function (key) {
 
 var _base = require("./base");
 
-Object.keys(_base).forEach(function (key) {
+Object.keys(_base).forEach(function(key) {
   if (key === "default" || key === "__esModule") return;
   Object.defineProperty(exports, key, {
     enumerable: true,
-    get: function () {
+    get: function() {
       return _base[key];
     }
   });
@@ -114,11 +114,11 @@ Object.keys(_base).forEach(function (key) {
 
 var _jsx = require("./jsx");
 
-Object.keys(_jsx).forEach(function (key) {
+Object.keys(_jsx).forEach(function(key) {
   if (key === "default" || key === "__esModule") return;
   Object.defineProperty(exports, key, {
     enumerable: true,
-    get: function () {
+    get: function() {
       return _jsx[key];
     }
   });
@@ -126,11 +126,11 @@ Object.keys(_jsx).forEach(function (key) {
 
 var _typescript = require("./typescript");
 
-Object.keys(_typescript).forEach(function (key) {
+Object.keys(_typescript).forEach(function(key) {
   if (key === "default" || key === "__esModule") return;
   Object.defineProperty(exports, key, {
     enumerable: true,
-    get: function () {
+    get: function() {
       return _typescript[key];
     }
   });
