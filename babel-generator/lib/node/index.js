@@ -141,5 +141,9 @@ function needsParens(node, parent, printStack) {
     if (isOrHasCallExpression(node)) return true;
   }
 
+  if (t().isLogicalExpression(node) && node.extra && node.extra.parenthesized) {
+    return true;
+  }
+
   return find(expandedParens, node, parent, printStack);
 }
