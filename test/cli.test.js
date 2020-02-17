@@ -172,6 +172,45 @@ describe("cli", () => {
     expect(fs.existsSync(path.join(tmpdir, "bar.js"))).toBe(false);
   });
 
+  it("should convert jsx to tsx and delete many original files", () => {
+    // Arrange
+    const inputGlob = path.join(tmpdir, "*.js?(x)");
+    fs.writeFileSync(
+      path.join(tmpdir, "foo.js"),
+      "const a: number = 5;",
+      "utf-8"
+    );
+    fs.writeFileSync(
+      path.join(tmpdir, "bar.jsx"),
+      "const b: React.Node = <h1>hello</h1>;",
+      "utf-8"
+    );
+    fs.writeFileSync(
+      path.join(tmpdir, "baz.jsx"),
+      "const c: boolean = false;",
+      "utf-8"
+    );
+
+    // Act
+    cli([
+      "node",
+      path.join(__dirname, "../flow-to-ts.js"),
+      "--write",
+      "--delete-source",
+      inputGlob
+    ]);
+
+    // Assert
+    expect(fs.existsSync(path.join(tmpdir, "foo.ts"))).toBe(true);
+    expect(fs.existsSync(path.join(tmpdir, "bar.tsx"))).toBe(true);
+    expect(
+      fs.existsSync(path.join(tmpdir, "baz.ts")) // Uses .ts extension if no JSX syntax found
+    ).toBe(true);
+    expect(fs.existsSync(path.join(tmpdir, "foo.jsx"))).toBe(false);
+    expect(fs.existsSync(path.join(tmpdir, "bar.jsx"))).toBe(false);
+    expect(fs.existsSync(path.join(tmpdir, "baz.jsx"))).toBe(false);
+  });
+
   it("should write to the file", () => {
     // Arrange
     const inputPath = path.join(tmpdir, "test.js");

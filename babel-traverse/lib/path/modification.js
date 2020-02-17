@@ -23,38 +23,78 @@ var _index = _interopRequireDefault(require("./index"));
 function t() {
   const data = _interopRequireWildcard(require("@babel/types"));
 
-  t = function () {
+  t = function() {
     return data;
   };
 
   return data;
 }
 
-function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = Object.defineProperty && Object.getOwnPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : {}; if (desc.get || desc.set) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } } newObj.default = obj; return newObj; } }
+function _interopRequireWildcard(obj) {
+  if (obj && obj.__esModule) {
+    return obj;
+  } else {
+    var newObj = {};
+    if (obj != null) {
+      for (var key in obj) {
+        if (Object.prototype.hasOwnProperty.call(obj, key)) {
+          var desc =
+            Object.defineProperty && Object.getOwnPropertyDescriptor
+              ? Object.getOwnPropertyDescriptor(obj, key)
+              : {};
+          if (desc.get || desc.set) {
+            Object.defineProperty(newObj, key, desc);
+          } else {
+            newObj[key] = obj[key];
+          }
+        }
+      }
+    }
+    newObj.default = obj;
+    return newObj;
+  }
+}
 
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+function _interopRequireDefault(obj) {
+  return obj && obj.__esModule ? obj : { default: obj };
+}
 
 function insertBefore(nodes) {
   this._assertUnremoved();
 
   nodes = this._verifyNodeList(nodes);
-  const {
-    parentPath
-  } = this;
+  const { parentPath } = this;
 
-  if (parentPath.isExpressionStatement() || parentPath.isLabeledStatement() || parentPath.isExportNamedDeclaration() || parentPath.isExportDefaultDeclaration() && this.isDeclaration()) {
+  if (
+    parentPath.isExpressionStatement() ||
+    parentPath.isLabeledStatement() ||
+    parentPath.isExportNamedDeclaration() ||
+    (parentPath.isExportDefaultDeclaration() && this.isDeclaration())
+  ) {
     return parentPath.insertBefore(nodes);
-  } else if (this.isNodeType("Expression") && this.listKey !== "params" && this.listKey !== "arguments" || parentPath.isForStatement() && this.key === "init") {
+  } else if (
+    (this.isNodeType("Expression") &&
+      this.listKey !== "params" &&
+      this.listKey !== "arguments") ||
+    (parentPath.isForStatement() && this.key === "init")
+  ) {
     if (this.node) nodes.push(this.node);
     return this.replaceExpressionWithStatements(nodes);
   } else if (Array.isArray(this.container)) {
     return this._containerInsertBefore(nodes);
   } else if (this.isStatementOrBlock()) {
-    const shouldInsertCurrentNode = this.node && (!this.isExpressionStatement() || this.node.expression != null);
-    this.replaceWith(t().blockStatement(shouldInsertCurrentNode ? [this.node] : []));
+    const shouldInsertCurrentNode =
+      this.node &&
+      (!this.isExpressionStatement() || this.node.expression != null);
+    this.replaceWith(
+      t().blockStatement(shouldInsertCurrentNode ? [this.node] : [])
+    );
     return this.unshiftContainer("body", nodes);
   } else {
-    throw new Error("We don't know what to do with this node type. " + "We were previously a Statement but we can't fit in here?");
+    throw new Error(
+      "We don't know what to do with this node type. " +
+        "We were previously a Statement but we can't fit in here?"
+    );
   }
 }
 
@@ -99,29 +139,41 @@ function insertAfter(nodes) {
   this._assertUnremoved();
 
   nodes = this._verifyNodeList(nodes);
-  const {
-    parentPath
-  } = this;
+  const { parentPath } = this;
 
-  if (parentPath.isExpressionStatement() || parentPath.isLabeledStatement() || parentPath.isExportNamedDeclaration() || parentPath.isExportDefaultDeclaration() && this.isDeclaration()) {
-    return parentPath.insertAfter(nodes.map(node => {
-      return t().isExpression(node) ? t().expressionStatement(node) : node;
-    }));
-  } else if (this.isNodeType("Expression") && !this.isJSXElement() || parentPath.isForStatement() && this.key === "init") {
+  if (
+    parentPath.isExpressionStatement() ||
+    parentPath.isLabeledStatement() ||
+    parentPath.isExportNamedDeclaration() ||
+    (parentPath.isExportDefaultDeclaration() && this.isDeclaration())
+  ) {
+    return parentPath.insertAfter(
+      nodes.map(node => {
+        return t().isExpression(node) ? t().expressionStatement(node) : node;
+      })
+    );
+  } else if (
+    (this.isNodeType("Expression") && !this.isJSXElement()) ||
+    (parentPath.isForStatement() && this.key === "init")
+  ) {
     if (this.node) {
-      let {
-        scope
-      } = this;
+      let { scope } = this;
 
-      if (parentPath.isMethod({
-        computed: true,
-        key: this.node
-      })) {
+      if (
+        parentPath.isMethod({
+          computed: true,
+          key: this.node
+        })
+      ) {
         scope = scope.parent;
       }
 
       const temp = scope.generateDeclaredUidIdentifier();
-      nodes.unshift(t().expressionStatement(t().assignmentExpression("=", t().cloneNode(temp), this.node)));
+      nodes.unshift(
+        t().expressionStatement(
+          t().assignmentExpression("=", t().cloneNode(temp), this.node)
+        )
+      );
       nodes.push(t().expressionStatement(t().cloneNode(temp)));
     }
 
@@ -129,11 +181,18 @@ function insertAfter(nodes) {
   } else if (Array.isArray(this.container)) {
     return this._containerInsertAfter(nodes);
   } else if (this.isStatementOrBlock()) {
-    const shouldInsertCurrentNode = this.node && (!this.isExpressionStatement() || this.node.expression != null);
-    this.replaceWith(t().blockStatement(shouldInsertCurrentNode ? [this.node] : []));
+    const shouldInsertCurrentNode =
+      this.node &&
+      (!this.isExpressionStatement() || this.node.expression != null);
+    this.replaceWith(
+      t().blockStatement(shouldInsertCurrentNode ? [this.node] : [])
+    );
     return this.pushContainer("body", nodes);
   } else {
-    throw new Error("We don't know what to do with this node type. " + "We were previously a Statement but we can't fit in here?");
+    throw new Error(
+      "We don't know what to do with this node type. " +
+        "We were previously a Statement but we can't fit in here?"
+    );
   }
 }
 
@@ -176,7 +235,9 @@ function _verifyNodeList(nodes) {
 
     if (msg) {
       const type = Array.isArray(node) ? "array" : typeof node;
-      throw new Error(`Node list ${msg} with the index of ${i} and type of ${type}`);
+      throw new Error(
+        `Node list ${msg} with the index of ${i} and type of ${type}`
+      );
     }
   }
 

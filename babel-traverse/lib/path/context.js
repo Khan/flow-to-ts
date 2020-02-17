@@ -26,7 +26,9 @@ exports._getQueueContexts = _getQueueContexts;
 
 var _index = _interopRequireDefault(require("../index"));
 
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+function _interopRequireDefault(obj) {
+  return obj && obj.__esModule ? obj : { default: obj };
+}
 
 function call(key) {
   const opts = this.opts;
@@ -53,7 +55,12 @@ function _call(fns) {
     const ret = fn.call(this.state, this, this.state);
 
     if (ret && typeof ret === "object" && typeof ret.then === "function") {
-      throw new Error(`You appear to be using a plugin with an async traversal visitor, ` + `which your current version of Babel does not support.` + `If you're using a published plugin, you may need to upgrade ` + `your @babel/core version.`);
+      throw new Error(
+        `You appear to be using a plugin with an async traversal visitor, ` +
+          `which your current version of Babel does not support.` +
+          `If you're using a published plugin, you may need to upgrade ` +
+          `your @babel/core version.`
+      );
     }
 
     if (ret) {
@@ -92,7 +99,14 @@ function visit() {
 
   this.debug("Recursing into...");
 
-  _index.default.node(this.node, this.opts, this.scope, this.state, this, this.skipKeys);
+  _index.default.node(
+    this.node,
+    this.opts,
+    this.scope,
+    this.state,
+    this,
+    this.skipKeys
+  );
 
   this.call("exit");
   return this.shouldStop;
@@ -187,7 +201,11 @@ function _resyncList() {
 }
 
 function _resyncRemoved() {
-  if (this.key == null || !this.container || this.container[this.key] !== this.node) {
+  if (
+    this.key == null ||
+    !this.container ||
+    this.container[this.key] !== this.node
+  ) {
     this._markRemoved();
   }
 }

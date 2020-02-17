@@ -21,14 +21,37 @@ exports.ThrowStatement = exports.BreakStatement = exports.ReturnStatement = expo
 function t() {
   const data = _interopRequireWildcard(require("@babel/types"));
 
-  t = function () {
+  t = function() {
     return data;
   };
 
   return data;
 }
 
-function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = Object.defineProperty && Object.getOwnPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : {}; if (desc.get || desc.set) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } } newObj.default = obj; return newObj; } }
+function _interopRequireWildcard(obj) {
+  if (obj && obj.__esModule) {
+    return obj;
+  } else {
+    var newObj = {};
+    if (obj != null) {
+      for (var key in obj) {
+        if (Object.prototype.hasOwnProperty.call(obj, key)) {
+          var desc =
+            Object.defineProperty && Object.getOwnPropertyDescriptor
+              ? Object.getOwnPropertyDescriptor(obj, key)
+              : {};
+          if (desc.get || desc.set) {
+            Object.defineProperty(newObj, key, desc);
+          } else {
+            newObj[key] = obj[key];
+          }
+        }
+      }
+    }
+    newObj.default = obj;
+    return newObj;
+  }
+}
 
 function WithStatement(node) {
   this.word("with");
@@ -46,7 +69,8 @@ function IfStatement(node) {
   this.print(node.test, node);
   this.token(")");
   this.space();
-  const needsBlock = node.alternate && t().isIfStatement(getLastStatement(node.consequent));
+  const needsBlock =
+    node.alternate && t().isIfStatement(getLastStatement(node.consequent));
 
   if (needsBlock) {
     this.token("{");
@@ -109,8 +133,8 @@ function WhileStatement(node) {
   this.printBlock(node);
 }
 
-const buildForXStatement = function (op) {
-  return function (node) {
+const buildForXStatement = function(op) {
+  return function(node) {
     this.word("for");
     this.space();
 
@@ -149,7 +173,7 @@ function DoWhileStatement(node) {
 }
 
 function buildLabelStatement(prefix, key = "label") {
-  return function (node) {
+  return function(node) {
     this.word(prefix);
     const label = node[key];
 
@@ -229,7 +253,6 @@ function SwitchStatement(node) {
     addNewlines(leading, cas) {
       if (!leading && node.cases[node.cases.length - 1] === cas) return -1;
     }
-
   });
   this.token("}");
 }
@@ -291,7 +314,10 @@ function VariableDeclaration(node, parent) {
   let separator;
 
   if (hasInits) {
-    separator = node.kind === "const" ? constDeclarationIndent : variableDeclarationIndent;
+    separator =
+      node.kind === "const"
+        ? constDeclarationIndent
+        : variableDeclarationIndent;
   }
 
   this.printList(node.declarations, node, {

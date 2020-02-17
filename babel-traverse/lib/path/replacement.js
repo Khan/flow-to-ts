@@ -13,7 +13,7 @@ exports.replaceInline = replaceInline;
 function _codeFrame() {
   const data = require("@babel/code-frame");
 
-  _codeFrame = function () {
+  _codeFrame = function() {
     return data;
   };
 
@@ -27,7 +27,7 @@ var _index2 = _interopRequireDefault(require("./index"));
 function _parser() {
   const data = require("@babel/parser");
 
-  _parser = function () {
+  _parser = function() {
     return data;
   };
 
@@ -37,16 +37,41 @@ function _parser() {
 function t() {
   const data = _interopRequireWildcard(require("@babel/types"));
 
-  t = function () {
+  t = function() {
     return data;
   };
 
   return data;
 }
 
-function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = Object.defineProperty && Object.getOwnPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : {}; if (desc.get || desc.set) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } } newObj.default = obj; return newObj; } }
+function _interopRequireWildcard(obj) {
+  if (obj && obj.__esModule) {
+    return obj;
+  } else {
+    var newObj = {};
+    if (obj != null) {
+      for (var key in obj) {
+        if (Object.prototype.hasOwnProperty.call(obj, key)) {
+          var desc =
+            Object.defineProperty && Object.getOwnPropertyDescriptor
+              ? Object.getOwnPropertyDescriptor(obj, key)
+              : {};
+          if (desc.get || desc.set) {
+            Object.defineProperty(newObj, key, desc);
+          } else {
+            newObj[key] = obj[key];
+          }
+        }
+      }
+    }
+    newObj.default = obj;
+    return newObj;
+  }
+}
 
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+function _interopRequireDefault(obj) {
+  return obj && obj.__esModule ? obj : { default: obj };
+}
 
 const hoistVariablesVisitor = {
   Function(path) {
@@ -67,13 +92,16 @@ const hoistVariablesVisitor = {
 
     for (const declar of path.node.declarations) {
       if (declar.init) {
-        exprs.push(t().expressionStatement(t().assignmentExpression("=", declar.id, declar.init)));
+        exprs.push(
+          t().expressionStatement(
+            t().assignmentExpression("=", declar.id, declar.init)
+          )
+        );
       }
     }
 
     path.replaceWithMultiple(exprs);
   }
-
 };
 
 function replaceWithMultiple(nodes) {
@@ -103,12 +131,14 @@ function replaceWithSourceString(replacement) {
     const loc = err.loc;
 
     if (loc) {
-      err.message += " - make sure this is an expression.\n" + (0, _codeFrame().codeFrameColumns)(replacement, {
-        start: {
-          line: loc.line,
-          column: loc.column + 1
-        }
-      });
+      err.message +=
+        " - make sure this is an expression.\n" +
+        (0, _codeFrame().codeFrameColumns)(replacement, {
+          start: {
+            line: loc.line,
+            column: loc.column + 1
+          }
+        });
       err.code = "BABEL_REPLACE_SOURCE_ERROR";
     }
 
@@ -134,7 +164,9 @@ function replaceWith(replacement) {
   }
 
   if (!replacement) {
-    throw new Error("You passed `path.replaceWith()` a falsy node, use `path.remove()` instead");
+    throw new Error(
+      "You passed `path.replaceWith()` a falsy node, use `path.remove()` instead"
+    );
   }
 
   if (this.node === replacement) {
@@ -142,28 +174,41 @@ function replaceWith(replacement) {
   }
 
   if (this.isProgram() && !t().isProgram(replacement)) {
-    throw new Error("You can only replace a Program root node with another Program node");
+    throw new Error(
+      "You can only replace a Program root node with another Program node"
+    );
   }
 
   if (Array.isArray(replacement)) {
-    throw new Error("Don't use `path.replaceWith()` with an array of nodes, use `path.replaceWithMultiple()`");
+    throw new Error(
+      "Don't use `path.replaceWith()` with an array of nodes, use `path.replaceWithMultiple()`"
+    );
   }
 
   if (typeof replacement === "string") {
-    throw new Error("Don't use `path.replaceWith()` with a source string, use `path.replaceWithSourceString()`");
+    throw new Error(
+      "Don't use `path.replaceWith()` with a source string, use `path.replaceWithSourceString()`"
+    );
   }
 
   let nodePath = "";
 
   if (this.isNodeType("Statement") && t().isExpression(replacement)) {
-    if (!this.canHaveVariableDeclarationOrExpression() && !this.canSwapBetweenExpressionAndStatement(replacement) && !this.parentPath.isExportDefaultDeclaration()) {
+    if (
+      !this.canHaveVariableDeclarationOrExpression() &&
+      !this.canSwapBetweenExpressionAndStatement(replacement) &&
+      !this.parentPath.isExportDefaultDeclaration()
+    ) {
       replacement = t().expressionStatement(replacement);
       nodePath = "expression";
     }
   }
 
   if (this.isNodeType("Expression") && t().isStatement(replacement)) {
-    if (!this.canHaveVariableDeclarationOrExpression() && !this.canSwapBetweenExpressionAndStatement(replacement)) {
+    if (
+      !this.canHaveVariableDeclarationOrExpression() &&
+      !this.canSwapBetweenExpressionAndStatement(replacement)
+    ) {
       return this.replaceExpressionWithStatements([replacement]);
     }
   }
@@ -221,13 +266,23 @@ function replaceExpressionWithStatements(nodes) {
       if (!uid) {
         const callee = this.get("callee");
         uid = callee.scope.generateDeclaredUidIdentifier("ret");
-        callee.get("body").pushContainer("body", t().returnStatement(t().cloneNode(uid)));
+        callee
+          .get("body")
+          .pushContainer("body", t().returnStatement(t().cloneNode(uid)));
         loop.setData("expressionReplacementReturnUid", uid);
       } else {
         uid = t().identifier(uid.name);
       }
 
-      path.get("expression").replaceWith(t().assignmentExpression("=", t().cloneNode(uid), path.node.expression));
+      path
+        .get("expression")
+        .replaceWith(
+          t().assignmentExpression(
+            "=",
+            t().cloneNode(uid),
+            path.node.expression
+          )
+        );
     } else {
       path.replaceWith(t().returnStatement(path.node.expression));
     }

@@ -14,17 +14,44 @@ exports._classMethodHead = _classMethodHead;
 function t() {
   const data = _interopRequireWildcard(require("@babel/types"));
 
-  t = function () {
+  t = function() {
     return data;
   };
 
   return data;
 }
 
-function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = Object.defineProperty && Object.getOwnPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : {}; if (desc.get || desc.set) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } } newObj.default = obj; return newObj; } }
+function _interopRequireWildcard(obj) {
+  if (obj && obj.__esModule) {
+    return obj;
+  } else {
+    var newObj = {};
+    if (obj != null) {
+      for (var key in obj) {
+        if (Object.prototype.hasOwnProperty.call(obj, key)) {
+          var desc =
+            Object.defineProperty && Object.getOwnPropertyDescriptor
+              ? Object.getOwnPropertyDescriptor(obj, key)
+              : {};
+          if (desc.get || desc.set) {
+            Object.defineProperty(newObj, key, desc);
+          } else {
+            newObj[key] = obj[key];
+          }
+        }
+      }
+    }
+    newObj.default = obj;
+    return newObj;
+  }
+}
 
 function ClassDeclaration(node, parent) {
-  if (!this.format.decoratorsBeforeExport || !t().isExportDefaultDeclaration(parent) && !t().isExportNamedDeclaration(parent)) {
+  if (
+    !this.format.decoratorsBeforeExport ||
+    (!t().isExportDefaultDeclaration(parent) &&
+      !t().isExportNamedDeclaration(parent))
+  ) {
     this.printJoin(node.decorators, node);
   }
 

@@ -1,1 +1,2 @@
-import A from "./deps";
+import A from "./depsA";
+import B from "../depsB";

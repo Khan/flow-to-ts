@@ -6,12 +6,7 @@ Object.defineProperty(exports, "__esModule", {
 exports.default = void 0;
 
 class Binding {
-  constructor({
-    identifier,
-    scope,
-    path,
-    kind
-  }) {
+  constructor({ identifier, scope, path, kind }) {
     this.identifier = identifier;
     this.scope = scope;
     this.path = path;
@@ -65,7 +60,6 @@ class Binding {
     this.references--;
     this.referenced = !!this.references;
   }
-
 }
 
 exports.default = Binding;

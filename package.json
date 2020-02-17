@@ -1,6 +1,6 @@
 {
   "name": "@khanacademy/flow-to-ts",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "publishConfig": {
     "access": "public"
   },
@@ -42,7 +42,7 @@
   "scripts": {
     "test": "jest",
     "coverage": "jest --coverage --collectCoverageFrom=src/**/*.js --coveragePathIgnorePatterns=src/flow-to-ts.js",
-    "pretty-quick": "prettier src/*.js test/*.js playground/src/*.tsx --write"
+    "pretty-quick": "prettier src/*.js test/*.js playground/src/*.tsx babel-generator/lib/**/*.js babel-traverse/lib/**/*.js --write"
   },
   "husky": {
     "hooks": {

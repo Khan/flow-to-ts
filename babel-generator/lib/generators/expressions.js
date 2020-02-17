@@ -30,7 +30,7 @@ exports.AwaitExpression = exports.YieldExpression = void 0;
 function t() {
   const data = _interopRequireWildcard(require("@babel/types"));
 
-  t = function () {
+  t = function() {
     return data;
   };
 
@@ -39,10 +39,38 @@ function t() {
 
 var n = _interopRequireWildcard(require("../node"));
 
-function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = Object.defineProperty && Object.getOwnPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : {}; if (desc.get || desc.set) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } } newObj.default = obj; return newObj; } }
+function _interopRequireWildcard(obj) {
+  if (obj && obj.__esModule) {
+    return obj;
+  } else {
+    var newObj = {};
+    if (obj != null) {
+      for (var key in obj) {
+        if (Object.prototype.hasOwnProperty.call(obj, key)) {
+          var desc =
+            Object.defineProperty && Object.getOwnPropertyDescriptor
+              ? Object.getOwnPropertyDescriptor(obj, key)
+              : {};
+          if (desc.get || desc.set) {
+            Object.defineProperty(newObj, key, desc);
+          } else {
+            newObj[key] = obj[key];
+          }
+        }
+      }
+    }
+    newObj.default = obj;
+    return newObj;
+  }
+}
 
 function UnaryExpression(node) {
-  if (node.operator === "void" || node.operator === "delete" || node.operator === "typeof" || node.operator === "throw") {
+  if (
+    node.operator === "void" ||
+    node.operator === "delete" ||
+    node.operator === "typeof" ||
+    node.operator === "throw"
+  ) {
     this.word(node.operator);
     this.space();
   } else {
@@ -93,9 +121,16 @@ function NewExpression(node, parent) {
   this.space();
   this.print(node.callee, node);
 
-  if (this.format.minified && node.arguments.length === 0 && !node.optional && !t().isCallExpression(parent, {
-    callee: node
-  }) && !t().isMemberExpression(parent) && !t().isNewExpression(parent)) {
+  if (
+    this.format.minified &&
+    node.arguments.length === 0 &&
+    !node.optional &&
+    !t().isCallExpression(parent, {
+      callee: node
+    }) &&
+    !t().isMemberExpression(parent) &&
+    !t().isNewExpression(parent)
+  ) {
     return;
   }
 
@@ -187,7 +222,7 @@ function Import() {
 }
 
 function buildYieldAwait(keyword) {
-  return function (node) {
+  return function(node) {
     this.word(keyword);
 
     if (node.delegate) {
@@ -228,7 +263,10 @@ function AssignmentPattern(node) {
 }
 
 function AssignmentExpression(node, parent) {
-  const parens = this.inForStatementInitCounter && node.operator === "in" && !n.needsParens(node, parent);
+  const parens =
+    this.inForStatementInitCounter &&
+    node.operator === "in" &&
+    !n.needsParens(node, parent);
 
   if (parens) {
     this.token("(");
