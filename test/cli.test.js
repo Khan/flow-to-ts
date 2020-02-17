@@ -208,7 +208,7 @@ describe("cli", () => {
     ).toBe(true);
     expect(fs.existsSync(path.join(tmpdir, "foo.jsx"))).toBe(false);
     expect(fs.existsSync(path.join(tmpdir, "bar.jsx"))).toBe(false);
-    expect(fs.existsSync(path.join(tmpdir, "bar.jsx"))).toBe(false);
+    expect(fs.existsSync(path.join(tmpdir, "baz.jsx"))).toBe(false);
   });
 
   it("should write to the file", () => {
