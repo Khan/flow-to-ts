@@ -15,14 +15,37 @@ exports.ArrowFunctionExpression = ArrowFunctionExpression;
 function t() {
   const data = _interopRequireWildcard(require("@babel/types"));
 
-  t = function () {
+  t = function() {
     return data;
   };
 
   return data;
 }
 
-function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = Object.defineProperty && Object.getOwnPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : {}; if (desc.get || desc.set) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } } newObj.default = obj; return newObj; } }
+function _interopRequireWildcard(obj) {
+  if (obj && obj.__esModule) {
+    return obj;
+  } else {
+    var newObj = {};
+    if (obj != null) {
+      for (var key in obj) {
+        if (Object.prototype.hasOwnProperty.call(obj, key)) {
+          var desc =
+            Object.defineProperty && Object.getOwnPropertyDescriptor
+              ? Object.getOwnPropertyDescriptor(obj, key)
+              : {};
+          if (desc.get || desc.set) {
+            Object.defineProperty(newObj, key, desc);
+          } else {
+            newObj[key] = obj[key];
+          }
+        }
+      }
+    }
+    newObj.default = obj;
+    return newObj;
+  }
+}
 
 function _params(node) {
   this.print(node.typeParameters, node);
@@ -132,8 +155,17 @@ function ArrowFunctionExpression(node) {
 
   const firstParam = node.params[0];
 
-  if (node.params.length === 1 && t().isIdentifier(firstParam) && !hasTypes(node, firstParam)) {
-    if (this.format.retainLines && node.loc && node.body.loc && node.loc.start.line < node.body.loc.start.line) {
+  if (
+    node.params.length === 1 &&
+    t().isIdentifier(firstParam) &&
+    !hasTypes(node, firstParam)
+  ) {
+    if (
+      this.format.retainLines &&
+      node.loc &&
+      node.body.loc &&
+      node.loc.start.line < node.body.loc.start.line
+    ) {
       this.token("(");
 
       if (firstParam.loc && firstParam.loc.start.line > node.loc.start.line) {
@@ -163,5 +195,11 @@ function ArrowFunctionExpression(node) {
 }
 
 function hasTypes(node, param) {
-  return node.typeParameters || node.returnType || param.typeAnnotation || param.optional || param.trailingComments;
+  return (
+    node.typeParameters ||
+    node.returnType ||
+    param.typeAnnotation ||
+    param.optional ||
+    param.trailingComments
+  );
 }

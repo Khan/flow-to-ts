@@ -23,16 +23,41 @@ var _index = _interopRequireDefault(require("./index"));
 function t() {
   const data = _interopRequireWildcard(require("@babel/types"));
 
-  t = function () {
+  t = function() {
     return data;
   };
 
   return data;
 }
 
-function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = Object.defineProperty && Object.getOwnPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : {}; if (desc.get || desc.set) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } } newObj.default = obj; return newObj; } }
+function _interopRequireWildcard(obj) {
+  if (obj && obj.__esModule) {
+    return obj;
+  } else {
+    var newObj = {};
+    if (obj != null) {
+      for (var key in obj) {
+        if (Object.prototype.hasOwnProperty.call(obj, key)) {
+          var desc =
+            Object.defineProperty && Object.getOwnPropertyDescriptor
+              ? Object.getOwnPropertyDescriptor(obj, key)
+              : {};
+          if (desc.get || desc.set) {
+            Object.defineProperty(newObj, key, desc);
+          } else {
+            newObj[key] = obj[key];
+          }
+        }
+      }
+    }
+    newObj.default = obj;
+    return newObj;
+  }
+}
 
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+function _interopRequireDefault(obj) {
+  return obj && obj.__esModule ? obj : { default: obj };
+}
 
 function getOpposite() {
   if (this.key === "left") {
@@ -133,21 +158,25 @@ function _getKey(key, context) {
 
   if (Array.isArray(container)) {
     return container.map((_, i) => {
-      return _index.default.get({
-        listKey: key,
-        parentPath: this,
-        parent: node,
-        container: container,
-        key: i
-      }).setContext(context);
+      return _index.default
+        .get({
+          listKey: key,
+          parentPath: this,
+          parent: node,
+          container: container,
+          key: i
+        })
+        .setContext(context);
     });
   } else {
-    return _index.default.get({
-      parentPath: this,
-      parent: node,
-      container: node,
-      key: key
-    }).setContext(context);
+    return _index.default
+      .get({
+        parentPath: this,
+        parent: node,
+        container: node,
+        key: key
+      })
+      .setContext(context);
   }
 }
 
@@ -190,7 +219,7 @@ function getBindingIdentifierPaths(duplicates = false, outerOnly = false) {
 
     if (id.isIdentifier()) {
       if (duplicates) {
-        const _ids = ids[id.node.name] = ids[id.node.name] || [];
+        const _ids = (ids[id.node.name] = ids[id.node.name] || []);
 
         _ids.push(id);
       } else {

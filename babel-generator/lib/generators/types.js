@@ -23,7 +23,7 @@ exports.PipelinePrimaryTopicReference = PipelinePrimaryTopicReference;
 function t() {
   const data = _interopRequireWildcard(require("@babel/types"));
 
-  t = function () {
+  t = function() {
     return data;
   };
 
@@ -33,16 +33,41 @@ function t() {
 function _jsesc() {
   const data = _interopRequireDefault(require("jsesc"));
 
-  _jsesc = function () {
+  _jsesc = function() {
     return data;
   };
 
   return data;
 }
 
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+function _interopRequireDefault(obj) {
+  return obj && obj.__esModule ? obj : { default: obj };
+}
 
-function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = Object.defineProperty && Object.getOwnPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : {}; if (desc.get || desc.set) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } } newObj.default = obj; return newObj; } }
+function _interopRequireWildcard(obj) {
+  if (obj && obj.__esModule) {
+    return obj;
+  } else {
+    var newObj = {};
+    if (obj != null) {
+      for (var key in obj) {
+        if (Object.prototype.hasOwnProperty.call(obj, key)) {
+          var desc =
+            Object.defineProperty && Object.getOwnPropertyDescriptor
+              ? Object.getOwnPropertyDescriptor(obj, key)
+              : {};
+          if (desc.get || desc.set) {
+            Object.defineProperty(newObj, key, desc);
+          } else {
+            newObj[key] = obj[key];
+          }
+        }
+      }
+    }
+    newObj.default = obj;
+    return newObj;
+  }
+}
 
 function Identifier(node) {
   this.exactSource(node.loc, () => {
@@ -93,14 +118,23 @@ function ObjectProperty(node) {
     this.print(node.key, node);
     this.token("]");
   } else {
-    if (t().isAssignmentPattern(node.value) && t().isIdentifier(node.key) && node.key.name === node.value.left.name) {
+    if (
+      t().isAssignmentPattern(node.value) &&
+      t().isIdentifier(node.key) &&
+      node.key.name === node.value.left.name
+    ) {
       this.print(node.value, node);
       return;
     }
 
     this.print(node.key, node);
 
-    if (node.shorthand && t().isIdentifier(node.key) && t().isIdentifier(node.value) && node.key.name === node.value.name) {
+    if (
+      node.shorthand &&
+      t().isIdentifier(node.key) &&
+      t().isIdentifier(node.value) &&
+      node.key.name === node.value.name
+    ) {
       return;
     }
   }

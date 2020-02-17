@@ -55,13 +55,13 @@ exports.Variance = Variance;
 exports.VoidTypeAnnotation = VoidTypeAnnotation;
 Object.defineProperty(exports, "NumberLiteralTypeAnnotation", {
   enumerable: true,
-  get: function () {
+  get: function() {
     return _types2.NumericLiteral;
   }
 });
 Object.defineProperty(exports, "StringLiteralTypeAnnotation", {
   enumerable: true,
-  get: function () {
+  get: function() {
     return _types2.StringLiteral;
   }
 });
@@ -69,7 +69,7 @@ Object.defineProperty(exports, "StringLiteralTypeAnnotation", {
 function t() {
   const data = _interopRequireWildcard(require("@babel/types"));
 
-  t = function () {
+  t = function() {
     return data;
   };
 
@@ -80,7 +80,30 @@ var _modules = require("./modules");
 
 var _types2 = require("./types");
 
-function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = Object.defineProperty && Object.getOwnPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : {}; if (desc.get || desc.set) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } } newObj.default = obj; return newObj; } }
+function _interopRequireWildcard(obj) {
+  if (obj && obj.__esModule) {
+    return obj;
+  } else {
+    var newObj = {};
+    if (obj != null) {
+      for (var key in obj) {
+        if (Object.prototype.hasOwnProperty.call(obj, key)) {
+          var desc =
+            Object.defineProperty && Object.getOwnPropertyDescriptor
+              ? Object.getOwnPropertyDescriptor(obj, key)
+              : {};
+          if (desc.get || desc.set) {
+            Object.defineProperty(newObj, key, desc);
+          } else {
+            newObj[key] = obj[key];
+          }
+        }
+      }
+    }
+    newObj.default = obj;
+    return newObj;
+  }
+}
 
 function AnyTypeAnnotation() {
   this.word("any");
@@ -270,7 +293,11 @@ function FunctionTypeAnnotation(node, parent) {
 
   this.token(")");
 
-  if (parent.type === "ObjectTypeCallProperty" || parent.type === "DeclareFunction" || parent.type === "ObjectTypeProperty" && parent.method) {
+  if (
+    parent.type === "ObjectTypeCallProperty" ||
+    parent.type === "DeclareFunction" ||
+    (parent.type === "ObjectTypeProperty" && parent.method)
+  ) {
     this.token(":");
   } else {
     this.space();
@@ -480,7 +507,11 @@ function ObjectTypeAnnotation(node) {
     this.token("{");
   }
 
-  const props = node.properties.concat(node.callProperties || [], node.indexers || [], node.internalSlots || []);
+  const props = node.properties.concat(
+    node.callProperties || [],
+    node.indexers || [],
+    node.internalSlots || []
+  );
 
   if (props.length) {
     this.space();

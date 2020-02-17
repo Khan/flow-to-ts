@@ -17,14 +17,37 @@ exports.ImportNamespaceSpecifier = ImportNamespaceSpecifier;
 function t() {
   const data = _interopRequireWildcard(require("@babel/types"));
 
-  t = function () {
+  t = function() {
     return data;
   };
 
   return data;
 }
 
-function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = Object.defineProperty && Object.getOwnPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : {}; if (desc.get || desc.set) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } } newObj.default = obj; return newObj; } }
+function _interopRequireWildcard(obj) {
+  if (obj && obj.__esModule) {
+    return obj;
+  } else {
+    var newObj = {};
+    if (obj != null) {
+      for (var key in obj) {
+        if (Object.prototype.hasOwnProperty.call(obj, key)) {
+          var desc =
+            Object.defineProperty && Object.getOwnPropertyDescriptor
+              ? Object.getOwnPropertyDescriptor(obj, key)
+              : {};
+          if (desc.get || desc.set) {
+            Object.defineProperty(newObj, key, desc);
+          } else {
+            newObj[key] = obj[key];
+          }
+        }
+      }
+    }
+    newObj.default = obj;
+    return newObj;
+  }
+}
 
 function ImportSpecifier(node) {
   if (node.importKind === "type" || node.importKind === "typeof") {
@@ -87,7 +110,10 @@ function ExportAllDeclaration(node) {
 }
 
 function ExportNamedDeclaration(node) {
-  if (this.format.decoratorsBeforeExport && t().isClassDeclaration(node.declaration)) {
+  if (
+    this.format.decoratorsBeforeExport &&
+    t().isClassDeclaration(node.declaration)
+  ) {
     this.printJoin(node.declaration.decorators, node);
   }
 
@@ -97,7 +123,10 @@ function ExportNamedDeclaration(node) {
 }
 
 function ExportDefaultDeclaration(node) {
-  if (this.format.decoratorsBeforeExport && t().isClassDeclaration(node.declaration)) {
+  if (
+    this.format.decoratorsBeforeExport &&
+    t().isClassDeclaration(node.declaration)
+  ) {
     this.printJoin(node.declaration.decorators, node);
   }
 
@@ -125,7 +154,10 @@ function ExportDeclaration(node) {
     while (true) {
       const first = specifiers[0];
 
-      if (t().isExportDefaultSpecifier(first) || t().isExportNamespaceSpecifier(first)) {
+      if (
+        t().isExportDefaultSpecifier(first) ||
+        t().isExportNamespaceSpecifier(first)
+      ) {
         hasSpecial = true;
         this.print(specifiers.shift(), node);
 
@@ -138,7 +170,7 @@ function ExportDeclaration(node) {
       }
     }
 
-    if (specifiers.length || !specifiers.length && !hasSpecial) {
+    if (specifiers.length || (!specifiers.length && !hasSpecial)) {
       this.token("{");
 
       if (specifiers.length) {
@@ -176,7 +208,10 @@ function ImportDeclaration(node) {
     while (true) {
       const first = specifiers[0];
 
-      if (t().isImportDefaultSpecifier(first) || t().isImportNamespaceSpecifier(first)) {
+      if (
+        t().isImportDefaultSpecifier(first) ||
+        t().isImportNamespaceSpecifier(first)
+      ) {
         this.print(specifiers.shift(), node);
 
         if (specifiers.length) {

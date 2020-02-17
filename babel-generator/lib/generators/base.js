@@ -77,16 +77,17 @@ function DirectiveLiteral(node) {
     return;
   }
 
-  const {
-    value
-  } = node;
+  const { value } = node;
 
   if (!unescapedDoubleQuoteRE.test(value)) {
     this.token(`"${value}"`);
   } else if (!unescapedSingleQuoteRE.test(value)) {
     this.token(`'${value}'`);
   } else {
-    throw new Error("Malformed AST: it is not possible to print a directive containing" + " both unescaped single and double quotes.");
+    throw new Error(
+      "Malformed AST: it is not possible to print a directive containing" +
+        " both unescaped single and double quotes."
+    );
   }
 }
 

@@ -10,7 +10,7 @@ var virtualTypes = _interopRequireWildcard(require("./lib/virtual-types"));
 function _debug() {
   const data = _interopRequireDefault(require("debug"));
 
-  _debug = function () {
+  _debug = function() {
     return data;
   };
 
@@ -24,7 +24,7 @@ var _scope = _interopRequireDefault(require("../scope"));
 function t() {
   const data = _interopRequireWildcard(require("@babel/types"));
 
-  t = function () {
+  t = function() {
     return data;
   };
 
@@ -36,7 +36,7 @@ var _cache = require("../cache");
 function _generator() {
   const data = _interopRequireDefault(require("@babel/generator"));
 
-  _generator = function () {
+  _generator = function() {
     return data;
   };
 
@@ -53,7 +53,9 @@ var NodePath_evaluation = _interopRequireWildcard(require("./evaluation"));
 
 var NodePath_conversion = _interopRequireWildcard(require("./conversion"));
 
-var NodePath_introspection = _interopRequireWildcard(require("./introspection"));
+var NodePath_introspection = _interopRequireWildcard(
+  require("./introspection")
+);
 
 var NodePath_context = _interopRequireWildcard(require("./context"));
 
@@ -65,9 +67,34 @@ var NodePath_family = _interopRequireWildcard(require("./family"));
 
 var NodePath_comments = _interopRequireWildcard(require("./comments"));
 
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+function _interopRequireDefault(obj) {
+  return obj && obj.__esModule ? obj : { default: obj };
+}
 
-function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = Object.defineProperty && Object.getOwnPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : {}; if (desc.get || desc.set) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } } newObj.default = obj; return newObj; } }
+function _interopRequireWildcard(obj) {
+  if (obj && obj.__esModule) {
+    return obj;
+  } else {
+    var newObj = {};
+    if (obj != null) {
+      for (var key in obj) {
+        if (Object.prototype.hasOwnProperty.call(obj, key)) {
+          var desc =
+            Object.defineProperty && Object.getOwnPropertyDescriptor
+              ? Object.getOwnPropertyDescriptor(obj, key)
+              : {};
+          if (desc.get || desc.set) {
+            Object.defineProperty(newObj, key, desc);
+          } else {
+            newObj[key] = obj[key];
+          }
+        }
+      }
+    }
+    newObj.default = obj;
+    return newObj;
+  }
+}
 
 const debug = (0, _debug().default)("babel");
 
@@ -96,14 +123,7 @@ class NodePath {
     this.typeAnnotation = null;
   }
 
-  static get({
-    hub,
-    parentPath,
-    parent,
-    container,
-    listKey,
-    key
-  }) {
+  static get({ hub, parentPath, parent, container, listKey, key }) {
     if (!hub && parentPath) {
       hub = parentPath.hub;
     }
@@ -144,7 +164,7 @@ class NodePath {
   }
 
   setData(key, val) {
-    return this.data[key] = val;
+    return (this.data[key] = val);
   }
 
   getData(key, def) {
@@ -174,7 +194,7 @@ class NodePath {
       let key = path.key;
       if (path.inList) key = `${path.listKey}[${key}]`;
       parts.unshift(key);
-    } while (path = path.parentPath);
+    } while ((path = path.parentPath));
 
     return parts.join(".");
   }
@@ -187,21 +207,33 @@ class NodePath {
   toString() {
     return (0, _generator().default)(this.node).code;
   }
-
 }
 
 exports.default = NodePath;
-Object.assign(NodePath.prototype, NodePath_ancestry, NodePath_inference, NodePath_replacement, NodePath_evaluation, NodePath_conversion, NodePath_introspection, NodePath_context, NodePath_removal, NodePath_modification, NodePath_family, NodePath_comments);
+Object.assign(
+  NodePath.prototype,
+  NodePath_ancestry,
+  NodePath_inference,
+  NodePath_replacement,
+  NodePath_evaluation,
+  NodePath_conversion,
+  NodePath_introspection,
+  NodePath_context,
+  NodePath_removal,
+  NodePath_modification,
+  NodePath_family,
+  NodePath_comments
+);
 
 for (const type of t().TYPES) {
   const typeKey = `is${type}`;
   const fn = t()[typeKey];
 
-  NodePath.prototype[typeKey] = function (opts) {
+  NodePath.prototype[typeKey] = function(opts) {
     return fn(this.node, opts);
   };
 
-  NodePath.prototype[`assert${type}`] = function (opts) {
+  NodePath.prototype[`assert${type}`] = function(opts) {
     if (!fn(this.node, opts)) {
       throw new TypeError(`Expected node path of type ${type}`);
     }
@@ -213,7 +245,7 @@ for (const type of Object.keys(virtualTypes)) {
   if (t().TYPES.indexOf(type) < 0) t().TYPES.push(type);
   const virtualType = virtualTypes[type];
 
-  NodePath.prototype[`is${type}`] = function (opts) {
+  NodePath.prototype[`is${type}`] = function(opts) {
     return virtualType.checkPath(this, opts);
   };
 }
