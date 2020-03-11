@@ -14,6 +14,18 @@ const stripSuffixFromImportSource = path => {
   path.node.source = t.stringLiteral(src);
 };
 
+const transformFunction = path => {
+  if (path.node.predicate) {
+    console.warn(`removing %checks at ${locToString(path.node.predicate.loc)}`);
+    delete path.node.predicate;
+  }
+  for (const param of path.node.params) {
+    if (t.isAssignmentPattern(param)) {
+      param.left.optional = false;
+    }
+  }
+};
+
 // TODO: figure out how to template these inline definitions
 const utilityTypes = {
   $Keys: typeAnnotation => {
@@ -243,28 +255,13 @@ const transform = {
   // since we're modifying them in a way doesn't affect
   // the processing of other nodes.
   FunctionDeclaration(path) {
-    if (path.node.predicate) {
-      console.warn(
-        `removing %checks at ${locToString(path.node.predicate.loc)}`
-      );
-      delete path.node.predicate;
-    }
+    transformFunction(path);
   },
   FunctionExpression(path) {
-    if (path.node.predicate) {
-      console.warn(
-        `removing %checks at ${locToString(path.node.predicate.loc)}`
-      );
-      delete path.node.predicate;
-    }
+    transformFunction(path);
   },
   ArrowFunctionExpression(path) {
-    if (path.node.predicate) {
-      console.warn(
-        `removing %checks at ${locToString(path.node.predicate.loc)}`
-      );
-      delete path.node.predicate;
-    }
+    transformFunction(path);
   },
 
   // All other non-leaf nodes must be processed on exit()
