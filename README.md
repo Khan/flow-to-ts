@@ -32,7 +32,7 @@ https://flow-to-ts.netlify.com
   always possible so warn in those situations where we can't, e.g. converting
   object type spreads to intersection types.
 
-# Contibuting
+# Contributing
 
 ## Bugs
 
