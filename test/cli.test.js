@@ -3,6 +3,13 @@ const tmp = require("tmp");
 const fs = require("fs");
 const mockConsole = require("jest-mock-console").default;
 const mockProcess = require("jest-mock-process");
+const prettier = require("prettier");
+
+jest.mock("prettier", () => ({
+  resolveConfig: {
+    sync: jest.fn()
+  }
+}));
 
 const cli = require("../src/cli.js");
 
@@ -228,6 +235,35 @@ describe("cli", () => {
     // Assert
     const output = fs.readFileSync(outputPath, "utf-8");
     expect(output).toBe("const a: number = 5;");
+  });
+
+  it("should not attempt to load the prettier config file", () => {
+    // Arrange
+    const inputPath = path.join(tmpdir, "test.js");
+    fs.writeFileSync(inputPath, "const a: number = 5;", "utf-8");
+
+    // Act
+    cli(["node", path.join(__dirname, "../flow-to-ts.js"), inputPath]);
+
+    // Assert
+    expect(prettier.resolveConfig.sync).not.toHaveBeenCalled();
+  });
+
+  it("should attempt to load the prettier config file", () => {
+    // Arrange
+    const inputPath = path.join(tmpdir, "test.js");
+    fs.writeFileSync(inputPath, "const a: number = 5;", "utf-8");
+
+    // Act
+    cli([
+      "node",
+      path.join(__dirname, "../flow-to-ts.js"),
+      "--prettier",
+      inputPath
+    ]);
+
+    // Assert
+    expect(prettier.resolveConfig.sync).toHaveBeenCalled();
   });
 
   // TODO: add tests for option handling

@@ -1,6 +1,7 @@
 const program = require("commander");
 const fs = require("fs");
 const glob = require("glob");
+const prettier = require("prettier");
 
 const convert = require("./convert.js");
 const detectJsx = require("./detect-jsx.js");
@@ -58,14 +59,29 @@ const cli = argv => {
   const options = {
     inlineUtilityTypes: Boolean(program.inlineUtilityTypes),
     prettier: program.prettier,
-    semi: Boolean(program.semi),
-    singleQuote: Boolean(program.singleQuote),
-    tabWidth: parseInt(program.tabWidth),
-    trailingComma: program.trailingComma,
-    bracketSpacing: Boolean(program.bracketSpacing),
-    arrowParens: program.arrowParens,
-    printWidth: parseInt(program.printWidth)
+    prettierOptions: {
+      semi: Boolean(program.semi),
+      singleQuote: Boolean(program.singleQuote),
+      tabWidth: parseInt(program.tabWidth),
+      trailingComma: program.trailingComma,
+      bracketSpacing: Boolean(program.bracketSpacing),
+      arrowParens: program.arrowParens,
+      printWidth: parseInt(program.printWidth)
+    }
   };
+
+  if (options.prettier) {
+    try {
+      const prettierConfig = prettier.resolveConfig.sync(process.cwd());
+      if (prettierConfig) {
+        options.prettierOptions = prettierConfig;
+      }
+    } catch (e) {
+      console.error("error parsing prettier config file");
+      console.error(e);
+      process.exit(1);
+    }
+  }
 
   const files = new Set();
   for (const arg of program.args) {
