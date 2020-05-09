@@ -57,13 +57,7 @@ const convert = (flowCode, options) => {
     const prettierOptions = {
       parser: "typescript",
       plugins,
-      semi: options.semi,
-      singleQuote: options.singleQuote,
-      tabWidth: options.tabWidth,
-      trailingComma: options.trailingComma,
-      bracketSpacing: options.bracketSpacing,
-      arrowParens: options.arrowParens,
-      printWidth: options.printWidth
+      ...options.prettierOptions
     };
     return prettier.format(tsCode, prettierOptions).trim();
   } else {

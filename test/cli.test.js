@@ -1,6 +1,7 @@
 const path = require("path");
 const tmp = require("tmp");
 const fs = require("fs");
+const program = require("commander");
 const mockConsole = require("jest-mock-console").default;
 const mockProcess = require("jest-mock-process");
 const prettier = require("prettier");
@@ -239,6 +240,7 @@ describe("cli", () => {
 
   it("should not attempt to load the prettier config file", () => {
     // Arrange
+    mockConsole();
     const inputPath = path.join(tmpdir, "test.js");
     fs.writeFileSync(inputPath, "const a: number = 5;", "utf-8");
 
@@ -251,6 +253,7 @@ describe("cli", () => {
 
   it("should attempt to load the prettier config file", () => {
     // Arrange
+    mockConsole();
     const inputPath = path.join(tmpdir, "test.js");
     fs.writeFileSync(inputPath, "const a: number = 5;", "utf-8");
 
@@ -264,6 +267,72 @@ describe("cli", () => {
 
     // Assert
     expect(prettier.resolveConfig.sync).toHaveBeenCalled();
+  });
+
+  it("should exit with code one when parsing the prettier config fails", () => {
+    // Arrange
+    mockConsole();
+    const mockExit = mockProcess.mockProcessExit();
+    const mockStdout = mockProcess.mockProcessStdout();
+    const inputPath = path.join(tmpdir, "test.js");
+    fs.writeFileSync(inputPath, "const a: number = 5;", "utf-8");
+    prettier.resolveConfig.sync.mockImplementationOnce(() => {
+      throw new Error();
+    });
+
+    // Act
+    cli([
+      "node",
+      path.join(__dirname, "../flow-to-ts.js"),
+      "--prettier",
+      inputPath
+    ]);
+
+    // Assert
+    expect(mockExit).toHaveBeenCalledWith(1);
+    mockExit.mockRestore();
+    mockStdout.mockRestore();
+  });
+
+  it("should use prettier options from file when a config file is found", () => {
+    // Arrange
+    mockConsole();
+    const inputPath = path.join(tmpdir, "test.js");
+    fs.writeFileSync(inputPath, 'const a: string = "string";', "utf-8");
+    const prettierConfig = {
+      singleQuote: true
+    };
+    prettier.resolveConfig.sync.mockReturnValueOnce(prettierConfig);
+
+    // Act
+    cli([
+      "node",
+      path.join(__dirname, "../flow-to-ts.js"),
+      "--prettier",
+      inputPath
+    ]);
+
+    // Assert
+    expect(console.log).toHaveBeenCalledWith("const a: string = 'string';");
+  });
+
+  it("should use default prettier options when no config file is found", () => {
+    // Arrange
+    mockConsole();
+    const inputPath = path.join(tmpdir, "test.js");
+    fs.writeFileSync(inputPath, 'const a: string = "string";', "utf-8");
+    prettier.resolveConfig.sync.mockReturnValueOnce(null);
+
+    // Act
+    cli([
+      "node",
+      path.join(__dirname, "../flow-to-ts.js"),
+      "--prettier",
+      inputPath
+    ]);
+
+    // Assert
+    expect(console.log).toHaveBeenCalledWith('const a: string = "string"');
   });
 
   // TODO: add tests for option handling

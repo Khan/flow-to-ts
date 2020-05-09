@@ -1,4 +1,4 @@
-const program = require("commander");
+const { Command } = require("commander");
 const fs = require("fs");
 const glob = require("glob");
 const prettier = require("prettier");
@@ -8,6 +8,7 @@ const detectJsx = require("./detect-jsx.js");
 const version = require("../package.json").version;
 
 const cli = argv => {
+  const program = new Command();
   program
     .version(version)
     .option(
