@@ -14,6 +14,7 @@ const parseOptions = {
     "flow",
 
     // handle esnext syntax
+    "decorators-legacy",
     "classProperties",
     "objectRestSpread",
     "dynamicImport",
