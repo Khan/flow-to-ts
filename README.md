@@ -17,6 +17,8 @@ afterwards, e.g. changing `SyntheticEvent` to `React.Event`.
 - `yarn global add @khanacademy/flow-to-ts`
 - `flow-to-ts [options] <file globs>`
 
+For a comprehensive list of available options, please check out the [CLI code](./src/cli.js).
+
 # Playground
 
 https://flow-to-ts.netlify.com
