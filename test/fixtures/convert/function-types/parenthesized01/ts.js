@@ -1,0 +1,1 @@
+type union = (() => void) | void;
