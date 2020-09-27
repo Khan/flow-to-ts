@@ -79,7 +79,7 @@ const UnqualifiedReactTypeNameMap = {
   SyntheticAnimationEvent: "AnimationEvent",
   SyntheticClipboardEvent: "ClipboardEvent",
   SyntheticCompositionEvent: "CompositionEvent",
-  SyntheticInputEvent: "InputEvent",
+  SyntheticInputEvent: "SyntheticEvent",
   SyntheticUIEvent: "UIEvent",
   SyntheticFocusEvent: "FocusEvent",
   SyntheticKeyboardEvent: "KeyboardEvent",
