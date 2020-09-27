@@ -326,7 +326,14 @@ const transform = {
       }
       const typeAnnotation = t.tsTypeAnnotation(returnType);
       path.replaceWith(
-        t.tsFunctionType(typeParameters, parameters, typeAnnotation)
+        !path.parent ||
+          t.isUnionTypeAnnotation(path.parent) ||
+          t.isIntersectionTypeAnnotation(path.parent) ||
+          t.isArrayTypeAnnotation(path.parent)
+          ? t.tsParenthesizedType(
+              t.tsFunctionType(typeParameters, parameters, typeAnnotation)
+            )
+          : t.tsFunctionType(typeParameters, parameters, typeAnnotation)
       );
     }
   },

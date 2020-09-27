@@ -1,0 +1,1 @@
+type intersection = (() => void) & void;
