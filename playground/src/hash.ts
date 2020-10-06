@@ -19,7 +19,7 @@ export const maybeDecodeHash = (
       return;
     }
 
-    const options = {} as Options;
+    const options = { prettierOptions: {} } as Options;
 
     if (urlParams.prettier) {
       options.prettier = Boolean(parseInt(urlParams.prettier));
