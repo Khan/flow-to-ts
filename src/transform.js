@@ -392,7 +392,7 @@ const transform = {
         typeName.name = "ReadonlyArray";
       }
 
-	  if (typeName.name === "Function") {
+      if (typeName.name === "Function") {
         path.replaceWith(
           t.functionTypeAnnotation(
             null,
@@ -408,7 +408,7 @@ const transform = {
           )
         );
         return;
-	  }
+      }
 
       if (typeName.name === "Object") {
         path.replaceWith(
@@ -425,6 +425,7 @@ const transform = {
         );
         return;
       }
+
       if (typeName.name in utilityTypes) {
         if (
           state.options.inlineUtilityTypes &&
