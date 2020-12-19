@@ -392,6 +392,24 @@ const transform = {
         typeName.name = "ReadonlyArray";
       }
 
+      if (typeName.name === "Function") {
+        path.replaceWith(
+          t.functionTypeAnnotation(
+            null,
+            [],
+            t.functionTypeParam(
+              t.identifier("args"),
+              t.genericTypeAnnotation(
+                t.identifier("Array"),
+                t.typeParameterInstantiation([t.anyTypeAnnotation()])
+              )
+            ),
+            t.anyTypeAnnotation()
+          )
+        );
+        return;
+      }
+
       if (typeName.name === "Object") {
         path.replaceWith(
           t.objectTypeAnnotation(
