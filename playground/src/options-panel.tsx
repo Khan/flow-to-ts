@@ -19,13 +19,15 @@ const examples = {
 
 export type Options = {
   prettier: boolean;
-  semi: boolean;
-  singleQuote: boolean;
-  tabWidth: number;
-  trailingComma: "all" | "es5" | "none";
-  bracketSpacing: boolean;
-  arrowParens: "avoid" | "always";
-  printWidth: number;
+  prettierOptions: {
+    semi: boolean;
+    singleQuote: boolean;
+    tabWidth: number;
+    trailingComma: "all" | "es5" | "none";
+    bracketSpacing: boolean;
+    arrowParens: "avoid" | "always";
+    printWidth: number;
+  };
   inlineUtilityTypes: boolean;
 };
 
@@ -104,12 +106,15 @@ class OptionsPanel extends React.Component<Props> {
           <input
             id="semicolons"
             type="checkbox"
-            checked={options.semi}
+            checked={options.prettierOptions.semi}
             disabled={!options.prettier}
             onChange={e => {
               onOptionsChange({
                 ...options,
-                semi: e.currentTarget.checked
+                prettierOptions: {
+                  ...options.prettierOptions,
+                  semi: e.currentTarget.checked
+                }
               });
             }}
           />
@@ -119,12 +124,15 @@ class OptionsPanel extends React.Component<Props> {
           <input
             id="single-quotes"
             type="checkbox"
-            checked={options.singleQuote}
+            checked={options.prettierOptions.singleQuote}
             disabled={!options.prettier}
             onChange={e => {
               onOptionsChange({
                 ...options,
-                singleQuote: e.currentTarget.checked
+                prettierOptions: {
+                  ...options.prettierOptions,
+                  singleQuote: e.currentTarget.checked
+                }
               });
             }}
           />
@@ -134,12 +142,15 @@ class OptionsPanel extends React.Component<Props> {
           <input
             id="bracket-spacing"
             type="checkbox"
-            checked={options.bracketSpacing}
+            checked={options.prettierOptions.bracketSpacing}
             disabled={!options.prettier}
             onChange={e => {
               onOptionsChange({
                 ...options,
-                bracketSpacing: e.currentTarget.checked
+                prettierOptions: {
+                  ...options.prettierOptions,
+                  bracketSpacing: e.currentTarget.checked
+                }
               });
             }}
           />
@@ -148,12 +159,15 @@ class OptionsPanel extends React.Component<Props> {
           </label>
           <select
             id="tab-width"
-            value={options.tabWidth}
+            value={options.prettierOptions.tabWidth}
             disabled={!options.prettier}
             onChange={e => {
               onOptionsChange({
                 ...options,
-                tabWidth: Number(e.currentTarget.value)
+                prettierOptions: {
+                  ...options.prettierOptions,
+                  tabWidth: Number(e.currentTarget.value)
+                }
               });
             }}
           >
@@ -165,12 +179,15 @@ class OptionsPanel extends React.Component<Props> {
           </label>
           <select
             id="arrow-parens"
-            value={options.arrowParens}
+            value={options.prettierOptions.arrowParens}
             disabled={!options.prettier}
             onChange={e => {
               onOptionsChange({
                 ...options,
-                arrowParens: e.currentTarget.value as "avoid" | "always"
+                prettierOptions: {
+                  ...options.prettierOptions,
+                  arrowParens: e.currentTarget.value as "avoid" | "always"
+                }
               });
             }}
           >
@@ -182,12 +199,15 @@ class OptionsPanel extends React.Component<Props> {
           </label>
           <select
             id="trailing-commas"
-            value={options.trailingComma}
+            value={options.prettierOptions.trailingComma}
             disabled={!options.prettier}
             onChange={e => {
               onOptionsChange({
                 ...options,
-                trailingComma: e.currentTarget.value as "none" | "es5" | "all"
+                prettierOptions: {
+                  ...options.prettierOptions,
+                  trailingComma: e.currentTarget.value as "none" | "es5" | "all"
+                }
               });
             }}
           >
@@ -201,12 +221,15 @@ class OptionsPanel extends React.Component<Props> {
           <input
             id="print-width"
             type="text"
-            value={options.printWidth}
+            value={options.prettierOptions.printWidth}
             disabled={!options.prettier}
             onChange={e => {
               onOptionsChange({
                 ...options,
-                printWidth: Number(e.currentTarget.value)
+                prettierOptions: {
+                  ...options.prettierOptions,
+                  printWidth: Number(e.currentTarget.value)
+                }
               });
             }}
           />
