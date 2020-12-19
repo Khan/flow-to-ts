@@ -392,6 +392,22 @@ const transform = {
         typeName.name = "ReadonlyArray";
       }
 
+      if (typeName.name === "Object") {
+        path.replaceWith(
+          t.objectTypeAnnotation(
+            [],
+            [
+              t.objectTypeIndexer(
+                t.identifier("key"),
+                t.stringTypeAnnotation(),
+                t.anyTypeAnnotation()
+              )
+            ]
+          )
+        );
+        return;
+      }
+
       if (typeName.name in utilityTypes) {
         if (
           state.options.inlineUtilityTypes &&
