@@ -91,8 +91,11 @@ const utilityTypes = {
   },
   Class: null, // TODO
 
-  // These are two complicate to inline so we'll leave them as imports
+  // These are too complicated to inline so we'll leave them as imports
   $Diff: null,
+  // The behavior of $Rest only differs when exact object types are involved.
+  // And since TypeScript doesn't have exact object types using $Diff is okay.
+  $Rest: "$Diff",
   $PropertyType: null,
   $ElementType: null,
   $Call: null
@@ -403,6 +406,13 @@ const transform = {
         ) {
           const inline = utilityTypes[typeName.name];
           path.replaceWith(inline(...typeParameters.params));
+          return;
+        } else if (typeof utilityTypes[typeName.name] === "string") {
+          const replacementName = utilityTypes[typeName.name];
+          path.replaceWith(
+            t.tsTypeReference(t.identifier(replacementName), typeParameters)
+          );
+          state.usedUtilityTypes.add(replacementName);
           return;
         } else {
           state.usedUtilityTypes.add(typeName.name);
