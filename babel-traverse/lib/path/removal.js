@@ -12,12 +12,24 @@ exports._assertUnremoved = _assertUnremoved;
 
 var _removalHooks = require("./lib/removal-hooks");
 
+var _cache = require("../cache");
+
+var _index = _interopRequireWildcard(require("./index"));
+
+function _getRequireWildcardCache() { if (typeof WeakMap !== "function") return null; var cache = new WeakMap(); _getRequireWildcardCache = function () { return cache; }; return cache; }
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } if (obj === null || typeof obj !== "object" && typeof obj !== "function") { return { default: obj }; } var cache = _getRequireWildcardCache(); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj.default = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
+
 function remove() {
+  var _this$opts;
+
   this._assertUnremoved();
 
   this.resync();
 
-  this._removeFromScope();
+  if (!((_this$opts = this.opts) == null ? void 0 : _this$opts.noScope)) {
+    this._removeFromScope();
+  }
 
   if (this._callRemovalHooks()) {
     this._markRemoved();
@@ -53,15 +65,13 @@ function _remove() {
 }
 
 function _markRemoved() {
-  this.shouldSkip = true;
-  this.removed = true;
+  this._traverseFlags |= _index.SHOULD_SKIP | _index.REMOVED;
+  if (this.parent) _cache.path.get(this.parent).delete(this.node);
   this.node = null;
 }
 
 function _assertUnremoved() {
   if (this.removed) {
-    throw this.buildCodeFrameError(
-      "NodePath has been removed so is read-only."
-    );
+    throw this.buildCodeFrameError("NodePath has been removed so is read-only.");
   }
 }

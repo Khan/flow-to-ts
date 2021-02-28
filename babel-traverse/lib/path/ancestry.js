@@ -14,51 +14,20 @@ exports.isAncestor = isAncestor;
 exports.isDescendant = isDescendant;
 exports.inType = inType;
 
-function t() {
-  const data = _interopRequireWildcard(require("@babel/types"));
-
-  t = function() {
-    return data;
-  };
-
-  return data;
-}
+var t = _interopRequireWildcard(require("@babel/types"));
 
 var _index = _interopRequireDefault(require("./index"));
 
-function _interopRequireDefault(obj) {
-  return obj && obj.__esModule ? obj : { default: obj };
-}
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-function _interopRequireWildcard(obj) {
-  if (obj && obj.__esModule) {
-    return obj;
-  } else {
-    var newObj = {};
-    if (obj != null) {
-      for (var key in obj) {
-        if (Object.prototype.hasOwnProperty.call(obj, key)) {
-          var desc =
-            Object.defineProperty && Object.getOwnPropertyDescriptor
-              ? Object.getOwnPropertyDescriptor(obj, key)
-              : {};
-          if (desc.get || desc.set) {
-            Object.defineProperty(newObj, key, desc);
-          } else {
-            newObj[key] = obj[key];
-          }
-        }
-      }
-    }
-    newObj.default = obj;
-    return newObj;
-  }
-}
+function _getRequireWildcardCache() { if (typeof WeakMap !== "function") return null; var cache = new WeakMap(); _getRequireWildcardCache = function () { return cache; }; return cache; }
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } if (obj === null || typeof obj !== "object" && typeof obj !== "function") { return { default: obj }; } var cache = _getRequireWildcardCache(); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj.default = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
 
 function findParent(callback) {
   let path = this;
 
-  while ((path = path.parentPath)) {
+  while (path = path.parentPath) {
     if (callback(path)) return path;
   }
 
@@ -70,7 +39,7 @@ function find(callback) {
 
   do {
     if (callback(path)) return path;
-  } while ((path = path.parentPath));
+  } while (path = path.parentPath);
 
   return null;
 }
@@ -83,10 +52,7 @@ function getStatementParent() {
   let path = this;
 
   do {
-    if (
-      !path.parentPath ||
-      (Array.isArray(path.container) && path.isStatement())
-    ) {
+    if (!path.parentPath || Array.isArray(path.container) && path.isStatement()) {
       break;
     } else {
       path = path.parentPath;
@@ -94,22 +60,16 @@ function getStatementParent() {
   } while (path);
 
   if (path && (path.isProgram() || path.isFile())) {
-    throw new Error(
-      "File/Program node, we can't possibly find a statement parent to this"
-    );
+    throw new Error("File/Program node, we can't possibly find a statement parent to this");
   }
 
   return path;
 }
 
 function getEarliestCommonAncestorFrom(paths) {
-  return this.getDeepestCommonAncestorFrom(paths, function(
-    deepest,
-    i,
-    ancestries
-  ) {
+  return this.getDeepestCommonAncestorFrom(paths, function (deepest, i, ancestries) {
     let earliest;
-    const keys = t().VISITOR_KEYS[deepest.type];
+    const keys = t.VISITOR_KEYS[deepest.type];
 
     for (const ancestry of ancestries) {
       const path = ancestry[i + 1];
@@ -194,7 +154,7 @@ function getAncestry() {
 
   do {
     paths.push(path);
-  } while ((path = path.parentPath));
+  } while (path = path.parentPath);
 
   return paths;
 }
@@ -207,11 +167,11 @@ function isDescendant(maybeAncestor) {
   return !!this.findParent(parent => parent === maybeAncestor);
 }
 
-function inType() {
+function inType(...candidateTypes) {
   let path = this;
 
   while (path) {
-    for (const type of arguments) {
+    for (const type of candidateTypes) {
       if (path.node.type === type) return true;
     }
 

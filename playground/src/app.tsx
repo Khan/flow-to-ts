@@ -100,34 +100,9 @@ class App extends React.Component<Props, State> {
   }
 
   componentDidMount() {
-    import("../static/0.98.1/flow.js").then((flow: Flow) => {
-      Promise.all([
-        fetch("/static/0.98.1/flowlib/core.js"),
-        fetch("/static/0.98.1/flowlib/react.js"),
-        fetch("/static/0.98.1/flowlib/intl.js")
-      ])
-        .then(results => Promise.all(results.map(res => res.text())))
-        .then(values => {
-          const [core, react, intl] = values;
-          try {
-            flow.registerFile("/static/0.98.1/flowlib/core.js", core);
-            flow.registerFile("/static/0.98.1/flowlib/react.js", react);
-            flow.registerFile("/static/0.98.1/flowlib/intl.js", intl);
-            flow.registerFile("try-lib.js", TRY_LIB_CONTENTS);
-            flow.setLibs([
-              "/static/0.98.1/flowlib/core.js",
-              "/static/0.98.1/flowlib/react.js",
-              "/static/0.98.1/flowlib/intl.js",
-              "try-lib.js"
-            ]);
-          } catch (e) {
-            // ignore errors
-          }
-
-          this.flow = flow;
-          this.typeCheck(this.state.flowCode);
-        });
-    });
+    // Flow type checking the playground is disabled until we can figure out
+    // how to enable optional chaining and nullish coalescing.
+    // this.loadFlow();
   }
 
   componentDidUpdate(prevProps: Props, prevState: State) {
@@ -142,10 +117,42 @@ class App extends React.Component<Props, State> {
         this.setState({ tsCode });
         this.typeCheck(flowCode);
       } catch (e) {
+        debugger;
         this.setState({ errors: [e.toString()] });
         console.log(e);
       }
     }
+  }
+
+  loadFlow() {
+    import(`../static/0.98.1/flow.js`).then((flow: Flow) => {
+      Promise.all([
+        fetch(`/static/0.98.1/flowlib/core.js"`),
+        fetch(`/static/0.98.1/flowlib/react.js"`),
+        fetch(`/static/0.98.1/flowlib/intl.js"`)
+      ])
+        .then(results => Promise.all(results.map(res => res.text())))
+        .then(values => {
+          const [core, react, intl] = values;
+          try {
+            flow.registerFile(`/static/0.98.1/flowlib/core.js`, core);
+            flow.registerFile(`/static/0.98.1/flowlib/react.js`, react);
+            flow.registerFile(`/static/0.98.1/flowlib/intl.js`, intl);
+            flow.registerFile("try-lib.js", TRY_LIB_CONTENTS);
+            flow.setLibs([
+              `/static/0.98.1/flowlib/core.js`,
+              `/static/0.98.1/flowlib/react.js`,
+              `/static/0.98.1/flowlib/intl.js`,
+              "try-lib.js"
+            ]);
+          } catch (e) {
+            // ignore errors
+          }
+
+          this.flow = flow;
+          this.typeCheck(this.state.flowCode);
+        });
+    });
   }
 
   update(flowCode: string) {
@@ -156,6 +163,7 @@ class App extends React.Component<Props, State> {
       this.setState({ tsCode });
       this.typeCheck(flowCode);
     } catch (e) {
+      debugger;
       this.setState({ errors: [e.toString()] });
       console.log(e);
     }

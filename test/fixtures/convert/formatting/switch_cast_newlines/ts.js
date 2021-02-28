@@ -1,5 +1,4 @@
 switch (kind) {
-
   /**
    * foo
    */
@@ -10,8 +9,8 @@ switch (kind) {
   case "bar":
     console.log("bar");
     break;
-
   // default
+
   default:
     break;
 

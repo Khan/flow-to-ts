@@ -20,44 +20,13 @@ exports.getOuterBindingIdentifierPaths = getOuterBindingIdentifierPaths;
 
 var _index = _interopRequireDefault(require("./index"));
 
-function t() {
-  const data = _interopRequireWildcard(require("@babel/types"));
+var t = _interopRequireWildcard(require("@babel/types"));
 
-  t = function() {
-    return data;
-  };
+function _getRequireWildcardCache() { if (typeof WeakMap !== "function") return null; var cache = new WeakMap(); _getRequireWildcardCache = function () { return cache; }; return cache; }
 
-  return data;
-}
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } if (obj === null || typeof obj !== "object" && typeof obj !== "function") { return { default: obj }; } var cache = _getRequireWildcardCache(); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj.default = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
 
-function _interopRequireWildcard(obj) {
-  if (obj && obj.__esModule) {
-    return obj;
-  } else {
-    var newObj = {};
-    if (obj != null) {
-      for (var key in obj) {
-        if (Object.prototype.hasOwnProperty.call(obj, key)) {
-          var desc =
-            Object.defineProperty && Object.getOwnPropertyDescriptor
-              ? Object.getOwnPropertyDescriptor(obj, key)
-              : {};
-          if (desc.get || desc.set) {
-            Object.defineProperty(newObj, key, desc);
-          } else {
-            newObj[key] = obj[key];
-          }
-        }
-      }
-    }
-    newObj.default = obj;
-    return newObj;
-  }
-}
-
-function _interopRequireDefault(obj) {
-  return obj && obj.__esModule ? obj : { default: obj };
-}
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function getOpposite() {
   if (this.key === "left") {
@@ -65,10 +34,79 @@ function getOpposite() {
   } else if (this.key === "right") {
     return this.getSibling("left");
   }
+
+  return null;
 }
 
 function addCompletionRecords(path, paths) {
   if (path) return paths.concat(path.getCompletionRecords());
+  return paths;
+}
+
+function findBreak(statements) {
+  let breakStatement;
+
+  if (!Array.isArray(statements)) {
+    statements = [statements];
+  }
+
+  for (const statement of statements) {
+    if (statement.isDoExpression() || statement.isProgram() || statement.isBlockStatement() || statement.isCatchClause() || statement.isLabeledStatement()) {
+      breakStatement = findBreak(statement.get("body"));
+    } else if (statement.isIfStatement()) {
+      var _findBreak;
+
+      breakStatement = (_findBreak = findBreak(statement.get("consequent"))) != null ? _findBreak : findBreak(statement.get("alternate"));
+    } else if (statement.isTryStatement()) {
+      var _findBreak2;
+
+      breakStatement = (_findBreak2 = findBreak(statement.get("block"))) != null ? _findBreak2 : findBreak(statement.get("handler"));
+    } else if (statement.isBreakStatement()) {
+      breakStatement = statement;
+    }
+
+    if (breakStatement) {
+      return breakStatement;
+    }
+  }
+
+  return null;
+}
+
+function completionRecordForSwitch(cases, paths) {
+  let isLastCaseWithConsequent = true;
+
+  for (let i = cases.length - 1; i >= 0; i--) {
+    const switchCase = cases[i];
+    const consequent = switchCase.get("consequent");
+    let breakStatement = findBreak(consequent);
+
+    if (breakStatement) {
+      while (breakStatement.key === 0 && breakStatement.parentPath.isBlockStatement()) {
+        breakStatement = breakStatement.parentPath;
+      }
+
+      const prevSibling = breakStatement.getPrevSibling();
+
+      if (breakStatement.key > 0 && (prevSibling.isExpressionStatement() || prevSibling.isBlockStatement())) {
+        paths = addCompletionRecords(prevSibling, paths);
+        breakStatement.remove();
+      } else {
+        breakStatement.replaceWith(breakStatement.scope.buildUndefinedNode());
+        paths = addCompletionRecords(breakStatement, paths);
+      }
+    } else if (isLastCaseWithConsequent) {
+      const statementFinder = statement => !statement.isBlockStatement() || statement.get("body").some(statementFinder);
+
+      const hasConsequent = consequent.some(statementFinder);
+
+      if (hasConsequent) {
+        paths = addCompletionRecords(consequent[consequent.length - 1], paths);
+        isLastCaseWithConsequent = false;
+      }
+    }
+  }
+
   return paths;
 }
 
@@ -87,9 +125,10 @@ function getCompletionRecords() {
   } else if (this.isTryStatement()) {
     paths = addCompletionRecords(this.get("block"), paths);
     paths = addCompletionRecords(this.get("handler"), paths);
-    paths = addCompletionRecords(this.get("finalizer"), paths);
   } else if (this.isCatchClause()) {
     paths = addCompletionRecords(this.get("body"), paths);
+  } else if (this.isSwitchStatement()) {
+    paths = completionRecordForSwitch(this.get("cases"), paths);
   } else {
     paths.push(this);
   }
@@ -104,7 +143,7 @@ function getSibling(key) {
     container: this.container,
     listKey: this.listKey,
     key: key
-  });
+  }).setContext(this.context);
 }
 
 function getPrevSibling() {
@@ -141,7 +180,7 @@ function getAllPrevSiblings() {
   return siblings;
 }
 
-function get(key, context) {
+function get(key, context = true) {
   if (context === true) context = this.context;
   const parts = key.split(".");
 
@@ -158,25 +197,21 @@ function _getKey(key, context) {
 
   if (Array.isArray(container)) {
     return container.map((_, i) => {
-      return _index.default
-        .get({
-          listKey: key,
-          parentPath: this,
-          parent: node,
-          container: container,
-          key: i
-        })
-        .setContext(context);
-    });
-  } else {
-    return _index.default
-      .get({
+      return _index.default.get({
+        listKey: key,
         parentPath: this,
         parent: node,
-        container: node,
-        key: key
-      })
-      .setContext(context);
+        container: container,
+        key: i
+      }).setContext(context);
+    });
+  } else {
+    return _index.default.get({
+      parentPath: this,
+      parent: node,
+      container: node,
+      key: key
+    }).setContext(context);
   }
 }
 
@@ -199,11 +234,11 @@ function _getPattern(parts, context) {
 }
 
 function getBindingIdentifiers(duplicates) {
-  return t().getBindingIdentifiers(this.node, duplicates);
+  return t.getBindingIdentifiers(this.node, duplicates);
 }
 
 function getOuterBindingIdentifiers(duplicates) {
-  return t().getOuterBindingIdentifiers(this.node, duplicates);
+  return t.getOuterBindingIdentifiers(this.node, duplicates);
 }
 
 function getBindingIdentifierPaths(duplicates = false, outerOnly = false) {
@@ -215,11 +250,11 @@ function getBindingIdentifierPaths(duplicates = false, outerOnly = false) {
     const id = search.shift();
     if (!id) continue;
     if (!id.node) continue;
-    const keys = t().getBindingIdentifiers.keys[id.node.type];
+    const keys = t.getBindingIdentifiers.keys[id.node.type];
 
     if (id.isIdentifier()) {
       if (duplicates) {
-        const _ids = (ids[id.node.name] = ids[id.node.name] || []);
+        const _ids = ids[id.node.name] = ids[id.node.name] || [];
 
         _ids.push(id);
       } else {

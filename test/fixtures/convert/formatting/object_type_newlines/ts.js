@@ -1,10 +1,7 @@
 type Point = {
-
   // x
   x: number;
-
   // y
-  y: number;
-  // trailing newline
+  y: number; // trailing newline
 
 };

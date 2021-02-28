@@ -3,45 +3,21 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.default = void 0;
+exports.default = exports.SHOULD_SKIP = exports.SHOULD_STOP = exports.REMOVED = void 0;
 
 var virtualTypes = _interopRequireWildcard(require("./lib/virtual-types"));
 
-function _debug() {
-  const data = _interopRequireDefault(require("debug"));
-
-  _debug = function() {
-    return data;
-  };
-
-  return data;
-}
+var _debug = _interopRequireDefault(require("debug"));
 
 var _index = _interopRequireDefault(require("../index"));
 
 var _scope = _interopRequireDefault(require("../scope"));
 
-function t() {
-  const data = _interopRequireWildcard(require("@babel/types"));
-
-  t = function() {
-    return data;
-  };
-
-  return data;
-}
+var t = _interopRequireWildcard(require("@babel/types"));
 
 var _cache = require("../cache");
 
-function _generator() {
-  const data = _interopRequireDefault(require("@babel/generator"));
-
-  _generator = function() {
-    return data;
-  };
-
-  return data;
-}
+var _generator = _interopRequireDefault(require("@babel/generator"));
 
 var NodePath_ancestry = _interopRequireWildcard(require("./ancestry"));
 
@@ -53,9 +29,7 @@ var NodePath_evaluation = _interopRequireWildcard(require("./evaluation"));
 
 var NodePath_conversion = _interopRequireWildcard(require("./conversion"));
 
-var NodePath_introspection = _interopRequireWildcard(
-  require("./introspection")
-);
+var NodePath_introspection = _interopRequireWildcard(require("./introspection"));
 
 var NodePath_context = _interopRequireWildcard(require("./context"));
 
@@ -67,63 +41,48 @@ var NodePath_family = _interopRequireWildcard(require("./family"));
 
 var NodePath_comments = _interopRequireWildcard(require("./comments"));
 
-function _interopRequireDefault(obj) {
-  return obj && obj.__esModule ? obj : { default: obj };
-}
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-function _interopRequireWildcard(obj) {
-  if (obj && obj.__esModule) {
-    return obj;
-  } else {
-    var newObj = {};
-    if (obj != null) {
-      for (var key in obj) {
-        if (Object.prototype.hasOwnProperty.call(obj, key)) {
-          var desc =
-            Object.defineProperty && Object.getOwnPropertyDescriptor
-              ? Object.getOwnPropertyDescriptor(obj, key)
-              : {};
-          if (desc.get || desc.set) {
-            Object.defineProperty(newObj, key, desc);
-          } else {
-            newObj[key] = obj[key];
-          }
-        }
-      }
-    }
-    newObj.default = obj;
-    return newObj;
-  }
-}
+function _getRequireWildcardCache() { if (typeof WeakMap !== "function") return null; var cache = new WeakMap(); _getRequireWildcardCache = function () { return cache; }; return cache; }
 
-const debug = (0, _debug().default)("babel");
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } if (obj === null || typeof obj !== "object" && typeof obj !== "function") { return { default: obj }; } var cache = _getRequireWildcardCache(); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj.default = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
+
+const debug = (0, _debug.default)("babel");
+const REMOVED = 1 << 0;
+exports.REMOVED = REMOVED;
+const SHOULD_STOP = 1 << 1;
+exports.SHOULD_STOP = SHOULD_STOP;
+const SHOULD_SKIP = 1 << 2;
+exports.SHOULD_SKIP = SHOULD_SKIP;
 
 class NodePath {
   constructor(hub, parent) {
-    this.parent = parent;
-    this.hub = hub;
     this.contexts = [];
-    this.data = {};
-    this.shouldSkip = false;
-    this.shouldStop = false;
-    this.removed = false;
     this.state = null;
     this.opts = null;
+    this._traverseFlags = 0;
     this.skipKeys = null;
     this.parentPath = null;
-    this.context = null;
     this.container = null;
     this.listKey = null;
-    this.inList = false;
-    this.parentKey = null;
     this.key = null;
     this.node = null;
-    this.scope = null;
     this.type = null;
-    this.typeAnnotation = null;
+    this.parent = parent;
+    this.hub = hub;
+    this.data = null;
+    this.context = null;
+    this.scope = null;
   }
 
-  static get({ hub, parentPath, parent, container, listKey, key }) {
+  static get({
+    hub,
+    parentPath,
+    parent,
+    container,
+    listKey,
+    key
+  }) {
     if (!hub && parentPath) {
       hub = parentPath.hub;
     }
@@ -133,26 +92,20 @@ class NodePath {
     }
 
     const targetNode = container[key];
-    const paths = _cache.path.get(parent) || [];
 
-    if (!_cache.path.has(parent)) {
+    let paths = _cache.path.get(parent);
+
+    if (!paths) {
+      paths = new Map();
+
       _cache.path.set(parent, paths);
     }
 
-    let path;
-
-    for (let i = 0; i < paths.length; i++) {
-      const pathCheck = paths[i];
-
-      if (pathCheck.node === targetNode) {
-        path = pathCheck;
-        break;
-      }
-    }
+    let path = paths.get(targetNode);
 
     if (!path) {
       path = new NodePath(hub, parent);
-      paths.push(path);
+      if (targetNode) paths.set(targetNode, path);
     }
 
     path.setup(parentPath, container, listKey, key);
@@ -164,12 +117,20 @@ class NodePath {
   }
 
   setData(key, val) {
-    return (this.data[key] = val);
+    if (this.data == null) {
+      this.data = Object.create(null);
+    }
+
+    return this.data[key] = val;
   }
 
   getData(key, def) {
+    if (this.data == null) {
+      this.data = Object.create(null);
+    }
+
     let val = this.data[key];
-    if (!val && def) val = this.data[key] = def;
+    if (val === undefined && def !== undefined) val = this.data[key] = def;
     return val;
   }
 
@@ -182,7 +143,7 @@ class NodePath {
   }
 
   set(key, node) {
-    t().validate(this.node, key, node);
+    // t.validate(this.node, key, node);
     this.node[key] = node;
   }
 
@@ -194,7 +155,7 @@ class NodePath {
       let key = path.key;
       if (path.inList) key = `${path.listKey}[${key}]`;
       parts.unshift(key);
-    } while ((path = path.parentPath));
+    } while (path = path.parentPath);
 
     return parts.join(".");
   }
@@ -205,35 +166,72 @@ class NodePath {
   }
 
   toString() {
-    return (0, _generator().default)(this.node).code;
+    return (0, _generator.default)(this.node).code;
   }
+
+  get inList() {
+    return !!this.listKey;
+  }
+
+  set inList(inList) {
+    if (!inList) {
+      this.listKey = null;
+    }
+  }
+
+  get parentKey() {
+    return this.listKey || this.key;
+  }
+
+  get shouldSkip() {
+    return !!(this._traverseFlags & SHOULD_SKIP);
+  }
+
+  set shouldSkip(v) {
+    if (v) {
+      this._traverseFlags |= SHOULD_SKIP;
+    } else {
+      this._traverseFlags &= ~SHOULD_SKIP;
+    }
+  }
+
+  get shouldStop() {
+    return !!(this._traverseFlags & SHOULD_STOP);
+  }
+
+  set shouldStop(v) {
+    if (v) {
+      this._traverseFlags |= SHOULD_STOP;
+    } else {
+      this._traverseFlags &= ~SHOULD_STOP;
+    }
+  }
+
+  get removed() {
+    return !!(this._traverseFlags & REMOVED);
+  }
+
+  set removed(v) {
+    if (v) {
+      this._traverseFlags |= REMOVED;
+    } else {
+      this._traverseFlags &= ~REMOVED;
+    }
+  }
+
 }
 
-exports.default = NodePath;
-Object.assign(
-  NodePath.prototype,
-  NodePath_ancestry,
-  NodePath_inference,
-  NodePath_replacement,
-  NodePath_evaluation,
-  NodePath_conversion,
-  NodePath_introspection,
-  NodePath_context,
-  NodePath_removal,
-  NodePath_modification,
-  NodePath_family,
-  NodePath_comments
-);
+Object.assign(NodePath.prototype, NodePath_ancestry, NodePath_inference, NodePath_replacement, NodePath_evaluation, NodePath_conversion, NodePath_introspection, NodePath_context, NodePath_removal, NodePath_modification, NodePath_family, NodePath_comments);
 
-for (const type of t().TYPES) {
+for (const type of t.TYPES) {
   const typeKey = `is${type}`;
-  const fn = t()[typeKey];
+  const fn = t[typeKey];
 
-  NodePath.prototype[typeKey] = function(opts) {
+  NodePath.prototype[typeKey] = function (opts) {
     return fn(this.node, opts);
   };
 
-  NodePath.prototype[`assert${type}`] = function(opts) {
+  NodePath.prototype[`assert${type}`] = function (opts) {
     if (!fn(this.node, opts)) {
       throw new TypeError(`Expected node path of type ${type}`);
     }
@@ -242,10 +240,13 @@ for (const type of t().TYPES) {
 
 for (const type of Object.keys(virtualTypes)) {
   if (type[0] === "_") continue;
-  if (t().TYPES.indexOf(type) < 0) t().TYPES.push(type);
+  if (t.TYPES.indexOf(type) < 0) t.TYPES.push(type);
   const virtualType = virtualTypes[type];
 
-  NodePath.prototype[`is${type}`] = function(opts) {
+  NodePath.prototype[`is${type}`] = function (opts) {
     return virtualType.checkPath(this, opts);
   };
 }
+
+var _default = NodePath;
+exports.default = _default;

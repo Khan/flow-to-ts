@@ -10,68 +10,23 @@ exports._replaceWith = _replaceWith;
 exports.replaceExpressionWithStatements = replaceExpressionWithStatements;
 exports.replaceInline = replaceInline;
 
-function _codeFrame() {
-  const data = require("@babel/code-frame");
-
-  _codeFrame = function() {
-    return data;
-  };
-
-  return data;
-}
+var _codeFrame = require("@babel/code-frame");
 
 var _index = _interopRequireDefault(require("../index"));
 
 var _index2 = _interopRequireDefault(require("./index"));
 
-function _parser() {
-  const data = require("@babel/parser");
+var _cache = require("../cache");
 
-  _parser = function() {
-    return data;
-  };
+var _parser = require("@babel/parser");
 
-  return data;
-}
+var t = _interopRequireWildcard(require("@babel/types"));
 
-function t() {
-  const data = _interopRequireWildcard(require("@babel/types"));
+function _getRequireWildcardCache() { if (typeof WeakMap !== "function") return null; var cache = new WeakMap(); _getRequireWildcardCache = function () { return cache; }; return cache; }
 
-  t = function() {
-    return data;
-  };
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } if (obj === null || typeof obj !== "object" && typeof obj !== "function") { return { default: obj }; } var cache = _getRequireWildcardCache(); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj.default = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
 
-  return data;
-}
-
-function _interopRequireWildcard(obj) {
-  if (obj && obj.__esModule) {
-    return obj;
-  } else {
-    var newObj = {};
-    if (obj != null) {
-      for (var key in obj) {
-        if (Object.prototype.hasOwnProperty.call(obj, key)) {
-          var desc =
-            Object.defineProperty && Object.getOwnPropertyDescriptor
-              ? Object.getOwnPropertyDescriptor(obj, key)
-              : {};
-          if (desc.get || desc.set) {
-            Object.defineProperty(newObj, key, desc);
-          } else {
-            newObj[key] = obj[key];
-          }
-        }
-      }
-    }
-    newObj.default = obj;
-    return newObj;
-  }
-}
-
-function _interopRequireDefault(obj) {
-  return obj && obj.__esModule ? obj : { default: obj };
-}
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 const hoistVariablesVisitor = {
   Function(path) {
@@ -92,23 +47,23 @@ const hoistVariablesVisitor = {
 
     for (const declar of path.node.declarations) {
       if (declar.init) {
-        exprs.push(
-          t().expressionStatement(
-            t().assignmentExpression("=", declar.id, declar.init)
-          )
-        );
+        exprs.push(t.expressionStatement(t.assignmentExpression("=", declar.id, declar.init)));
       }
     }
 
     path.replaceWithMultiple(exprs);
   }
+
 };
 
 function replaceWithMultiple(nodes) {
+  var _pathCache$get;
+
   this.resync();
   nodes = this._verifyNodeList(nodes);
-  t().inheritLeadingComments(nodes[0], this.node);
-  t().inheritTrailingComments(nodes[nodes.length - 1], this.node);
+  t.inheritLeadingComments(nodes[0], this.node);
+  t.inheritTrailingComments(nodes[nodes.length - 1], this.node);
+  (_pathCache$get = _cache.path.get(this.parent)) == null ? void 0 : _pathCache$get.delete(this.node);
   this.node = this.container[this.key] = null;
   const paths = this.insertAfter(nodes);
 
@@ -126,19 +81,17 @@ function replaceWithSourceString(replacement) {
 
   try {
     replacement = `(${replacement})`;
-    replacement = (0, _parser().parse)(replacement);
+    replacement = (0, _parser.parse)(replacement);
   } catch (err) {
     const loc = err.loc;
 
     if (loc) {
-      err.message +=
-        " - make sure this is an expression.\n" +
-        (0, _codeFrame().codeFrameColumns)(replacement, {
-          start: {
-            line: loc.line,
-            column: loc.column + 1
-          }
-        });
+      err.message += " - make sure this is an expression.\n" + (0, _codeFrame.codeFrameColumns)(replacement, {
+        start: {
+          line: loc.line,
+          column: loc.column + 1
+        }
+      });
       err.code = "BABEL_REPLACE_SOURCE_ERROR";
     }
 
@@ -164,51 +117,36 @@ function replaceWith(replacement) {
   }
 
   if (!replacement) {
-    throw new Error(
-      "You passed `path.replaceWith()` a falsy node, use `path.remove()` instead"
-    );
+    throw new Error("You passed `path.replaceWith()` a falsy node, use `path.remove()` instead");
   }
 
   if (this.node === replacement) {
     return [this];
   }
 
-  if (this.isProgram() && !t().isProgram(replacement)) {
-    throw new Error(
-      "You can only replace a Program root node with another Program node"
-    );
+  if (this.isProgram() && !t.isProgram(replacement)) {
+    throw new Error("You can only replace a Program root node with another Program node");
   }
 
   if (Array.isArray(replacement)) {
-    throw new Error(
-      "Don't use `path.replaceWith()` with an array of nodes, use `path.replaceWithMultiple()`"
-    );
+    throw new Error("Don't use `path.replaceWith()` with an array of nodes, use `path.replaceWithMultiple()`");
   }
 
   if (typeof replacement === "string") {
-    throw new Error(
-      "Don't use `path.replaceWith()` with a source string, use `path.replaceWithSourceString()`"
-    );
+    throw new Error("Don't use `path.replaceWith()` with a source string, use `path.replaceWithSourceString()`");
   }
 
   let nodePath = "";
 
-  if (this.isNodeType("Statement") && t().isExpression(replacement)) {
-    if (
-      !this.canHaveVariableDeclarationOrExpression() &&
-      !this.canSwapBetweenExpressionAndStatement(replacement) &&
-      !this.parentPath.isExportDefaultDeclaration()
-    ) {
-      replacement = t().expressionStatement(replacement);
+  if (this.isNodeType("Statement") && t.isExpression(replacement)) {
+    if (!this.canHaveVariableDeclarationOrExpression() && !this.canSwapBetweenExpressionAndStatement(replacement) && !this.parentPath.isExportDefaultDeclaration()) {
+      replacement = t.expressionStatement(replacement);
       nodePath = "expression";
     }
   }
 
-  if (this.isNodeType("Expression") && t().isStatement(replacement)) {
-    if (
-      !this.canHaveVariableDeclarationOrExpression() &&
-      !this.canSwapBetweenExpressionAndStatement(replacement)
-    ) {
+  if (this.isNodeType("Expression") && t.isStatement(replacement)) {
+    if (!this.canHaveVariableDeclarationOrExpression() && !this.canSwapBetweenExpressionAndStatement(replacement)) {
       return this.replaceExpressionWithStatements([replacement]);
     }
   }
@@ -216,8 +154,8 @@ function replaceWith(replacement) {
   const oldNode = this.node;
 
   if (oldNode) {
-    t().inheritsComments(replacement, oldNode);
-    t().removeComments(oldNode);
+    t.inheritsComments(replacement, oldNode);
+    t.removeComments(oldNode);
   }
 
   this._replaceWith(replacement);
@@ -229,30 +167,35 @@ function replaceWith(replacement) {
 }
 
 function _replaceWith(node) {
+  var _pathCache$get2;
+
   if (!this.container) {
     throw new ReferenceError("Container is falsy");
   }
 
   // if (this.inList) {
-  //   t().validate(this.parent, this.key, [node]);
+  //   t.validate(this.parent, this.key, [node]);
   // } else {
-  //   t().validate(this.parent, this.key, node);
+  //   t.validate(this.parent, this.key, node);
   // }
 
-  this.debug(`Replace with ${node && node.type}`);
+  this.debug(`Replace with ${node == null ? void 0 : node.type}`);
+  (_pathCache$get2 = _cache.path.get(this.parent)) == null ? void 0 : _pathCache$get2.set(node, this).delete(this.node);
   this.node = this.container[this.key] = node;
 }
 
 function replaceExpressionWithStatements(nodes) {
   this.resync();
-  const toSequenceExpression = t().toSequenceExpression(nodes, this.scope);
+  const toSequenceExpression = t.toSequenceExpression(nodes, this.scope);
 
   if (toSequenceExpression) {
     return this.replaceWith(toSequenceExpression)[0].get("expressions");
   }
 
-  const container = t().arrowFunctionExpression([], t().blockStatement(nodes));
-  this.replaceWith(t().callExpression(container, []));
+  const functionParent = this.getFunctionParent();
+  const isParentAsync = functionParent == null ? void 0 : functionParent.is("async");
+  const container = t.arrowFunctionExpression([], t.blockStatement(nodes));
+  this.replaceWith(t.callExpression(container, []));
   this.traverse(hoistVariablesVisitor);
   const completionRecords = this.get("callee").getCompletionRecords();
 
@@ -266,30 +209,26 @@ function replaceExpressionWithStatements(nodes) {
       if (!uid) {
         const callee = this.get("callee");
         uid = callee.scope.generateDeclaredUidIdentifier("ret");
-        callee
-          .get("body")
-          .pushContainer("body", t().returnStatement(t().cloneNode(uid)));
+        callee.get("body").pushContainer("body", t.returnStatement(t.cloneNode(uid)));
         loop.setData("expressionReplacementReturnUid", uid);
       } else {
-        uid = t().identifier(uid.name);
+        uid = t.identifier(uid.name);
       }
 
-      path
-        .get("expression")
-        .replaceWith(
-          t().assignmentExpression(
-            "=",
-            t().cloneNode(uid),
-            path.node.expression
-          )
-        );
+      path.get("expression").replaceWith(t.assignmentExpression("=", t.cloneNode(uid), path.node.expression));
     } else {
-      path.replaceWith(t().returnStatement(path.node.expression));
+      path.replaceWith(t.returnStatement(path.node.expression));
     }
   }
 
   const callee = this.get("callee");
   callee.arrowFunctionToExpression();
+
+  if (isParentAsync && _index.default.hasType(this.get("callee.body").node, "AwaitExpression", t.FUNCTION_TYPES)) {
+    callee.set("async", true);
+    this.replaceWith(t.awaitExpression(this.node));
+  }
+
   return callee.get("body.body");
 }
 

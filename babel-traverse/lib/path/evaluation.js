@@ -20,8 +20,12 @@ function deopt(path, state) {
 }
 
 function evaluateCached(path, state) {
-  const { node } = path;
-  const { seen } = state;
+  const {
+    node
+  } = path;
+  const {
+    seen
+  } = state;
 
   if (seen.has(node)) {
     const existing = seen.get(node);
@@ -51,19 +55,14 @@ function evaluateCached(path, state) {
 
 function _evaluate(path, state) {
   if (!state.confident) return;
-  const { node } = path;
 
   if (path.isSequenceExpression()) {
     const exprs = path.get("expressions");
     return evaluateCached(exprs[exprs.length - 1], state);
   }
 
-  if (
-    path.isStringLiteral() ||
-    path.isNumericLiteral() ||
-    path.isBooleanLiteral()
-  ) {
-    return node.value;
+  if (path.isStringLiteral() || path.isNumericLiteral() || path.isBooleanLiteral()) {
+    return path.node.value;
   }
 
   if (path.isNullLiteral()) {
@@ -71,27 +70,20 @@ function _evaluate(path, state) {
   }
 
   if (path.isTemplateLiteral()) {
-    return evaluateQuasis(path, node.quasis, state);
+    return evaluateQuasis(path, path.node.quasis, state);
   }
 
-  if (
-    path.isTaggedTemplateExpression() &&
-    path.get("tag").isMemberExpression()
-  ) {
+  if (path.isTaggedTemplateExpression() && path.get("tag").isMemberExpression()) {
     const object = path.get("tag.object");
     const {
-      node: { name }
+      node: {
+        name
+      }
     } = object;
     const property = path.get("tag.property");
 
-    if (
-      object.isIdentifier() &&
-      name === "String" &&
-      !path.scope.getBinding(name, true) &&
-      property.isIdentifier &&
-      property.node.name === "raw"
-    ) {
-      return evaluateQuasis(path, node.quasi.quasis, state, true);
+    if (object.isIdentifier() && name === "String" && !path.scope.getBinding(name) && property.isIdentifier() && property.node.name === "raw") {
+      return evaluateQuasis(path, path.node.quasi.quasis, state, true);
     }
   }
 
@@ -110,12 +102,9 @@ function _evaluate(path, state) {
     return evaluateCached(path.get("expression"), state);
   }
 
-  if (
-    path.isMemberExpression() &&
-    !path.parentPath.isCallExpression({
-      callee: node
-    })
-  ) {
+  if (path.isMemberExpression() && !path.parentPath.isCallExpression({
+    callee: path.node
+  })) {
     const property = path.get("property");
     const object = path.get("object");
 
@@ -130,7 +119,7 @@ function _evaluate(path, state) {
   }
 
   if (path.isReferencedIdentifier()) {
-    const binding = path.scope.getBinding(node.name);
+    const binding = path.scope.getBinding(path.node.name);
 
     if (binding && binding.constantViolations.length > 0) {
       return deopt(binding.path, state);
@@ -140,14 +129,14 @@ function _evaluate(path, state) {
       return deopt(binding.path, state);
     }
 
-    if (binding && binding.hasValue) {
+    if (binding == null ? void 0 : binding.hasValue) {
       return binding.value;
     } else {
-      if (node.name === "undefined") {
+      if (path.node.name === "undefined") {
         return binding ? deopt(binding.path, state) : undefined;
-      } else if (node.name === "Infinity") {
+      } else if (path.node.name === "Infinity") {
         return binding ? deopt(binding.path, state) : Infinity;
-      } else if (node.name === "NaN") {
+      } else if (path.node.name === "NaN") {
         return binding ? deopt(binding.path, state) : NaN;
       }
 
@@ -161,28 +150,23 @@ function _evaluate(path, state) {
     }
   }
 
-  if (
-    path.isUnaryExpression({
-      prefix: true
-    })
-  ) {
-    if (node.operator === "void") {
+  if (path.isUnaryExpression({
+    prefix: true
+  })) {
+    if (path.node.operator === "void") {
       return undefined;
     }
 
     const argument = path.get("argument");
 
-    if (
-      node.operator === "typeof" &&
-      (argument.isFunction() || argument.isClass())
-    ) {
+    if (path.node.operator === "typeof" && (argument.isFunction() || argument.isClass())) {
       return "function";
     }
 
     const arg = evaluateCached(argument, state);
     if (!state.confident) return;
 
-    switch (node.operator) {
+    switch (path.node.operator) {
       case "!":
         return !arg;
 
@@ -210,7 +194,7 @@ function _evaluate(path, state) {
       if (elemValue.confident) {
         arr.push(elemValue.value);
       } else {
-        return deopt(elem, state);
+        return deopt(elemValue.deopt, state);
       }
     }
 
@@ -233,7 +217,7 @@ function _evaluate(path, state) {
         key = key.evaluate();
 
         if (!key.confident) {
-          return deopt(keyPath, state);
+          return deopt(key.deopt, state);
         }
 
         key = key.value;
@@ -247,7 +231,7 @@ function _evaluate(path, state) {
       let value = valuePath.evaluate();
 
       if (!value.confident) {
-        return deopt(valuePath, state);
+        return deopt(value.deopt, state);
       }
 
       value = value.value;
@@ -265,7 +249,7 @@ function _evaluate(path, state) {
     const right = evaluateCached(path.get("right"), state);
     const rightConfident = state.confident;
 
-    switch (node.operator) {
+    switch (path.node.operator) {
       case "||":
         state.confident = leftConfident && (!!left || rightConfident);
         if (!state.confident) return;
@@ -284,7 +268,7 @@ function _evaluate(path, state) {
     const right = evaluateCached(path.get("right"), state);
     if (!state.confident) return;
 
-    switch (node.operator) {
+    switch (path.node.operator) {
       case "-":
         return left - right;
 
@@ -352,24 +336,15 @@ function _evaluate(path, state) {
     let context;
     let func;
 
-    if (
-      callee.isIdentifier() &&
-      !path.scope.getBinding(callee.node.name, true) &&
-      VALID_CALLEES.indexOf(callee.node.name) >= 0
-    ) {
-      func = global[node.callee.name];
+    if (callee.isIdentifier() && !path.scope.getBinding(callee.node.name) && VALID_CALLEES.indexOf(callee.node.name) >= 0) {
+      func = global[callee.node.name];
     }
 
     if (callee.isMemberExpression()) {
       const object = callee.get("object");
       const property = callee.get("property");
 
-      if (
-        object.isIdentifier() &&
-        property.isIdentifier() &&
-        VALID_CALLEES.indexOf(object.node.name) >= 0 &&
-        INVALID_METHODS.indexOf(property.node.name) < 0
-      ) {
+      if (object.isIdentifier() && property.isIdentifier() && VALID_CALLEES.indexOf(object.node.name) >= 0 && INVALID_METHODS.indexOf(property.node.name) < 0) {
         context = global[object.node.name];
         func = context[property.node.name];
       }

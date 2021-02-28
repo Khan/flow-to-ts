@@ -20,81 +20,37 @@ var _hoister = _interopRequireDefault(require("./lib/hoister"));
 
 var _index = _interopRequireDefault(require("./index"));
 
-function t() {
-  const data = _interopRequireWildcard(require("@babel/types"));
+var t = _interopRequireWildcard(require("@babel/types"));
 
-  t = function() {
-    return data;
-  };
+function _getRequireWildcardCache() { if (typeof WeakMap !== "function") return null; var cache = new WeakMap(); _getRequireWildcardCache = function () { return cache; }; return cache; }
 
-  return data;
-}
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } if (obj === null || typeof obj !== "object" && typeof obj !== "function") { return { default: obj }; } var cache = _getRequireWildcardCache(); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj.default = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
 
-function _interopRequireWildcard(obj) {
-  if (obj && obj.__esModule) {
-    return obj;
-  } else {
-    var newObj = {};
-    if (obj != null) {
-      for (var key in obj) {
-        if (Object.prototype.hasOwnProperty.call(obj, key)) {
-          var desc =
-            Object.defineProperty && Object.getOwnPropertyDescriptor
-              ? Object.getOwnPropertyDescriptor(obj, key)
-              : {};
-          if (desc.get || desc.set) {
-            Object.defineProperty(newObj, key, desc);
-          } else {
-            newObj[key] = obj[key];
-          }
-        }
-      }
-    }
-    newObj.default = obj;
-    return newObj;
-  }
-}
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-function _interopRequireDefault(obj) {
-  return obj && obj.__esModule ? obj : { default: obj };
-}
-
-function insertBefore(nodes) {
+function insertBefore(nodes_) {
   this._assertUnremoved();
 
-  nodes = this._verifyNodeList(nodes);
-  const { parentPath } = this;
+  const nodes = this._verifyNodeList(nodes_);
 
-  if (
-    parentPath.isExpressionStatement() ||
-    parentPath.isLabeledStatement() ||
-    parentPath.isExportNamedDeclaration() ||
-    (parentPath.isExportDefaultDeclaration() && this.isDeclaration())
-  ) {
+  const {
+    parentPath
+  } = this;
+
+  if (parentPath.isExpressionStatement() || parentPath.isLabeledStatement() || parentPath.isExportNamedDeclaration() || parentPath.isExportDefaultDeclaration() && this.isDeclaration()) {
     return parentPath.insertBefore(nodes);
-  } else if (
-    (this.isNodeType("Expression") &&
-      this.listKey !== "params" &&
-      this.listKey !== "arguments") ||
-    (parentPath.isForStatement() && this.key === "init")
-  ) {
+  } else if (this.isNodeType("Expression") && !this.isJSXElement() || parentPath.isForStatement() && this.key === "init") {
     if (this.node) nodes.push(this.node);
     return this.replaceExpressionWithStatements(nodes);
   } else if (Array.isArray(this.container)) {
     return this._containerInsertBefore(nodes);
   } else if (this.isStatementOrBlock()) {
-    const shouldInsertCurrentNode =
-      this.node &&
-      (!this.isExpressionStatement() || this.node.expression != null);
-    this.replaceWith(
-      t().blockStatement(shouldInsertCurrentNode ? [this.node] : [])
-    );
+    const node = this.node;
+    const shouldInsertCurrentNode = node && (!this.isExpressionStatement() || node.expression != null);
+    this.replaceWith(t.blockStatement(shouldInsertCurrentNode ? [node] : []));
     return this.unshiftContainer("body", nodes);
   } else {
-    throw new Error(
-      "We don't know what to do with this node type. " +
-        "We were previously a Statement but we can't fit in here?"
-    );
+    throw new Error("We don't know what to do with this node type. " + "We were previously a Statement but we can't fit in here?");
   }
 }
 
@@ -135,64 +91,55 @@ function _containerInsertAfter(nodes) {
   return this._containerInsert(this.key + 1, nodes);
 }
 
-function insertAfter(nodes) {
+function insertAfter(nodes_) {
   this._assertUnremoved();
 
-  nodes = this._verifyNodeList(nodes);
-  const { parentPath } = this;
+  const nodes = this._verifyNodeList(nodes_);
 
-  if (
-    parentPath.isExpressionStatement() ||
-    parentPath.isLabeledStatement() ||
-    parentPath.isExportNamedDeclaration() ||
-    (parentPath.isExportDefaultDeclaration() && this.isDeclaration())
-  ) {
-    return parentPath.insertAfter(
-      nodes.map(node => {
-        return t().isExpression(node) ? t().expressionStatement(node) : node;
-      })
-    );
-  } else if (
-    (this.isNodeType("Expression") && !this.isJSXElement()) ||
-    (parentPath.isForStatement() && this.key === "init")
-  ) {
+  const {
+    parentPath
+  } = this;
+
+  if (parentPath.isExpressionStatement() || parentPath.isLabeledStatement() || parentPath.isExportNamedDeclaration() || parentPath.isExportDefaultDeclaration() && this.isDeclaration()) {
+    return parentPath.insertAfter(nodes.map(node => {
+      return t.isExpression(node) ? t.expressionStatement(node) : node;
+    }));
+  } else if (this.isNodeType("Expression") && !this.isJSXElement() && !parentPath.isJSXElement() || parentPath.isForStatement() && this.key === "init") {
     if (this.node) {
-      let { scope } = this;
+      const node = this.node;
+      let {
+        scope
+      } = this;
 
-      if (
-        parentPath.isMethod({
-          computed: true,
-          key: this.node
-        })
-      ) {
+      if (scope.path.isPattern()) {
+        t.assertExpression(node);
+        this.replaceWith(t.callExpression(t.arrowFunctionExpression([], node), []));
+        this.get("callee.body").insertAfter(nodes);
+        return [this];
+      }
+
+      if (parentPath.isMethod({
+        computed: true,
+        key: node
+      })) {
         scope = scope.parent;
       }
 
       const temp = scope.generateDeclaredUidIdentifier();
-      nodes.unshift(
-        t().expressionStatement(
-          t().assignmentExpression("=", t().cloneNode(temp), this.node)
-        )
-      );
-      nodes.push(t().expressionStatement(t().cloneNode(temp)));
+      nodes.unshift(t.expressionStatement(t.assignmentExpression("=", t.cloneNode(temp), node)));
+      nodes.push(t.expressionStatement(t.cloneNode(temp)));
     }
 
     return this.replaceExpressionWithStatements(nodes);
   } else if (Array.isArray(this.container)) {
     return this._containerInsertAfter(nodes);
   } else if (this.isStatementOrBlock()) {
-    const shouldInsertCurrentNode =
-      this.node &&
-      (!this.isExpressionStatement() || this.node.expression != null);
-    this.replaceWith(
-      t().blockStatement(shouldInsertCurrentNode ? [this.node] : [])
-    );
+    const node = this.node;
+    const shouldInsertCurrentNode = node && (!this.isExpressionStatement() || node.expression != null);
+    this.replaceWith(t.blockStatement(shouldInsertCurrentNode ? [node] : []));
     return this.pushContainer("body", nodes);
   } else {
-    throw new Error(
-      "We don't know what to do with this node type. " +
-        "We were previously a Statement but we can't fit in here?"
-    );
+    throw new Error("We don't know what to do with this node type. " + "We were previously a Statement but we can't fit in here?");
   }
 }
 
@@ -201,9 +148,7 @@ function updateSiblingKeys(fromIndex, incrementBy) {
 
   const paths = _cache.path.get(this.parent);
 
-  for (let i = 0; i < paths.length; i++) {
-    const path = paths[i];
-
+  for (const [, path] of paths) {
     if (path.key >= fromIndex) {
       path.key += incrementBy;
     }
@@ -215,7 +160,7 @@ function _verifyNodeList(nodes) {
     return [];
   }
 
-  if (nodes.constructor !== Array) {
+  if (!Array.isArray(nodes)) {
     nodes = [nodes];
   }
 
@@ -235,9 +180,7 @@ function _verifyNodeList(nodes) {
 
     if (msg) {
       const type = Array.isArray(node) ? "array" : typeof node;
-      throw new Error(
-        `Node list ${msg} with the index of ${i} and type of ${type}`
-      );
+      throw new Error(`Node list ${msg} with the index of ${i} and type of ${type}`);
     }
   }
 
@@ -255,15 +198,16 @@ function unshiftContainer(listKey, nodes) {
     container: this.node[listKey],
     listKey,
     key: 0
-  });
+  }).setContext(this.context);
 
-  return path.insertBefore(nodes);
+  return path._containerInsertBefore(nodes);
 }
 
 function pushContainer(listKey, nodes) {
   this._assertUnremoved();
 
-  nodes = this._verifyNodeList(nodes);
+  const verifiedNodes = this._verifyNodeList(nodes);
+
   const container = this.node[listKey];
 
   const path = _index.default.get({
@@ -272,9 +216,9 @@ function pushContainer(listKey, nodes) {
     container: container,
     listKey,
     key: container.length
-  });
+  }).setContext(this.context);
 
-  return path.replaceWithMultiple(nodes);
+  return path.replaceWithMultiple(verifiedNodes);
 }
 
 function hoist(scope = this.scope) {

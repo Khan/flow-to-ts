@@ -1,6 +1,6 @@
 const { parse } = require("@babel/parser");
 const traverse = require("../babel-traverse/lib/index.js").default;
-const generate = require("../babel-generator/lib/index.js").default;
+const generate = require("@babel/generator").default;
 const prettier = require("prettier/standalone.js");
 const plugins = [require("prettier/parser-typescript.js")];
 
