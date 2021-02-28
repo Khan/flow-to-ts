@@ -1,3 +1,4 @@
 test/fixtures
 playground/static
 babel-traverse
+babel-types

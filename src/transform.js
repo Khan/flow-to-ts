@@ -1,5 +1,5 @@
 const path = require("path");
-const t = require("@babel/types");
+const t = require("../babel-types/lib/index.js");
 
 const locToString = loc =>
   `${loc.start.line}:${loc.start.column}-${loc.end.line}:${loc.end.column}`;
