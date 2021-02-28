@@ -365,7 +365,7 @@ const transform = {
       if (typeName.name === "Function") {
         path.replaceWith(
           t.functionTypeAnnotation(
-            null,
+            null, // type parameters
             [],
             t.functionTypeParam(
               t.identifier("args"),
@@ -417,7 +417,8 @@ const transform = {
               t.identifier("React"),
               t.identifier(UnqualifiedReactTypeNameMap[typeName.name])
             ),
-            typeParameters
+            // TypeScript doesn't support empty type param lists
+            typeParameters.params.length > 0 ? typeParameters : null
           )
         );
       } else {
