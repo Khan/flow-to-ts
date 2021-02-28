@@ -7,17 +7,11 @@ exports.default = void 0;
 
 var _path = _interopRequireDefault(require("./path"));
 
-function t() {
-  const data = _interopRequireWildcard(require("@babel/types"));
+var t = _interopRequireWildcard(require("@babel/types"));
 
-  t = function () {
-    return data;
-  };
+function _getRequireWildcardCache() { if (typeof WeakMap !== "function") return null; var cache = new WeakMap(); _getRequireWildcardCache = function () { return cache; }; return cache; }
 
-  return data;
-}
-
-function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = Object.defineProperty && Object.getOwnPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : {}; if (desc.get || desc.set) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } } newObj.default = obj; return newObj; } }
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } if (obj === null || typeof obj !== "object" && typeof obj !== "function") { return { default: obj }; } var cache = _getRequireWildcardCache(); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj.default = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -26,6 +20,7 @@ const testing = process.env.NODE_ENV === "test";
 class TraversalContext {
   constructor(scope, opts, state, parentPath) {
     this.queue = null;
+    this.priorityQueue = null;
     this.parentPath = parentPath;
     this.scope = scope;
     this.state = state;
@@ -36,8 +31,8 @@ class TraversalContext {
     const opts = this.opts;
     if (opts.enter || opts.exit) return true;
     if (opts[node.type]) return true;
-    const keys = t().VISITOR_KEYS[node.type];
-    if (!keys || !keys.length) return false;
+    const keys = t.VISITOR_KEYS[node.type];
+    if (!(keys == null ? void 0 : keys.length)) return false;
 
     for (const key of keys) {
       if (node[key]) return true;
@@ -96,7 +91,7 @@ class TraversalContext {
   visitQueue(queue) {
     this.queue = queue;
     this.priorityQueue = [];
-    const visited = [];
+    const visited = new WeakSet();
     let stop = false;
 
     for (const path of queue) {
@@ -112,8 +107,11 @@ class TraversalContext {
         this.trap = true;
       }
 
-      if (visited.indexOf(path.node) >= 0) continue;
-      visited.push(path.node);
+      const {
+        node
+      } = path;
+      if (visited.has(node)) continue;
+      if (node) visited.add(node);
 
       if (path.visit()) {
         stop = true;

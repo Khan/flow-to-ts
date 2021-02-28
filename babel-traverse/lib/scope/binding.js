@@ -6,16 +6,25 @@ Object.defineProperty(exports, "__esModule", {
 exports.default = void 0;
 
 class Binding {
-  constructor({ identifier, scope, path, kind }) {
-    this.identifier = identifier;
-    this.scope = scope;
-    this.path = path;
-    this.kind = kind;
+  constructor({
+    identifier,
+    scope,
+    path,
+    kind
+  }) {
+    this.identifier = void 0;
+    this.scope = void 0;
+    this.path = void 0;
+    this.kind = void 0;
     this.constantViolations = [];
     this.constant = true;
     this.referencePaths = [];
     this.referenced = false;
     this.references = 0;
+    this.identifier = identifier;
+    this.scope = scope;
+    this.path = path;
+    this.kind = kind;
     this.clearValue();
   }
 
@@ -60,6 +69,7 @@ class Binding {
     this.references--;
     this.referenced = !!this.references;
   }
+
 }
 
 exports.default = Binding;

@@ -1,8 +1,6 @@
-
 declare module "some-commonjs-module" {
   // foo
-  export default function foo(): string;
+  export default function foo(): string; // bar
 
-  // bar
   export function bar(): boolean;
 }

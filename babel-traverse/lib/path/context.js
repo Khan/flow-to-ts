@@ -5,7 +5,7 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.call = call;
 exports._call = _call;
-exports.isBlacklisted = isBlacklisted;
+exports.isBlacklisted = exports.isDenylisted = isDenylisted;
 exports.visit = visit;
 exports.skip = skip;
 exports.skipKey = skipKey;
@@ -26,9 +26,9 @@ exports._getQueueContexts = _getQueueContexts;
 
 var _index = _interopRequireDefault(require("../index"));
 
-function _interopRequireDefault(obj) {
-  return obj && obj.__esModule ? obj : { default: obj };
-}
+var _index2 = require("./index");
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function call(key) {
   const opts = this.opts;
@@ -55,12 +55,7 @@ function _call(fns) {
     const ret = fn.call(this.state, this, this.state);
 
     if (ret && typeof ret === "object" && typeof ret.then === "function") {
-      throw new Error(
-        `You appear to be using a plugin with an async traversal visitor, ` +
-          `which your current version of Babel does not support.` +
-          `If you're using a published plugin, you may need to upgrade ` +
-          `your @babel/core version.`
-      );
+      throw new Error(`You appear to be using a plugin with an async traversal visitor, ` + `which your current version of Babel does not support. ` + `If you're using a published plugin, you may need to upgrade ` + `your @babel/core version.`);
     }
 
     if (ret) {
@@ -68,15 +63,17 @@ function _call(fns) {
     }
 
     if (this.node !== node) return true;
-    if (this.shouldStop || this.shouldSkip || this.removed) return true;
+    if (this._traverseFlags > 0) return true;
   }
 
   return false;
 }
 
-function isBlacklisted() {
-  const blacklist = this.opts.blacklist;
-  return blacklist && blacklist.indexOf(this.node.type) > -1;
+function isDenylisted() {
+  var _this$opts$denylist;
+
+  const denylist = (_this$opts$denylist = this.opts.denylist) != null ? _this$opts$denylist : this.opts.blacklist;
+  return denylist && denylist.indexOf(this.node.type) > -1;
 }
 
 function visit() {
@@ -84,7 +81,7 @@ function visit() {
     return false;
   }
 
-  if (this.isBlacklisted()) {
+  if (this.isDenylisted()) {
     return false;
   }
 
@@ -92,21 +89,14 @@ function visit() {
     return false;
   }
 
-  if (this.call("enter") || this.shouldSkip) {
+  if (this.shouldSkip || this.call("enter") || this.shouldSkip) {
     this.debug("Skip...");
     return this.shouldStop;
   }
 
   this.debug("Recursing into...");
 
-  _index.default.node(
-    this.node,
-    this.opts,
-    this.scope,
-    this.state,
-    this,
-    this.skipKeys
-  );
+  _index.default.node(this.node, this.opts, this.scope, this.state, this, this.skipKeys);
 
   this.call("exit");
   return this.shouldStop;
@@ -117,17 +107,21 @@ function skip() {
 }
 
 function skipKey(key) {
+  if (this.skipKeys == null) {
+    this.skipKeys = {};
+  }
+
   this.skipKeys[key] = true;
 }
 
 function stop() {
-  this.shouldStop = true;
-  this.shouldSkip = true;
+  this._traverseFlags |= _index2.SHOULD_SKIP | _index2.SHOULD_STOP;
 }
 
 function setScope() {
   if (this.opts && this.opts.noScope) return;
   let path = this.parentPath;
+  if (this.key === "key" && path.isMethod()) path = path.parentPath;
   let target;
 
   while (path && !target) {
@@ -141,10 +135,11 @@ function setScope() {
 }
 
 function setContext(context) {
-  this.shouldSkip = false;
-  this.shouldStop = false;
-  this.removed = false;
-  this.skipKeys = {};
+  if (this.skipKeys != null) {
+    this.skipKeys = {};
+  }
+
+  this._traverseFlags = 0;
 
   if (context) {
     this.context = context;
@@ -201,11 +196,7 @@ function _resyncList() {
 }
 
 function _resyncRemoved() {
-  if (
-    this.key == null ||
-    !this.container ||
-    this.container[this.key] !== this.node
-  ) {
+  if (this.key == null || !this.container || this.container[this.key] !== this.node) {
     this._markRemoved();
   }
 }
@@ -226,18 +217,18 @@ function pushContext(context) {
 }
 
 function setup(parentPath, container, listKey, key) {
-  this.inList = !!listKey;
   this.listKey = listKey;
-  this.parentKey = listKey || key;
   this.container = container;
   this.parentPath = parentPath || this.parentPath;
   this.setKey(key);
 }
 
 function setKey(key) {
+  var _this$node;
+
   this.key = key;
   this.node = this.container[this.key];
-  this.type = this.node && this.node.type;
+  this.type = (_this$node = this.node) == null ? void 0 : _this$node.type;
 }
 
 function requeue(pathToQueue = this) {

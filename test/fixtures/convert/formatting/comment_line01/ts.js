@@ -1,7 +1,5 @@
 // first leading comment
 // second leading comment
-const a = 5;
+const a = 5; // bar
 
-// bar
-const b = 10;
-// baz
+const b = 10; // baz

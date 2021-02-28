@@ -1,4 +1,3 @@
-
 import * as React from "react";
 let component: React.Component;
 let pureComponent: React.PureComponent;
