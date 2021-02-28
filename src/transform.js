@@ -1,8 +1,6 @@
 const path = require("path");
 const t = require("@babel/types");
 
-const computeNewlines = require("./compute-newlines.js");
-
 const locToString = loc =>
   `${loc.start.line}:${loc.start.column}-${loc.end.line}:${loc.end.column}`;
 
@@ -22,6 +20,33 @@ const transformFunction = path => {
   for (const param of path.node.params) {
     if (t.isAssignmentPattern(param)) {
       param.left.optional = false;
+    }
+  }
+};
+
+const trackComments = (path, state) => {
+  if (path.node.leadingComments) {
+    for (const comment of path.node.leadingComments) {
+      const { start, end } = comment;
+      const key = `${start}:${end}`;
+
+      if (state.commentsToNodesMap.has(key)) {
+        state.commentsToNodesMap.get(key).leading = path.node;
+      } else {
+        state.commentsToNodesMap.set(key, { leading: path.node });
+      }
+    }
+  }
+  if (path.node.trailingComments) {
+    for (const comment of path.node.trailingComments) {
+      const { start, end } = comment;
+      const key = `${start}:${end}`;
+
+      if (state.commentsToNodesMap.has(key)) {
+        state.commentsToNodesMap.get(key).trailing = path.node;
+      } else {
+        state.commentsToNodesMap.set(key, { trailing: path.node });
+      }
     }
   }
 };
@@ -115,24 +140,6 @@ const transform = {
       for (let i = 0; i < body.length; i++) {
         const stmt = body[i];
 
-        // Workaround babylon bug where only the first leading comment is
-        // attached VariableDeclarations.
-        // TODO: file a ticket for this bug
-        if (i === 0 && t.isVariableDeclaration(stmt)) {
-          if (stmt.leadingComments && stmt.leadingComments[0]) {
-            const firstComment = stmt.leadingComments[0];
-            for (
-              let i = firstComment.loc.end.line + 1;
-              i < stmt.loc.start.line;
-              i++
-            ) {
-              if (state.comments.startLine[i]) {
-                stmt.leadingComments.push(state.comments.startLine[i]);
-              }
-            }
-          }
-        }
-
         // filter out flow specific comments
         if (stmt.leadingComments) {
           stmt.leadingComments = stmt.leadingComments.filter(comment => {
@@ -147,15 +154,6 @@ const transform = {
           });
         }
       }
-
-      if (body.length > 0) {
-        path.node.newlines = computeNewlines(path.node);
-
-        // Attach the number of trailing spaces to the state so that convert.js
-        // can add those back since babel-generator/lib/buffer.js removes them.
-        // TODO: compute this properly
-        state.trailingLines = 0;
-      }
     },
     exit(path, state) {
       const { body } = path.node;
@@ -168,44 +166,6 @@ const transform = {
         const source = t.stringLiteral("utility-types");
         const importDeclaration = t.importDeclaration(specifiers, source);
         path.node.body = [importDeclaration, ...path.node.body];
-        path.node.newlines = [
-          [], // place the new import at the start of the file
-          [undefined, ...path.node.newlines[0]],
-          ...path.node.newlines.slice(1)
-        ];
-      }
-    }
-  },
-  BlockStatement: {
-    // TODO: deal with empty functions
-    enter(path) {
-      const { body } = path.node;
-      if (body.length > 0) {
-        path.node.newlines = computeNewlines(path.node);
-      }
-    }
-  },
-  ObjectExpression: {
-    enter(path) {
-      const { properties } = path.node;
-      if (properties.length > 0) {
-        path.node.newlines = computeNewlines(path.node);
-      }
-    }
-  },
-  SwitchStatement: {
-    enter(path) {
-      const { cases } = path.node;
-      if (cases.length > 0) {
-        path.node.newlines = computeNewlines(path.node);
-      }
-    }
-  },
-  ClassBody: {
-    enter(path) {
-      const { body } = path.node;
-      if (body.length > 0) {
-        path.node.newlines = computeNewlines(path.node);
       }
     }
   },
@@ -254,7 +214,9 @@ const transform = {
   // It's okay to process these non-leaf nodes on enter()
   // since we're modifying them in a way doesn't affect
   // the processing of other nodes.
-  FunctionDeclaration(path) {
+  FunctionDeclaration(path, state) {
+    trackComments(path, state);
+
     transformFunction(path);
   },
   FunctionExpression(path) {
@@ -262,6 +224,14 @@ const transform = {
   },
   ArrowFunctionExpression(path) {
     transformFunction(path);
+  },
+
+  VariableDeclaration(path, state) {
+    trackComments(path, state);
+  },
+
+  ObjectProperty(path, state) {
+    trackComments(path, state);
   },
 
   // All other non-leaf nodes must be processed on exit()
@@ -474,7 +444,9 @@ const transform = {
     }
   },
   ObjectTypeProperty: {
-    exit(path) {
+    exit(path, state) {
+      trackComments(path, state);
+
       const { key, value, optional, variance, kind, method } = path.node; // TODO: static, kind
       const typeAnnotation = t.tsTypeAnnotation(value);
       const initializer = undefined; // TODO: figure out when this used
@@ -520,7 +492,9 @@ const transform = {
     }
   },
   ObjectTypeIndexer: {
-    exit(path) {
+    exit(path, state) {
+      trackComments(path, state);
+
       const { id, key, value, variance } = path.node;
 
       const readonly = variance && variance.kind === "plus";
@@ -558,13 +532,11 @@ const transform = {
         const trailingComments = [];
         const lastProp = properties[properties.length - 1];
         for (let i = lastProp.loc.end.line; i < path.node.loc.end.line; i++) {
-          if (state.comments.startLine[i]) {
-            trailingComments.push(state.comments.startLine[i]);
+          if (state.startLineToComments[i]) {
+            trailingComments.push(state.startLineToComments[i]);
           }
         }
         lastProp.trailingComments = trailingComments;
-
-        path.node.newlines = computeNewlines(path.node);
       }
     },
     exit(path) {
@@ -621,13 +593,14 @@ const transform = {
         path.replaceWith(t.tsIntersectionType(spreads));
       } else {
         const typeLiteral = t.tsTypeLiteral(elements);
-        typeLiteral.newlines = path.node.newlines;
         path.replaceWith(typeLiteral);
       }
     }
   },
   TypeAlias: {
-    exit(path) {
+    exit(path, state) {
+      trackComments(path, state);
+
       const { id, typeParameters, right } = path.node;
 
       path.replaceWith(t.tsTypeAliasDeclaration(id, typeParameters, right));

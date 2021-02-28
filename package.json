@@ -1,6 +1,6 @@
 {
   "name": "@khanacademy/flow-to-ts",
-  "version": "0.1.9",
+  "version": "0.2.0",
   "publishConfig": {
     "access": "public"
   },

@@ -25,22 +25,33 @@ const parseOptions = {
 const convert = (flowCode, options) => {
   const ast = parse(flowCode, parseOptions);
 
-  const comments = {
-    startLine: {},
-    endLine: {}
-  };
+  // key = startLine:endLine, value = {leading, trailing} (nodes)
+  const commentsToNodesMap = new Map();
+
+  const startLineToComments = {};
   for (const comment of ast.comments) {
-    comments.startLine[comment.loc.start.line] = comment;
-    comments.endLine[comment.loc.end.line] = comment;
+    startLineToComments[comment.loc.start.line] = comment;
   }
 
   // apply our transforms, traverse mutates the ast
   const state = {
     usedUtilityTypes: new Set(),
     options: Object.assign({ inlineUtilityTypes: false }, options),
-    comments
+    commentsToNodesMap,
+    startLineToComments
   };
   traverse(ast, transform, null, state);
+
+  for (const [key, value] of commentsToNodesMap) {
+    const { leading, trailing } = value;
+
+    if (leading && trailing) {
+      trailing.trailingComments = trailing.trailingComments.filter(comment => {
+        const { start, end } = comment;
+        return `${start}:${end}` !== key;
+      });
+    }
+  }
 
   if (options && options.debug) {
     console.log(JSON.stringify(ast, null, 4));
