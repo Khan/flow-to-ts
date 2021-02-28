@@ -162,6 +162,7 @@ class App extends React.Component<Props, State> {
       const tsCode = convert(flowCode, this.state.options);
       this.setState({ tsCode });
       this.typeCheck(flowCode);
+      this.setState({ errors: [] });
     } catch (e) {
       debugger;
       this.setState({ errors: [e.toString()] });
