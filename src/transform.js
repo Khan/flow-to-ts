@@ -89,6 +89,9 @@ const utilityTypes = {
     const typeParameters = t.tsTypeParameterInstantiation([typeAnnotation]);
     return t.tsTypeReference(typeName, typeParameters);
   },
+  $Exact: typeAnnotation => {
+    return typeAnnotation;
+  },
   Class: null, // TODO
 
   // These are too complicated to inline so we'll leave them as imports
@@ -401,8 +404,10 @@ const transform = {
 
       if (typeName.name in utilityTypes) {
         if (
-          state.options.inlineUtilityTypes &&
-          typeof utilityTypes[typeName.name] === "function"
+          (state.options.inlineUtilityTypes &&
+            typeof utilityTypes[typeName.name] === "function") ||
+          // $Exact doesn't exist in utility-types so we always inline it.
+          typeName.name === "$Exact"
         ) {
           const inline = utilityTypes[typeName.name];
           path.replaceWith(inline(...typeParameters.params));
