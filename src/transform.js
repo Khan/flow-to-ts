@@ -692,10 +692,6 @@ const transform = {
   },
   ExportDeclaration: {
     exit(path) {
-      if (path.node.exportKind == "type") {
-        path.node.exportKind = "value";
-      }
-
       if (path.node.source) {
         stripSuffixFromImportSource(path);
       }
@@ -703,13 +699,13 @@ const transform = {
   },
   ImportDeclaration: {
     exit(path) {
-      path.node.importKind = "value";
+      // TODO(#223): Handle "typeof" imports
       stripSuffixFromImportSource(path);
     }
   },
   ImportSpecifier: {
     exit(path) {
-      path.node.importKind = "value";
+      // TODO(#223): Handle "typeof" imports
     }
   },
   DeclareVariable: {

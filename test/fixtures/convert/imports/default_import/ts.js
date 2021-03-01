@@ -1,2 +1,2 @@
-import A from "./depsA";
-import B from "../depsB";
+import type A from "./depsA";
+import type B from "../depsB";

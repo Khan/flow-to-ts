@@ -1,2 +1,2 @@
-import { A, B, C } from "./depA";
-import { D, E, F } from "../depB";
+import { type A, type B, C } from "./depA";
+import { type D, type E, F } from "../depB";
