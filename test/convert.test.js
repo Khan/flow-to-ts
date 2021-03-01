@@ -1,7 +1,8 @@
 const fs = require("fs");
 const path = require("path");
 
-const trimTrailingNewlines = (string) => string.replace(/[\r\n]+$/, "");
+const trimTrailingNewlines = (string) =>
+  string.replace(new RegExp("\r\n", "g"), "\n").replace(/(\n)+$/, "");
 
 const convert = require("../src/convert.js");
 
