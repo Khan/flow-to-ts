@@ -1,7 +1,7 @@
 const fs = require("fs");
 const path = require("path");
 
-const trimTrailingNewlines = string => string.replace(/[\r\n]+$/, "");
+const trimTrailingNewlines = (string) => string.replace(/[\r\n]+$/, "");
 
 const convert = require("../src/convert.js");
 
@@ -17,7 +17,7 @@ describe("convert", () => {
         ? []
         : fs.readdirSync(path.join(__dirname, "fixtures/convert", suiteName));
       for (const testName of tests.filter(
-        testName => !failingTestNames.includes(testName)
+        (testName) => !failingTestNames.includes(testName)
       )) {
         const dir = path.join(
           __dirname,

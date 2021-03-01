@@ -1,1 +1,1 @@
-let obj: {x: number;} & T;
+let obj: { x: number } & T;

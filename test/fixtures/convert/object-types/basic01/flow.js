@@ -1,3 +1,3 @@
 let obj: {
-  a: string
+  a: string,
 };

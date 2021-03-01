@@ -1,4 +1,4 @@
 type Foo = {
-  name: ?string;
-  onChange: ?(arg0: string) => void;
+  name: ?string,
+  onChange: ?(arg0: string) => void,
 };

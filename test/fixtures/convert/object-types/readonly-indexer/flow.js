@@ -1,3 +1,3 @@
 let obj: {
-  +[key: number]: string
+  +[key: number]: string,
 };

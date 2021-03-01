@@ -1,4 +1,4 @@
 // @flow
 let obj: {
-    [number]: string
+  [number]: string,
 };

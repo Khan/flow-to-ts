@@ -18,8 +18,8 @@ const parseOptions = {
     "objectRestSpread",
     "dynamicImport",
     "optionalChaining",
-    "nullishCoalescingOperator"
-  ]
+    "nullishCoalescingOperator",
+  ],
 };
 
 const convert = (flowCode, options) => {
@@ -38,7 +38,7 @@ const convert = (flowCode, options) => {
     usedUtilityTypes: new Set(),
     options: Object.assign({ inlineUtilityTypes: false }, options),
     commentsToNodesMap,
-    startLineToComments
+    startLineToComments,
   };
   traverse(ast, transform, null, state);
 
@@ -46,10 +46,12 @@ const convert = (flowCode, options) => {
     const { leading, trailing } = value;
 
     if (leading && trailing) {
-      trailing.trailingComments = trailing.trailingComments.filter(comment => {
-        const { start, end } = comment;
-        return `${start}:${end}` !== key;
-      });
+      trailing.trailingComments = trailing.trailingComments.filter(
+        (comment) => {
+          const { start, end } = comment;
+          return `${start}:${end}` !== key;
+        }
+      );
     }
   }
 
@@ -68,7 +70,7 @@ const convert = (flowCode, options) => {
     const prettierOptions = {
       parser: "typescript",
       plugins,
-      ...options.prettierOptions
+      ...options.prettierOptions,
     };
     return prettier.format(tsCode, prettierOptions).trim();
   } else {

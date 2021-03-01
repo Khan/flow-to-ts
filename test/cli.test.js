@@ -8,8 +8,8 @@ const prettier = require("prettier");
 
 jest.mock("prettier", () => ({
   resolveConfig: {
-    sync: jest.fn()
-  }
+    sync: jest.fn(),
+  },
 }));
 
 const cli = require("../src/cli.js");
@@ -96,7 +96,7 @@ describe("cli", () => {
       "node",
       path.join(__dirname, "../flow-to-ts.js"),
       "--write",
-      inputPath
+      inputPath,
     ]);
 
     // Assert
@@ -122,7 +122,7 @@ describe("cli", () => {
       "node",
       path.join(__dirname, "../flow-to-ts.js"),
       "--write",
-      inputGlob
+      inputGlob,
     ]);
 
     // Assert
@@ -142,7 +142,7 @@ describe("cli", () => {
       path.join(__dirname, "../flow-to-ts.js"),
       "--write",
       "--delete-source",
-      inputPath
+      inputPath,
     ]);
 
     // Assert
@@ -170,7 +170,7 @@ describe("cli", () => {
       path.join(__dirname, "../flow-to-ts.js"),
       "--write",
       "--delete-source",
-      inputGlob
+      inputGlob,
     ]);
 
     // Assert
@@ -205,7 +205,7 @@ describe("cli", () => {
       path.join(__dirname, "../flow-to-ts.js"),
       "--write",
       "--delete-source",
-      inputGlob
+      inputGlob,
     ]);
 
     // Assert
@@ -230,7 +230,7 @@ describe("cli", () => {
       "node",
       path.join(__dirname, "../flow-to-ts.js"),
       "--write",
-      inputPath
+      inputPath,
     ]);
 
     // Assert
@@ -262,7 +262,7 @@ describe("cli", () => {
       "node",
       path.join(__dirname, "../flow-to-ts.js"),
       "--prettier",
-      inputPath
+      inputPath,
     ]);
 
     // Assert
@@ -285,7 +285,7 @@ describe("cli", () => {
       "node",
       path.join(__dirname, "../flow-to-ts.js"),
       "--prettier",
-      inputPath
+      inputPath,
     ]);
 
     // Assert
@@ -300,7 +300,7 @@ describe("cli", () => {
     const inputPath = path.join(tmpdir, "test.js");
     fs.writeFileSync(inputPath, 'const a: string = "string";', "utf-8");
     const prettierConfig = {
-      singleQuote: true
+      singleQuote: true,
     };
     prettier.resolveConfig.sync.mockReturnValueOnce(prettierConfig);
 
@@ -309,7 +309,7 @@ describe("cli", () => {
       "node",
       path.join(__dirname, "../flow-to-ts.js"),
       "--prettier",
-      inputPath
+      inputPath,
     ]);
 
     // Assert
@@ -328,7 +328,7 @@ describe("cli", () => {
       "node",
       path.join(__dirname, "../flow-to-ts.js"),
       "--prettier",
-      inputPath
+      inputPath,
     ]);
 
     // Assert

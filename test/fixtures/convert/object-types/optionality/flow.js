@@ -1,3 +1,3 @@
 type Foo = {
-  x?: number;
+  x?: number,
 };
