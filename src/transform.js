@@ -250,12 +250,18 @@ const transform = {
   NullableTypeAnnotation: {
     exit(path) {
       const { typeAnnotation } = path.node;
+
+      // conditionally unwrap TSTypeAnnotation nodes
+      const unwrappedType = t.isTSTypeAnnotation(typeAnnotation)
+        ? typeAnnotation.typeAnnotation
+        : typeAnnotation;
+
       path.replaceWith(
         t.tsUnionType([
-          // conditionally unwrap TSTypeAnnotation nodes
-          t.isTSTypeAnnotation(typeAnnotation)
-            ? typeAnnotation.typeAnnotation
-            : typeAnnotation,
+          // conditionally wrap function types in parens
+          t.isTSFunctionType(unwrappedType)
+            ? t.tsParenthesizedType(unwrappedType)
+            : unwrappedType,
           t.tsNullKeyword(),
           t.tsUndefinedKeyword()
         ])
