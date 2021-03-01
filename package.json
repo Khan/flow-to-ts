@@ -44,7 +44,8 @@
   "scripts": {
     "test": "jest",
     "coverage": "jest --coverage --collectCoverageFrom=src/**/*.js --coveragePathIgnorePatterns=src/flow-to-ts.js",
-    "pretty-quick": "prettier src/*.js test/*.js playground/src/*.tsx babel-generator/lib/**/*.js babel-traverse/lib/**/*.js --write"
+    "pretty-quick": "prettier src/*.js test/*.js playground/src/*.tsx babel-traverse/lib/**/*.js --write",
+    "pretty-tests": "prettier ./test/fixtures/**/ts.js --parser typescript --write && prettier ./test/fixtures/**/flow.js --parser flow --write"
   },
   "husky": {
     "hooks": {
