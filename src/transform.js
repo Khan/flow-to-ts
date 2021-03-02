@@ -708,16 +708,26 @@ const transform = {
   },
   ImportDeclaration: {
     exit(path) {
-      // TODO(#223): Handle "typeof" imports
-      if (path.node.importKind === "typeof") {
-        path.node.importKind = "value";
-      }
       stripSuffixFromImportSource(path);
+      if (
+        path.node.importKind === "typeof" &&
+        t.isImportDefaultSpecifier(path.node.specifiers[0])
+      ) {
+        path.replaceWith(
+          t.tsTypeAliasDeclaration(
+            path.node.specifiers[0].local,
+            undefined,
+            t.tsTypeQuery(
+              t.tsImportType(path.node.source, t.identifier("default"))
+            )
+          )
+        );
+      }
     },
   },
   ImportSpecifier: {
     exit(path) {
-      // TODO(#223): Handle "typeof" imports
+      // TODO(#223): Handle "typeof" imports.
       if (path.node.importKind === "typeof") {
         path.node.importKind = "value";
       }
