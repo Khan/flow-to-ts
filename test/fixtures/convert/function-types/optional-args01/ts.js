@@ -1,1 +1,1 @@
-let a = (b: string = '') => b;
+let a = (b: string = "") => b;

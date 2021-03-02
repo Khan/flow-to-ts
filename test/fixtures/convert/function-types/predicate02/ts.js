@@ -1,3 +1,3 @@
-const isString = function(y) {
+const isString = function (y) {
   return typeof y === "isString";
 };

@@ -1,8 +1,8 @@
 // @flow
 declare module "some-commonjs-module" {
-    // foo
-    declare export default function foo(): string;
+  // foo
+  declare export default function foo(): string;
 
-    // bar
-    declare export function bar(): boolean;
+  // bar
+  declare export function bar(): boolean;
 }

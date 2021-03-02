@@ -25,7 +25,7 @@
     "@babel/types": "^7.4.0",
     "commander": "^2.19.0",
     "glob": "^7.1.3",
-    "prettier": "1.19.1",
+    "prettier": "2.2.1",
     "trim-right": "^1.0.1"
   },
   "devDependencies": {
@@ -44,7 +44,8 @@
   "scripts": {
     "test": "jest",
     "coverage": "jest --coverage --collectCoverageFrom=src/**/*.js --coveragePathIgnorePatterns=src/flow-to-ts.js",
-    "pretty-quick": "prettier src/*.js test/*.js playground/src/*.tsx babel-generator/lib/**/*.js babel-traverse/lib/**/*.js --write"
+    "pretty-quick": "prettier src/*.js test/*.js playground/src/*.tsx babel-traverse/lib/**/*.js --write",
+    "pretty-tests": "prettier ./test/fixtures/**/ts.js --parser typescript --write && prettier ./test/fixtures/**/flow.js --parser flow --write"
   },
   "husky": {
     "hooks": {

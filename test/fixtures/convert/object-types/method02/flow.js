@@ -1,3 +1,3 @@
 let obj: {
-  a<T>(b: T): string
+  a<T>(b: T): string,
 };
