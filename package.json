@@ -37,7 +37,6 @@
     "jest": "^24.5.0",
     "jest-mock-console": "^0.4.2",
     "jest-mock-process": "^1.2.0",
-    "pretty-quick": "^1.10.0",
     "tmp": "^0.1.0",
     "typescript": "^3.4.5"
   },
@@ -50,7 +49,7 @@
   "husky": {
     "hooks": {
       "pre-push": "npm test",
-      "pre-commit": "pretty-quick --staged"
+      "pre-commit": "npm run pretty-quick && npm run pretty-tests"
     }
   },
   "jest": {
