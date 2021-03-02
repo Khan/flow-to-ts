@@ -690,7 +690,16 @@ const transform = {
       path.replaceWith(t.tsExpressionWithTypeArguments(id, typeParameters));
     },
   },
-  ExportDeclaration: {
+  ExportAllDeclaration: {
+    exit(path) {
+      // TypeScript doesn't support `export type * from ...`
+      path.node.exportKind = "value";
+      if (path.node.source) {
+        stripSuffixFromImportSource(path);
+      }
+    },
+  },
+  ExportNamedDeclaration: {
     exit(path) {
       if (path.node.source) {
         stripSuffixFromImportSource(path);
@@ -700,12 +709,18 @@ const transform = {
   ImportDeclaration: {
     exit(path) {
       // TODO(#223): Handle "typeof" imports
+      if (path.node.importKind === "typeof") {
+        path.node.importKind = "value";
+      }
       stripSuffixFromImportSource(path);
     },
   },
   ImportSpecifier: {
     exit(path) {
       // TODO(#223): Handle "typeof" imports
+      if (path.node.importKind === "typeof") {
+        path.node.importKind = "value";
+      }
     },
   },
   DeclareVariable: {
