@@ -32,7 +32,15 @@ const transformFunction = (path) => {
  * or trailing comment (or both).
  *
  * In order to call this function correctly, the transformed node must be passed
- * in.  This requires copying over the comments from the original node first.
+ * in.  This requires copying over the following properties from the original
+ * node:
+ * - loc
+ * - leadingComments
+ * - trailingComments
+ *
+ * NOTE: The copied `loc` will be wrong for the new node.  It's need by convert
+ * though which uses it to determine whether maintain the position of trailing
+ * line comments.
  *
  * @param {*} node
  * @param {*} state
@@ -551,6 +559,7 @@ const transform = {
         method,
         leadingComments,
         trailingComments,
+        loc,
       } = path.node; // TODO: static, kind
       const typeAnnotation = t.tsTypeAnnotation(value);
       const initializer = undefined; // TODO: figure out when this used
@@ -577,6 +586,7 @@ const transform = {
           optional,
           leadingComments,
           trailingComments,
+          loc,
         };
 
         trackComments(methodSignature, state);
@@ -595,6 +605,7 @@ const transform = {
           readonly,
           leadingComments,
           trailingComments,
+          loc,
         };
 
         trackComments(propertySignature, state);
@@ -614,6 +625,7 @@ const transform = {
         variance,
         leadingComments,
         trailingComments,
+        loc,
       } = path.node;
 
       const readonly = variance && variance.kind === "plus";
@@ -637,6 +649,7 @@ const transform = {
         readonly,
         leadingComments,
         trailingComments,
+        loc,
       };
 
       trackComments(indexSignature, state);
@@ -729,6 +742,7 @@ const transform = {
         right,
         leadingComments,
         trailingComments,
+        loc,
       } = path.node;
 
       const replacementNode = t.tsTypeAliasDeclaration(
@@ -738,6 +752,7 @@ const transform = {
       );
       replacementNode.leadingComments = leadingComments;
       replacementNode.trailingComments = trailingComments;
+      replacementNode.loc = loc;
 
       trackComments(replacementNode, state);
 
@@ -790,6 +805,7 @@ const transform = {
         typeParameters,
         leadingComments,
         trailingComments,
+        loc,
       } = path.node; // TODO: implements, mixins
       const body = t.tsInterfaceBody(path.node.body.members);
       const _extends =
@@ -803,6 +819,7 @@ const transform = {
 
       replacementNode.leadingComments = leadingComments;
       replacementNode.trailingComments = trailingComments;
+      replacementNode.loc = loc;
 
       trackComments(replacementNode, state);
 
@@ -853,6 +870,7 @@ const transform = {
           source,
           leadingComments,
           trailingComments,
+          loc,
         } = path.node;
         const replacementNode = t.tsTypeAliasDeclaration(
           specifiers[0].local,
@@ -861,6 +879,7 @@ const transform = {
         );
         replacementNode.leadingComments = leadingComments;
         replacementNode.trailingComments = trailingComments;
+        replacementNode.loc = loc;
 
         trackComments(replacementNode);
 
@@ -903,6 +922,7 @@ const transform = {
         typeParameters,
         leadingComments,
         trailingComments,
+        loc,
       } = path.node;
       const superClass =
         path.node.extends.length > 0 ? path.node.extends[0] : undefined;
@@ -922,6 +942,7 @@ const transform = {
         declare: true,
         leadingComments,
         trailingComments,
+        loc,
       };
 
       trackComments(replacementNode);
@@ -931,7 +952,7 @@ const transform = {
   },
   DeclareFunction: {
     exit(path, state) {
-      const { id, leadingComments, trailingComments } = path.node;
+      const { id, leadingComments, trailingComments, loc } = path.node;
       const { name, typeAnnotation } = id;
 
       // TSFunctionType
@@ -959,6 +980,7 @@ const transform = {
         generator: false, // TODO
         leadingComments,
         trailingComments,
+        loc,
       };
 
       trackComments(replacementNode, state);
@@ -973,6 +995,7 @@ const transform = {
         default: _default,
         leadingComments,
         trailingComments,
+        loc,
       } = path.node;
 
       const replacementNode = {
@@ -980,6 +1003,7 @@ const transform = {
         declaration,
         leadingComments,
         trailingComments,
+        loc,
       };
 
       trackComments(replacementNode, state);
