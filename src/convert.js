@@ -19,29 +19,12 @@ const parseOptions = {
     "dynamicImport",
     "optionalChaining",
     "nullishCoalescingOperator",
+    "classPrivateProperties",
+    "classPrivateMethods",
   ],
 };
 
-const convert = (flowCode, options) => {
-  const ast = parse(flowCode, parseOptions);
-
-  // key = startLine:endLine, value = {leading, trailing} (nodes)
-  const commentsToNodesMap = new Map();
-
-  const startLineToComments = {};
-  for (const comment of ast.comments) {
-    startLineToComments[comment.loc.start.line] = comment;
-  }
-
-  // apply our transforms, traverse mutates the ast
-  const state = {
-    usedUtilityTypes: new Set(),
-    options: Object.assign({ inlineUtilityTypes: false }, options),
-    commentsToNodesMap,
-    startLineToComments,
-  };
-  traverse(ast, transform, null, state);
-
+const fixComments = (commentsToNodesMap) => {
   for (const [key, value] of commentsToNodesMap) {
     const { leading, trailing } = value;
 
@@ -65,6 +48,29 @@ const convert = (flowCode, options) => {
       );
     }
   }
+};
+
+const convert = (flowCode, options) => {
+  const ast = parse(flowCode, parseOptions);
+
+  // key = startLine:endLine, value = {leading, trailing} (nodes)
+  const commentsToNodesMap = new Map();
+
+  const startLineToComments = {};
+  for (const comment of ast.comments) {
+    startLineToComments[comment.loc.start.line] = comment;
+  }
+
+  // apply our transforms, traverse mutates the ast
+  const state = {
+    usedUtilityTypes: new Set(),
+    options: Object.assign({ inlineUtilityTypes: false }, options),
+    commentsToNodesMap,
+    startLineToComments,
+  };
+  traverse(ast, transform, null, state);
+
+  fixComments(commentsToNodesMap);
 
   if (options && options.debug) {
     console.log(JSON.stringify(ast, null, 4));

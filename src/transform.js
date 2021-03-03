@@ -323,6 +323,20 @@ const transform = {
     trackComments(path.node, state);
   },
 
+  // Class children
+  ClassMethod(path, state) {
+    trackComments(path.node, state);
+  },
+  ClassPrivateMethod(path, state) {
+    trackComments(path.node, state);
+  },
+  ClassProperty(path, state) {
+    trackComments(path.node, state);
+  },
+  ClassPrivateProperty(path, state) {
+    trackComments(path.node, state);
+  },
+
   // All other non-leaf nodes must be processed on exit()
   TypeAnnotation: {
     exit(path) {
