@@ -9,8 +9,8 @@ switch (kind) {
   case "bar":
     console.log("bar");
     break;
-  // default
 
+  // default
   default:
     break;
 
