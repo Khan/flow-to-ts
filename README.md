@@ -6,6 +6,9 @@
 
 Convert Flow code to TypeScript.
 
+> :warning: This is a WIP and many things still do not work properly.  There
+> may also be the odd regression from time to time as work progresses.
+
 The goal of this project is to provide a tool that can translate 95% of Flow
 to TypeScript while maintaining a high percentage of the existing type
 information. We don't want to convert code and end up with everything using
