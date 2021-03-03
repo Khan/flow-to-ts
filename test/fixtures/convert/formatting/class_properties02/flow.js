@@ -1,15 +1,15 @@
 class Foo {
 
     // line comment
-    foo: string;
+    #foo: string;
 
     /**
      * block comment
      */
-    bar = 5;
+    #bar = 5;
 
     // comment on method
-    baz() {
+    #baz() {
         console.log("baz");
     }
 }

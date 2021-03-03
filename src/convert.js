@@ -19,7 +19,35 @@ const parseOptions = {
     "dynamicImport",
     "optionalChaining",
     "nullishCoalescingOperator",
+    "classPrivateProperties",
+    "classPrivateMethods",
   ],
+};
+
+const fixComments = (commentsToNodesMap) => {
+  for (const [key, value] of commentsToNodesMap) {
+    const { leading, trailing } = value;
+
+    if (leading && trailing) {
+      trailing.trailingComments = trailing.trailingComments.filter(
+        (comment) => {
+          if (comment.type === "CommentLine") {
+            try {
+              if (comment.loc.start.line === trailing.loc.start.line) {
+                // Leave this comment as is because it's at the end of a line,
+                // e.g. console.log("hello, world"); // print 'hello, world'
+                return true;
+              }
+            } catch (e) {
+              console.log(trailing);
+            }
+          }
+          const { start, end } = comment;
+          return `${start}:${end}` !== key;
+        }
+      );
+    }
+  }
 };
 
 const convert = (flowCode, options) => {
@@ -42,18 +70,7 @@ const convert = (flowCode, options) => {
   };
   traverse(ast, transform, null, state);
 
-  for (const [key, value] of commentsToNodesMap) {
-    const { leading, trailing } = value;
-
-    if (leading && trailing) {
-      trailing.trailingComments = trailing.trailingComments.filter(
-        (comment) => {
-          const { start, end } = comment;
-          return `${start}:${end}` !== key;
-        }
-      );
-    }
-  }
+  fixComments(commentsToNodesMap);
 
   if (options && options.debug) {
     console.log(JSON.stringify(ast, null, 4));

@@ -24,28 +24,49 @@ const transformFunction = (path) => {
   }
 };
 
-const trackComments = (path, state) => {
-  if (path.node.leadingComments) {
-    for (const comment of path.node.leadingComments) {
+/**
+ * Track which nodes a comment is attached to.
+ *
+ * state.commentsToNodesMap is a Map() between comment position in the file and
+ * an object with references to node(s) it was attached to as either a leading
+ * or trailing comment (or both).
+ *
+ * In order to call this function correctly, the transformed node must be passed
+ * in.  This requires copying over the following properties from the original
+ * node:
+ * - loc
+ * - leadingComments
+ * - trailingComments
+ *
+ * NOTE: The copied `loc` will be wrong for the new node.  It's need by convert
+ * though which uses it to determine whether maintain the position of trailing
+ * line comments.
+ *
+ * @param {*} node
+ * @param {*} state
+ */
+const trackComments = (node, state) => {
+  if (node.leadingComments) {
+    for (const comment of node.leadingComments) {
       const { start, end } = comment;
       const key = `${start}:${end}`;
 
       if (state.commentsToNodesMap.has(key)) {
-        state.commentsToNodesMap.get(key).leading = path.node;
+        state.commentsToNodesMap.get(key).leading = node;
       } else {
-        state.commentsToNodesMap.set(key, { leading: path.node });
+        state.commentsToNodesMap.set(key, { leading: node });
       }
     }
   }
-  if (path.node.trailingComments) {
-    for (const comment of path.node.trailingComments) {
+  if (node.trailingComments) {
+    for (const comment of node.trailingComments) {
       const { start, end } = comment;
       const key = `${start}:${end}`;
 
       if (state.commentsToNodesMap.has(key)) {
-        state.commentsToNodesMap.get(key).trailing = path.node;
+        state.commentsToNodesMap.get(key).trailing = node;
       } else {
-        state.commentsToNodesMap.set(key, { trailing: path.node });
+        state.commentsToNodesMap.set(key, { trailing: node });
       }
     }
   }
@@ -221,7 +242,7 @@ const transform = {
   // since we're modifying them in a way doesn't affect
   // the processing of other nodes.
   FunctionDeclaration(path, state) {
-    trackComments(path, state);
+    trackComments(path.node, state);
 
     transformFunction(path);
   },
@@ -233,11 +254,87 @@ const transform = {
   },
 
   VariableDeclaration(path, state) {
-    trackComments(path, state);
+    trackComments(path.node, state);
   },
 
   ObjectProperty(path, state) {
-    trackComments(path, state);
+    trackComments(path.node, state);
+  },
+
+  // Statements
+  ExpressionStatement(path, state) {
+    trackComments(path.node, state);
+  },
+  BlockStatement(path, state) {
+    trackComments(path.node, state);
+  },
+  EmptyStatement(path, state) {
+    trackComments(path.node, state);
+  },
+  DebuggerStatement(path, state) {
+    trackComments(path.node, state);
+  },
+  WithStatement(path, state) {
+    trackComments(path.node, state);
+  },
+  ReturnStatement(path, state) {
+    trackComments(path.node, state);
+  },
+  LabeledStatement(path, state) {
+    trackComments(path.node, state);
+  },
+  BreakStatement(path, state) {
+    trackComments(path.node, state);
+  },
+  ContinueStatement(path, state) {
+    trackComments(path.node, state);
+  },
+  IfStatement(path, state) {
+    trackComments(path.node, state);
+  },
+  SwitchStatement(path, state) {
+    trackComments(path.node, state);
+  },
+  SwitchCase(path, state) {
+    trackComments(path.node, state);
+  },
+  ThrowStatement(path, state) {
+    trackComments(path.node, state);
+  },
+  TryStatement(path, state) {
+    trackComments(path.node, state);
+  },
+  CatchClause(path, state) {
+    trackComments(path.node, state);
+  },
+  WhileStatement(path, state) {
+    trackComments(path.node, state);
+  },
+  DoWhileStatement(path, state) {
+    trackComments(path.node, state);
+  },
+  ForStatement(path, state) {
+    trackComments(path.node, state);
+  },
+  ForInStatement(path, state) {
+    trackComments(path.node, state);
+  },
+  ForOfStatement(path, state) {
+    trackComments(path.node, state);
+  },
+
+  // Class children
+  ClassMethod(path, state) {
+    trackComments(path.node, state);
+  },
+  ClassPrivateMethod(path, state) {
+    trackComments(path.node, state);
+  },
+  ClassProperty(path, state) {
+    trackComments(path.node, state);
+  },
+  ClassPrivateProperty(path, state) {
+    trackComments(path.node, state);
   },
 
   // All other non-leaf nodes must be processed on exit()
@@ -467,9 +564,17 @@ const transform = {
   },
   ObjectTypeProperty: {
     exit(path, state) {
-      trackComments(path, state);
-
-      const { key, value, optional, variance, kind, method } = path.node; // TODO: static, kind
+      const {
+        key,
+        value,
+        optional,
+        variance,
+        kind,
+        method,
+        leadingComments,
+        trailingComments,
+        loc,
+      } = path.node; // TODO: static, kind
       const typeAnnotation = t.tsTypeAnnotation(value);
       const initializer = undefined; // TODO: figure out when this used
       const computed = false; // TODO: maybe set this to true for indexers
@@ -493,7 +598,13 @@ const transform = {
           typeAnnotation: value.typeAnnotation,
           computed,
           optional,
+          leadingComments,
+          trailingComments,
+          loc,
         };
+
+        trackComments(methodSignature, state);
+
         // TODO: patch @babel/types - tsMethodSignature ignores two out of the six params
         // const methodSignature = t.tsMethodSignature(key, value.typeParameters, value.parameters, value.typeAnnotation, computed, optional);
         path.replaceWith(methodSignature);
@@ -506,7 +617,13 @@ const transform = {
           computed,
           optional,
           readonly,
+          leadingComments,
+          trailingComments,
+          loc,
         };
+
+        trackComments(propertySignature, state);
+
         // TODO: patch @babel/types - tsPropertySignature ignores typeAnnotation, optional, and readonly
         // const = propertySignature = t.tsPropertySignature(key, typeAnnotation, initializer, computed, optional, readonly),
         path.replaceWith(propertySignature);
@@ -515,9 +632,15 @@ const transform = {
   },
   ObjectTypeIndexer: {
     exit(path, state) {
-      trackComments(path, state);
-
-      const { id, key, value, variance } = path.node;
+      const {
+        id,
+        key,
+        value,
+        variance,
+        leadingComments,
+        trailingComments,
+        loc,
+      } = path.node;
 
       const readonly = variance && variance.kind === "plus";
       if (variance && variance.kind === "minus") {
@@ -538,7 +661,13 @@ const transform = {
         parameters: [identifier], // TODO: figure when multiple parameters are used
         typeAnnotation: t.tsTypeAnnotation(value),
         readonly,
+        leadingComments,
+        trailingComments,
+        loc,
       };
+
+      trackComments(indexSignature, state);
+
       // TODO: patch @babel/types - t.tsIndexSignature omits readonly
       // const indexSignature = t.tsIndexSignature([identifier], t.tsTypeAnnotation(value), readonly);
       path.replaceWith(indexSignature);
@@ -621,11 +750,27 @@ const transform = {
   },
   TypeAlias: {
     exit(path, state) {
-      trackComments(path, state);
+      const {
+        id,
+        typeParameters,
+        right,
+        leadingComments,
+        trailingComments,
+        loc,
+      } = path.node;
 
-      const { id, typeParameters, right } = path.node;
+      const replacementNode = t.tsTypeAliasDeclaration(
+        id,
+        typeParameters,
+        right
+      );
+      replacementNode.leadingComments = leadingComments;
+      replacementNode.trailingComments = trailingComments;
+      replacementNode.loc = loc;
 
-      path.replaceWith(t.tsTypeAliasDeclaration(id, typeParameters, right));
+      trackComments(replacementNode, state);
+
+      path.replaceWith(replacementNode);
     },
   },
   IntersectionTypeAnnotation: {
@@ -668,14 +813,31 @@ const transform = {
     },
   },
   InterfaceDeclaration: {
-    exit(path) {
-      const { id, typeParameters } = path.node; // TODO: implements, mixins
+    exit(path, state) {
+      const {
+        id,
+        typeParameters,
+        leadingComments,
+        trailingComments,
+        loc,
+      } = path.node; // TODO: implements, mixins
       const body = t.tsInterfaceBody(path.node.body.members);
       const _extends =
         path.node.extends.length > 0 ? path.node.extends : undefined;
-      path.replaceWith(
-        t.tsInterfaceDeclaration(id, typeParameters, _extends, body)
+      const replacementNode = t.tsInterfaceDeclaration(
+        id,
+        typeParameters,
+        _extends,
+        body
       );
+
+      replacementNode.leadingComments = leadingComments;
+      replacementNode.trailingComments = trailingComments;
+      replacementNode.loc = loc;
+
+      trackComments(replacementNode, state);
+
+      path.replaceWith(replacementNode);
     },
   },
   InterfaceExtends: {
@@ -691,7 +853,9 @@ const transform = {
     },
   },
   ExportAllDeclaration: {
-    exit(path) {
+    exit(path, state) {
+      trackComments(path.node, state);
+
       // TypeScript doesn't support `export type * from ...`
       path.node.exportKind = "value";
       if (path.node.source) {
@@ -700,28 +864,42 @@ const transform = {
     },
   },
   ExportNamedDeclaration: {
-    exit(path) {
+    exit(path, state) {
+      trackComments(path.node, state);
+
       if (path.node.source) {
         stripSuffixFromImportSource(path);
       }
     },
   },
   ImportDeclaration: {
-    exit(path) {
+    exit(path, state) {
       stripSuffixFromImportSource(path);
       if (
         path.node.importKind === "typeof" &&
         t.isImportDefaultSpecifier(path.node.specifiers[0])
       ) {
-        path.replaceWith(
-          t.tsTypeAliasDeclaration(
-            path.node.specifiers[0].local,
-            undefined,
-            t.tsTypeQuery(
-              t.tsImportType(path.node.source, t.identifier("default"))
-            )
-          )
+        const {
+          specifiers,
+          source,
+          leadingComments,
+          trailingComments,
+          loc,
+        } = path.node;
+        const replacementNode = t.tsTypeAliasDeclaration(
+          specifiers[0].local,
+          undefined,
+          t.tsTypeQuery(t.tsImportType(source, t.identifier("default")))
         );
+        replacementNode.leadingComments = leadingComments;
+        replacementNode.trailingComments = trailingComments;
+        replacementNode.loc = loc;
+
+        trackComments(replacementNode);
+
+        path.replaceWith(replacementNode);
+      } else {
+        trackComments(path.node, state);
       }
     },
   },
@@ -751,15 +929,22 @@ const transform = {
     },
   },
   DeclareClass: {
-    exit(path) {
-      const { id, body, typeParameters } = path.node;
+    exit(path, state) {
+      const {
+        id,
+        body,
+        typeParameters,
+        leadingComments,
+        trailingComments,
+        loc,
+      } = path.node;
       const superClass =
         path.node.extends.length > 0 ? path.node.extends[0] : undefined;
 
       // TODO: patch @babel/types - t.classDeclaration omits typescript params
       // t.classDeclaration(id, superClass, body, [], false, true, [], undefined)
 
-      path.replaceWith({
+      const replacementNode = {
         type: "ClassDeclaration",
         id,
         typeParameters,
@@ -769,12 +954,19 @@ const transform = {
           : undefined,
         body,
         declare: true,
-      });
+        leadingComments,
+        trailingComments,
+        loc,
+      };
+
+      trackComments(replacementNode);
+
+      path.replaceWith(replacementNode);
     },
   },
   DeclareFunction: {
-    exit(path) {
-      const { id } = path.node;
+    exit(path, state) {
+      const { id, leadingComments, trailingComments, loc } = path.node;
       const { name, typeAnnotation } = id;
 
       // TSFunctionType
@@ -791,7 +983,7 @@ const transform = {
       //   false, // generator
       // ),
 
-      path.replaceWith({
+      const replacementNode = {
         type: "TSDeclareFunction",
         id: t.identifier(name),
         typeParameters: functionType.typeParameters,
@@ -800,17 +992,37 @@ const transform = {
         declare: !t.isDeclareExportDeclaration(path.parent),
         async: false, // TODO
         generator: false, // TODO
-      });
+        leadingComments,
+        trailingComments,
+        loc,
+      };
+
+      trackComments(replacementNode, state);
+
+      path.replaceWith(replacementNode);
     },
   },
   DeclareExportDeclaration: {
-    exit(path) {
-      const { declaration, default: _default } = path.node;
+    exit(path, state) {
+      const {
+        declaration,
+        default: _default,
+        leadingComments,
+        trailingComments,
+        loc,
+      } = path.node;
 
-      path.replaceWith({
+      const replacementNode = {
         type: _default ? "ExportDefaultDeclaration" : "ExportNamedDeclaration",
         declaration,
-      });
+        leadingComments,
+        trailingComments,
+        loc,
+      };
+
+      trackComments(replacementNode, state);
+
+      path.replaceWith(replacementNode);
     },
   },
 };
