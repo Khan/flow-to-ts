@@ -120,7 +120,9 @@ const utilityTypes = {
   // The behavior of $Rest only differs when exact object types are involved.
   // And since TypeScript doesn't have exact object types using $Diff is okay.
   $Rest: "$Diff",
-  $PropertyType: null,
+  $PropertyType: (typeAnnotation, typeParam) => {
+    return t.tsIndexedAccessType(typeAnnotation, typeParam);
+  },
   $ElementType: null,
   $Call: null,
 };
@@ -509,8 +511,7 @@ const transform = {
         if (
           (state.options.inlineUtilityTypes &&
             typeof utilityTypes[typeName.name] === "function") ||
-          // $Exact doesn't exist in utility-types so we always inline it.
-          typeName.name === "$Exact"
+          typeName.name === "$Exact" // $Exact doesn't exist in utility-types so we always inline it.
         ) {
           const inline = utilityTypes[typeName.name];
           path.replaceWith(inline(...typeParameters.params));
