@@ -177,18 +177,37 @@ const transform = {
       for (let i = 0; i < body.length; i++) {
         const stmt = body[i];
 
-        // filter out flow specific comments
+        // filter out @flow and $FlowIssue comments
         if (stmt.leadingComments) {
           stmt.leadingComments = stmt.leadingComments.filter((comment) => {
             const value = comment.value.trim();
-            return value !== "@flow" && !value.startsWith("$FlowFixMe");
+            return !(value.includes("@flow") || value.includes("$FlowIssue"));
           });
         }
         if (stmt.trailingComments) {
           stmt.trailingComments = stmt.trailingComments.filter((comment) => {
             const value = comment.value.trim();
-            return value !== "@flow" && !value.startsWith("$FlowFixMe");
+            return !(value.includes("@flow") || value.includes("$FlowIssue"));
           });
+        }
+
+        // TODO(#207): Handle error codes
+        // - filter out [incompatible-exact] comments
+        // - merge remaining comments
+        // convert $FlowFixMe, $FlowIgnore, $FlowExpectedError comments
+        if (stmt.leadingComments) {
+          for (const comment of stmt.leadingComments) {
+            comment.value = comment.value
+              .replace(/\$(FlowFixMe|FlowExpectError)/g, "@ts-expect-error")
+              .replace(/\$FlowIgnore/g, "@ts-ignore");
+          }
+        }
+        if (stmt.trailingComments) {
+          for (const comment of stmt.trailingComments) {
+            comment.value = comment.value
+              .replace(/\$(FlowFixMe|FlowExpectError)/g, "@ts-expect-error")
+              .replace(/\$FlowIgnore/g, "@ts-ignore");
+          }
         }
       }
     },
