@@ -151,6 +151,10 @@ const UnqualifiedReactTypeNameMap = {
   SyntheticPointerEvent: "PointerEvent",
   SyntheticTouchEvent: "TouchEvent",
   SyntheticTransitionEvent: "TransitionEvent",
+
+  // React$ElementType takes no type params, but React.ElementType takes one
+  // optional type param
+  React$ElementType: "ElementType",
 };
 
 // Only types with different names are included.
@@ -159,7 +163,7 @@ const QualifiedReactTypeNameMap = {
   Text: "ReactText",
   Child: "ReactChild",
   Children: "ReactChildren",
-  Element: "ReactElement",
+  Element: "ReactElement", // 1:1 mapping is wrong, since ReactElement takes two type params
   Fragment: "ReactFragment",
   Portal: "ReactPortal",
   NodeArray: "ReactNodeArray",
@@ -578,7 +582,94 @@ const transform = {
               t.identifier(UnqualifiedReactTypeNameMap[typeName.name])
             ),
             // TypeScript doesn't support empty type param lists
-            typeParameters.params.length > 0 ? typeParameters : null
+            typeParameters && typeParameters.params.length > 0
+              ? typeParameters
+              : null
+          )
+        );
+        return;
+      }
+
+      if (typeName.name === "React$Node") {
+        path.replaceWith(
+          t.tsTypeReference(
+            t.tsQualifiedName(t.identifier("React"), t.identifier("ReactNode"))
+          )
+        );
+        return;
+      }
+      if (typeName.name === "React$Element") {
+        // React$Element<T> -> React.ReactElement<React.ComponentProps<T>, T>
+        path.replaceWith(
+          t.tsTypeReference(
+            t.tsQualifiedName(
+              t.identifier("React"),
+              t.identifier("ReactElement")
+            ),
+            t.tsTypeParameterInstantiation([
+              // React.ComponentProps<T>
+              t.tsTypeReference(
+                t.tsQualifiedName(
+                  t.identifier("React"),
+                  t.identifier("ComponentProps")
+                ),
+                t.tsTypeParameterInstantiation([typeParameters.params[0]])
+              ),
+              typeParameters.params[0],
+            ])
+          )
+        );
+        return;
+      }
+      if (typeName.name === "React$Component") {
+        // React$Component<Props, State> -> React.Component<Props, State>
+        path.replaceWith(
+          t.tsTypeReference(
+            t.tsQualifiedName(t.identifier("React"), t.identifier("Component")),
+            typeParameters
+          )
+        );
+        return;
+      }
+      if (typeName.name === "React$ComponentType") {
+        // React$ComponentType<Props> -> React.ComponentType<Props>
+        path.replaceWith(
+          t.tsTypeReference(
+            t.tsQualifiedName(
+              t.identifier("React"),
+              t.identifier("ComponentType")
+            ),
+            typeParameters
+          )
+        );
+        return;
+      }
+      if (typeName.name === "React$Context") {
+        // React$Context<T> -> React.Context<T>
+        path.replaceWith(
+          t.tsTypeReference(
+            t.tsQualifiedName(t.identifier("React"), t.identifier("Context")),
+            typeParameters
+          )
+        );
+        return;
+      }
+      if (typeName.name === "React$Ref") {
+        // React$Ref<T> -> React.Ref<T>
+        path.replaceWith(
+          t.tsTypeReference(
+            t.tsQualifiedName(t.identifier("React"), t.identifier("Ref")),
+            typeParameters
+          )
+        );
+        return;
+      }
+      if (typeName.name === "React$StatelessFunctionalComponent") {
+        // React$StatelessFunctionalComponent<Props> -> React.FC<Props>
+        path.replaceWith(
+          t.tsTypeReference(
+            t.tsQualifiedName(t.identifier("React"), t.identifier("FC")),
+            typeParameters
           )
         );
         return;
