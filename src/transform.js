@@ -523,17 +523,17 @@ const transform = {
         ) {
           const inline = utilityTypes[typeName.name];
           path.replaceWith(inline(...typeParameters.params));
-          return;
         } else if (typeof utilityTypes[typeName.name] === "string") {
           const replacementName = utilityTypes[typeName.name];
           path.replaceWith(
             t.tsTypeReference(t.identifier(replacementName), typeParameters)
           );
           state.usedUtilityTypes.add(replacementName);
-          return;
         } else {
           state.usedUtilityTypes.add(typeName.name);
         }
+
+        return;
       }
 
       if (typeName.name in UnqualifiedReactTypeNameMap) {
@@ -548,9 +548,41 @@ const transform = {
             typeParameters.params.length > 0 ? typeParameters : null
           )
         );
-      } else {
-        path.replaceWith(t.tsTypeReference(typeName, typeParameters));
+        return;
       }
+
+      if (t.isTSQualifiedName(id)) {
+        const { left, right } = id;
+
+        // React.ElementConfig<T> -> JSX.LibraryManagedAttributes<T, React.ComponentProps<T>>
+        if (
+          t.isIdentifier(left, { name: "React" }) &&
+          t.isIdentifier(right, { name: "ElementConfig" })
+        ) {
+          path.replaceWith(
+            t.tsTypeReference(
+              t.tsQualifiedName(
+                t.identifier("JSX"),
+                t.identifier("LibraryManagedAttributes")
+              ),
+              t.tsTypeParameterInstantiation([
+                typeParameters.params[0],
+                t.tsTypeReference(
+                  t.tsQualifiedName(
+                    t.identifier("React"),
+                    t.identifier("ComponentProps")
+                  ),
+                  t.tsTypeParameterInstantiation([typeParameters.params[0]])
+                ),
+              ])
+            )
+          );
+          return;
+        }
+      }
+
+      // fallthrough case
+      path.replaceWith(t.tsTypeReference(typeName, typeParameters));
     },
   },
   QualifiedTypeIdentifier: {
