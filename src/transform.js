@@ -817,7 +817,8 @@ const transform = {
         if (
           t.isTSSymbolKeyword(key) ||
           t.isTSStringKeyword(key) ||
-          t.isTSNumberKeyword(key)
+          t.isTSNumberKeyword(key) ||
+          t.isTSTypeReference(key)
         ) {
           elements.push(indexer);
         } else {
@@ -834,6 +835,37 @@ const transform = {
           spreads.push(mappedType);
         }
       });
+
+      // If there's only one property and it's an indexer convert the object
+      // type to use Record, e.g.
+      // {[string]: number} -> Record<string, number>
+      if (
+        spreads.length === 0 &&
+        elements.length === 1 &&
+        indexers.length === 1
+      ) {
+        const indexer = indexers[0];
+        const value = indexer.typeAnnotation.typeAnnotation;
+        const key = indexer.parameters[0].typeAnnotation.typeAnnotation;
+
+        const record = t.tsTypeReference(
+          t.identifier("Record"),
+          t.tsTypeParameterInstantiation([key, value])
+        );
+
+        if (indexer.readonly) {
+          path.replaceWith(
+            t.tsTypeReference(
+              t.identifier("Readonly"),
+              t.tsTypeParameterInstantiation([record])
+            )
+          );
+        } else {
+          path.replaceWith(record);
+        }
+
+        return;
+      }
 
       if (spreads.length > 0 && elements.length > 0) {
         path.replaceWith(

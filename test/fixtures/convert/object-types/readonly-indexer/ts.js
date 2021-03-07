@@ -1,3 +1,1 @@
-let obj: {
-  readonly [key: number]: string;
-};
+let obj: Readonly<Record<number, string>>;

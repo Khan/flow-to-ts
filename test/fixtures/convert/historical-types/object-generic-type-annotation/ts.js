@@ -1,3 +1,1 @@
-let a: {
-  [key: string]: any;
-};
+let a: Record<string, any>;

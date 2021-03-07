@@ -1,3 +1,1 @@
-let obj: {
-  [key: number]: string;
-};
+let obj: Record<number, string>;
