@@ -2,8 +2,9 @@ const path = require("path");
 const t = require("../babel-types/lib/index.js");
 
 const declare = require("./transforms/declare.js");
-const react = require("./transforms/react.js");
+const reactTypes = require("./transforms/react-types.js");
 const objectType = require("./transforms/object-type.js");
+const utilityTypes = require("./transforms/utility-types.js");
 
 const { trackComments } = require("./util.js");
 
@@ -28,69 +29,6 @@ const transformFunction = (path) => {
       param.left.optional = false;
     }
   }
-};
-
-// TODO: figure out how to template these inline definitions
-const utilityTypes = {
-  $Keys: (T) => {
-    // $Keys<T> -> keyof T
-    // TODO: patch @babel/types - tsTypeOperator should accept two arguments
-    // return t.tsTypeOperator(typeAnnotation, "keyof");
-    return {
-      type: "TSTypeOperator",
-      typeAnnotation: T,
-      operator: "keyof",
-    };
-  },
-  $Values: (T) => {
-    // $Keys<T> -> T[keyof T]
-    return t.tsIndexedAccessType(
-      T,
-      {
-        type: "TSTypeOperator",
-        typeAnnotation: T,
-        operator: "keyof",
-      }
-      // TODO: patch @babel/types - tsTypeOperator should accept two arguments
-      //t.tsTypeOperator(typeAnnotation, "keyof"),
-    );
-  },
-  $ReadOnly: (T) => {
-    // $ReadOnly<T> -> Readonly<T>
-    const typeName = t.identifier("Readonly");
-    const typeParameters = t.tsTypeParameterInstantiation([T]);
-    return t.tsTypeReference(typeName, typeParameters);
-  },
-  $Shape: (T) => {
-    // $Shape<T> -> Partial<T>
-    const typeName = t.identifier("Partial");
-    const typeParameters = t.tsTypeParameterInstantiation([T]);
-    return t.tsTypeReference(typeName, typeParameters);
-  },
-  $NonMaybeType: (T) => {
-    // $NonMaybeType<T> -> NonNullable<T>
-    const typeName = t.identifier("NonNullable");
-    const typeParameters = t.tsTypeParameterInstantiation([T]);
-    return t.tsTypeReference(typeName, typeParameters);
-  },
-  $Exact: (T) => {
-    // $Exact<T> -> T
-    return T;
-  },
-  $PropertyType: (T, name) => {
-    // $PropertyType<T, "name"> -> T["name"]
-    return t.tsIndexedAccessType(T, name);
-  },
-  Class: null, // TODO
-
-  // These are too complicated to inline so we'll leave them as imports
-  $Diff: null,
-  $ElementType: null,
-  $Call: null,
-
-  // The behavior of $Rest only differs when exact object types are involved.
-  // And since TypeScript doesn't have exact object types using $Diff is okay.
-  $Rest: "$Diff",
 };
 
 const transform = {
@@ -472,28 +410,15 @@ const transform = {
         return;
       }
 
-      if (typeName.name in utilityTypes) {
-        if (
-          (state.options.inlineUtilityTypes &&
-            typeof utilityTypes[typeName.name] === "function") ||
-          typeName.name === "$Exact" // $Exact doesn't exist in utility-types so we always inline it.
-        ) {
-          const inline = utilityTypes[typeName.name];
-          path.replaceWith(inline(...typeParameters.params));
-        } else if (typeof utilityTypes[typeName.name] === "string") {
-          const replacementName = utilityTypes[typeName.name];
-          path.replaceWith(
-            t.tsTypeReference(t.identifier(replacementName), typeParameters)
-          );
-          state.usedUtilityTypes.add(replacementName);
-        } else {
-          state.usedUtilityTypes.add(typeName.name);
-        }
+      let replacement;
 
+      replacement = utilityTypes.GenericTypeAnnotation.exit(path, state);
+      if (replacement) {
+        path.replaceWith(replacement);
         return;
       }
 
-      const replacement = react.GenericTypeAnnotation.exit(path, state);
+      replacement = reactTypes.GenericTypeAnnotation.exit(path, state);
       if (replacement) {
         path.replaceWith(replacement);
         return;
@@ -509,7 +434,7 @@ const transform = {
       const left = qualification;
       const right = id;
 
-      const replacement = react.QualifiedTypeIdentifier.exit(path, state);
+      const replacement = reactTypes.QualifiedTypeIdentifier.exit(path, state);
       if (replacement) {
         path.replaceWith(replacement);
         return;
