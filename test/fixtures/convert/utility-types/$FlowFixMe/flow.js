@@ -1,0 +1,2 @@
+// @flow
+type A = $FlowFixMe;

@@ -1,5 +1,5 @@
 const t = require("../../babel-types/lib/index.js");
-const {trackComments} = require("../util.js");
+const { trackComments } = require("../util.js");
 
 exports.ObjectTypeAnnotation = {
   enter(path, state) {
@@ -126,7 +126,7 @@ exports.QualifiedTypeIdentifier = {
       path.replaceWith(replacement);
       return;
     }
-    
+
     // fallthrough case
     path.replaceWith(t.tsQualifiedName(left, right));
   },
