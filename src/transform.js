@@ -74,57 +74,65 @@ const trackComments = (node, state) => {
 
 // TODO: figure out how to template these inline definitions
 const utilityTypes = {
-  $Keys: (typeAnnotation) => {
+  $Keys: (T) => {
+    // $Keys<T> -> keyof T
     // TODO: patch @babel/types - tsTypeOperator should accept two arguments
     // return t.tsTypeOperator(typeAnnotation, "keyof");
     return {
       type: "TSTypeOperator",
-      typeAnnotation,
+      typeAnnotation: T,
       operator: "keyof",
     };
   },
-  $Values: (typeAnnotation) => {
+  $Values: (T) => {
+    // $Keys<T> -> T[keyof T]
     return t.tsIndexedAccessType(
-      typeAnnotation,
+      T,
       {
         type: "TSTypeOperator",
-        typeAnnotation,
+        typeAnnotation: T,
         operator: "keyof",
       }
       // TODO: patch @babel/types - tsTypeOperator should accept two arguments
       //t.tsTypeOperator(typeAnnotation, "keyof"),
     );
   },
-  $ReadOnly: (typeAnnotation) => {
+  $ReadOnly: (T) => {
+    // $ReadOnly<T> -> Readonly<T>
     const typeName = t.identifier("Readonly");
-    const typeParameters = t.tsTypeParameterInstantiation([typeAnnotation]);
+    const typeParameters = t.tsTypeParameterInstantiation([T]);
     return t.tsTypeReference(typeName, typeParameters);
   },
-  $Shape: (typeAnnotation) => {
+  $Shape: (T) => {
+    // $Shape<T> -> Partial<T>
     const typeName = t.identifier("Partial");
-    const typeParameters = t.tsTypeParameterInstantiation([typeAnnotation]);
+    const typeParameters = t.tsTypeParameterInstantiation([T]);
     return t.tsTypeReference(typeName, typeParameters);
   },
-  $NonMaybeType: (typeAnnotation) => {
+  $NonMaybeType: (T) => {
+    // $NonMaybeType<T> -> NonNullable<T>
     const typeName = t.identifier("NonNullable");
-    const typeParameters = t.tsTypeParameterInstantiation([typeAnnotation]);
+    const typeParameters = t.tsTypeParameterInstantiation([T]);
     return t.tsTypeReference(typeName, typeParameters);
   },
-  $Exact: (typeAnnotation) => {
-    return typeAnnotation;
+  $Exact: (T) => {
+    // $Exact<T> -> T
+    return T;
+  },
+  $PropertyType: (T, name) => {
+    // $PropertyType<T, "name"> -> T["name"]
+    return t.tsIndexedAccessType(T, name);
   },
   Class: null, // TODO
 
   // These are too complicated to inline so we'll leave them as imports
   $Diff: null,
+  $ElementType: null,
+  $Call: null,
+
   // The behavior of $Rest only differs when exact object types are involved.
   // And since TypeScript doesn't have exact object types using $Diff is okay.
   $Rest: "$Diff",
-  $PropertyType: (typeAnnotation, typeParam) => {
-    return t.tsIndexedAccessType(typeAnnotation, typeParam);
-  },
-  $ElementType: null,
-  $Call: null,
 };
 
 // Mapping between React types for Flow and those for TypeScript.
