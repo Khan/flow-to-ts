@@ -19,7 +19,7 @@ jobs:
         env:
           CI: true
       - name: codecov
-        run: yarn run codecov
+        uses: codecov/codecov-action@v1
 
   build:
     runs-on: ubuntu-latest
