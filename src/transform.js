@@ -622,6 +622,25 @@ const transform = {
       }
     },
   },
+  ObjectTypeCallProperty: {
+    exit(path, state) {
+      // NOTE: `value` has already been converted to a TSFunctionType
+      const { value, leadingComments, trailingComments, loc } = path.node;
+      const { typeParameters, parameters, typeAnnotation } = value;
+      const replacement = t.tsCallSignatureDeclaration(
+        typeParameters,
+        parameters,
+        typeAnnotation
+      );
+      replacement.leadingComments = leadingComments;
+      replacement.trailingComments = trailingComments;
+      replacement.loc = loc;
+
+      trackComments(replacement, state);
+
+      path.replaceWith(replacement);
+    },
+  },
   ObjectTypeProperty: {
     exit(path, state) {
       const {
@@ -751,7 +770,7 @@ const transform = {
       }
     },
     exit(path) {
-      const { exact, properties, indexers } = path.node; // TODO: callProperties, inexact
+      const { exact, callProperties, properties, indexers } = path.node; // TODO: inexact
 
       if (exact) {
         console.warn("downgrading exact object type");
@@ -761,6 +780,12 @@ const transform = {
       // {x: number, ...T, y: number} to {x: number} & T & {y: number}
       const elements = [];
       const spreads = [];
+
+      if (callProperties) {
+        for (const prop of callProperties) {
+          elements.push(prop);
+        }
+      }
 
       for (const prop of properties) {
         if (t.isObjectTypeSpreadProperty(prop)) {
