@@ -1,6 +1,12 @@
 const path = require("path");
 const t = require("../babel-types/lib/index.js");
 
+const declare = require("./transforms/declare.js");
+const react = require("./transforms/react.js");
+const objectType = require("./transforms/object-type.js");
+
+const { trackComments } = require("./util.js");
+
 const locToString = (loc) =>
   `${loc.start.line}:${loc.start.column}-${loc.end.line}:${loc.end.column}`;
 
@@ -20,54 +26,6 @@ const transformFunction = (path) => {
   for (const param of path.node.params) {
     if (t.isAssignmentPattern(param)) {
       param.left.optional = false;
-    }
-  }
-};
-
-/**
- * Track which nodes a comment is attached to.
- *
- * state.commentsToNodesMap is a Map() between comment position in the file and
- * an object with references to node(s) it was attached to as either a leading
- * or trailing comment (or both).
- *
- * In order to call this function correctly, the transformed node must be passed
- * in.  This requires copying over the following properties from the original
- * node:
- * - loc
- * - leadingComments
- * - trailingComments
- *
- * NOTE: The copied `loc` will be wrong for the new node.  It's need by convert
- * though which uses it to determine whether maintain the position of trailing
- * line comments.
- *
- * @param {*} node
- * @param {*} state
- */
-const trackComments = (node, state) => {
-  if (node.leadingComments) {
-    for (const comment of node.leadingComments) {
-      const { start, end } = comment;
-      const key = `${start}:${end}`;
-
-      if (state.commentsToNodesMap.has(key)) {
-        state.commentsToNodesMap.get(key).leading = node;
-      } else {
-        state.commentsToNodesMap.set(key, { leading: node });
-      }
-    }
-  }
-  if (node.trailingComments) {
-    for (const comment of node.trailingComments) {
-      const { start, end } = comment;
-      const key = `${start}:${end}`;
-
-      if (state.commentsToNodesMap.has(key)) {
-        state.commentsToNodesMap.get(key).trailing = node;
-      } else {
-        state.commentsToNodesMap.set(key, { trailing: node });
-      }
     }
   }
 };
@@ -133,44 +91,6 @@ const utilityTypes = {
   // The behavior of $Rest only differs when exact object types are involved.
   // And since TypeScript doesn't have exact object types using $Diff is okay.
   $Rest: "$Diff",
-};
-
-// Mapping between React types for Flow and those for TypeScript.
-const UnqualifiedReactTypeNameMap = {
-  SyntheticEvent: "SyntheticEvent",
-  SyntheticAnimationEvent: "AnimationEvent",
-  SyntheticClipboardEvent: "ClipboardEvent",
-  SyntheticCompositionEvent: "CompositionEvent",
-  SyntheticInputEvent: "SyntheticEvent",
-  SyntheticUIEvent: "UIEvent",
-  SyntheticFocusEvent: "FocusEvent",
-  SyntheticKeyboardEvent: "KeyboardEvent",
-  SyntheticMouseEvent: "MouseEvent",
-  SyntheticDragEvent: "DragEvent",
-  SyntheticWheelEvent: "WheelEvent",
-  SyntheticPointerEvent: "PointerEvent",
-  SyntheticTouchEvent: "TouchEvent",
-  SyntheticTransitionEvent: "TransitionEvent",
-
-  // React$ElementType takes no type params, but React.ElementType takes one
-  // optional type param
-  React$ElementType: "ElementType",
-};
-
-// Only types with different names are included.
-const QualifiedReactTypeNameMap = {
-  Node: "ReactNode",
-  Text: "ReactText",
-  Child: "ReactChild",
-  Children: "ReactChildren",
-  Element: "ReactElement", // 1:1 mapping is wrong, since ReactElement takes two type params
-  Fragment: "ReactFragment",
-  Portal: "ReactPortal",
-  NodeArray: "ReactNodeArray",
-
-  // TODO: private types, e.g. React$ElementType, React$Node, etc.
-
-  // TODO: handle ComponentType, ElementConfig, ElementProps, etc.
 };
 
 const transform = {
@@ -573,136 +493,10 @@ const transform = {
         return;
       }
 
-      if (typeName.name in UnqualifiedReactTypeNameMap) {
-        // TODO: make sure that React was imported in this file
-        path.replaceWith(
-          t.tsTypeReference(
-            t.tsQualifiedName(
-              t.identifier("React"),
-              t.identifier(UnqualifiedReactTypeNameMap[typeName.name])
-            ),
-            // TypeScript doesn't support empty type param lists
-            typeParameters && typeParameters.params.length > 0
-              ? typeParameters
-              : null
-          )
-        );
+      const replacement = react.GenericTypeAnnotation.exit(path, state);
+      if (replacement) {
+        path.replaceWith(replacement);
         return;
-      }
-
-      if (typeName.name === "React$Node") {
-        path.replaceWith(
-          t.tsTypeReference(
-            t.tsQualifiedName(t.identifier("React"), t.identifier("ReactNode"))
-          )
-        );
-        return;
-      }
-      if (typeName.name === "React$Element") {
-        // React$Element<T> -> React.ReactElement<React.ComponentProps<T>, T>
-        path.replaceWith(
-          t.tsTypeReference(
-            t.tsQualifiedName(
-              t.identifier("React"),
-              t.identifier("ReactElement")
-            ),
-            t.tsTypeParameterInstantiation([
-              // React.ComponentProps<T>
-              t.tsTypeReference(
-                t.tsQualifiedName(
-                  t.identifier("React"),
-                  t.identifier("ComponentProps")
-                ),
-                t.tsTypeParameterInstantiation([typeParameters.params[0]])
-              ),
-              typeParameters.params[0],
-            ])
-          )
-        );
-        return;
-      }
-      if (typeName.name === "React$Component") {
-        // React$Component<Props, State> -> React.Component<Props, State>
-        path.replaceWith(
-          t.tsTypeReference(
-            t.tsQualifiedName(t.identifier("React"), t.identifier("Component")),
-            typeParameters
-          )
-        );
-        return;
-      }
-      if (typeName.name === "React$ComponentType") {
-        // React$ComponentType<Props> -> React.ComponentType<Props>
-        path.replaceWith(
-          t.tsTypeReference(
-            t.tsQualifiedName(
-              t.identifier("React"),
-              t.identifier("ComponentType")
-            ),
-            typeParameters
-          )
-        );
-        return;
-      }
-      if (typeName.name === "React$Context") {
-        // React$Context<T> -> React.Context<T>
-        path.replaceWith(
-          t.tsTypeReference(
-            t.tsQualifiedName(t.identifier("React"), t.identifier("Context")),
-            typeParameters
-          )
-        );
-        return;
-      }
-      if (typeName.name === "React$Ref") {
-        // React$Ref<T> -> React.Ref<T>
-        path.replaceWith(
-          t.tsTypeReference(
-            t.tsQualifiedName(t.identifier("React"), t.identifier("Ref")),
-            typeParameters
-          )
-        );
-        return;
-      }
-      if (typeName.name === "React$StatelessFunctionalComponent") {
-        // React$StatelessFunctionalComponent<Props> -> React.FC<Props>
-        path.replaceWith(
-          t.tsTypeReference(
-            t.tsQualifiedName(t.identifier("React"), t.identifier("FC")),
-            typeParameters
-          )
-        );
-        return;
-      }
-
-      if (t.isTSQualifiedName(id)) {
-        const { left, right } = id;
-
-        // React.ElementConfig<T> -> JSX.LibraryManagedAttributes<T, React.ComponentProps<T>>
-        if (
-          t.isIdentifier(left, { name: "React" }) &&
-          t.isIdentifier(right, { name: "ElementConfig" })
-        ) {
-          path.replaceWith(
-            t.tsTypeReference(
-              t.tsQualifiedName(
-                t.identifier("JSX"),
-                t.identifier("LibraryManagedAttributes")
-              ),
-              t.tsTypeParameterInstantiation([
-                typeParameters.params[0],
-                t.tsTypeReference(
-                  t.tsQualifiedName(
-                    t.identifier("React"),
-                    t.identifier("ComponentProps")
-                  ),
-                  t.tsTypeParameterInstantiation([typeParameters.params[0]])
-                ),
-              ])
-            )
-          );
-          return;
-        }
       }
 
       // fallthrough case
@@ -710,266 +504,25 @@ const transform = {
     },
   },
   QualifiedTypeIdentifier: {
-    exit(path) {
+    exit(path, state) {
       const { qualification, id } = path.node;
       const left = qualification;
       const right = id;
 
-      if (left.name === "React" && right.name in QualifiedReactTypeNameMap) {
-        path.replaceWith(
-          t.tsQualifiedName(
-            left,
-            t.identifier(QualifiedReactTypeNameMap[right.name])
-          )
-        );
-      } else {
-        path.replaceWith(t.tsQualifiedName(left, right));
-      }
-    },
-  },
-  ObjectTypeCallProperty: {
-    exit(path, state) {
-      // NOTE: `value` has already been converted to a TSFunctionType
-      const { value, leadingComments, trailingComments, loc } = path.node;
-      const { typeParameters, parameters, typeAnnotation } = value;
-      const replacement = t.tsCallSignatureDeclaration(
-        typeParameters,
-        parameters,
-        typeAnnotation
-      );
-      replacement.leadingComments = leadingComments;
-      replacement.trailingComments = trailingComments;
-      replacement.loc = loc;
-
-      trackComments(replacement, state);
-
-      path.replaceWith(replacement);
-    },
-  },
-  ObjectTypeProperty: {
-    exit(path, state) {
-      const {
-        key,
-        value,
-        optional,
-        variance,
-        kind,
-        method,
-        leadingComments,
-        trailingComments,
-        loc,
-      } = path.node; // TODO: static, kind
-      const typeAnnotation = t.tsTypeAnnotation(value);
-      const initializer = undefined; // TODO: figure out when this used
-      const computed = false; // TODO: maybe set this to true for indexers
-      const readonly = variance && variance.kind === "plus";
-
-      if (variance && variance.kind === "minus") {
-        // TODO: include file and location of infraction
-        console.warn("typescript doesn't support writeonly properties");
-      }
-      if (kind !== "init") {
-        console.warn("we don't handle get() or set() yet, :P");
-      }
-
-      if (method) {
-        // TODO: assert value is a FunctionTypeAnnotation
-        const methodSignature = {
-          type: "TSMethodSignature",
-          key,
-          typeParameters: value.typeParameters,
-          parameters: value.parameters,
-          typeAnnotation: value.typeAnnotation,
-          computed,
-          optional,
-          leadingComments,
-          trailingComments,
-          loc,
-        };
-
-        trackComments(methodSignature, state);
-
-        // TODO: patch @babel/types - tsMethodSignature ignores two out of the six params
-        // const methodSignature = t.tsMethodSignature(key, value.typeParameters, value.parameters, value.typeAnnotation, computed, optional);
-        path.replaceWith(methodSignature);
-      } else {
-        const propertySignature = {
-          type: "TSPropertySignature",
-          key,
-          typeAnnotation,
-          // initializer,
-          computed,
-          optional,
-          readonly,
-          leadingComments,
-          trailingComments,
-          loc,
-        };
-
-        trackComments(propertySignature, state);
-
-        // TODO: patch @babel/types - tsPropertySignature ignores typeAnnotation, optional, and readonly
-        // const = propertySignature = t.tsPropertySignature(key, typeAnnotation, initializer, computed, optional, readonly),
-        path.replaceWith(propertySignature);
-      }
-    },
-  },
-  ObjectTypeIndexer: {
-    exit(path, state) {
-      const {
-        id,
-        key,
-        value,
-        variance,
-        leadingComments,
-        trailingComments,
-        loc,
-      } = path.node;
-
-      const readonly = variance && variance.kind === "plus";
-      if (variance && variance.kind === "minus") {
-        // TODO: include file and location of infraction
-        console.warn("typescript doesn't support writeonly properties");
-      }
-
-      const identifier = {
-        type: "Identifier",
-        name: id ? id.name : "key",
-        typeAnnotation: t.tsTypeAnnotation(key),
-      };
-      // TODO: patch @babel/types - t.identifier omits typeAnnotation
-      // const identifier = t.identifier(name.name, decorators, optional, t.tsTypeAnnotation(typeAnnotation));
-
-      const indexSignature = {
-        type: "TSIndexSignature",
-        parameters: [identifier], // TODO: figure when multiple parameters are used
-        typeAnnotation: t.tsTypeAnnotation(value),
-        readonly,
-        leadingComments,
-        trailingComments,
-        loc,
-      };
-
-      trackComments(indexSignature, state);
-
-      // TODO: patch @babel/types - t.tsIndexSignature omits readonly
-      // const indexSignature = t.tsIndexSignature([identifier], t.tsTypeAnnotation(value), readonly);
-      path.replaceWith(indexSignature);
-    },
-  },
-  ObjectTypeAnnotation: {
-    enter(path, state) {
-      const { properties } = path.node;
-      if (properties.length > 0) {
-        // Workaround babylon bug where the last ObjectTypeProperty in an
-        // ObjectTypeAnnotation doesn't have its trailingComments.
-        // TODO: file a ticket for this bug
-        const trailingComments = [];
-        const lastProp = properties[properties.length - 1];
-        for (let i = lastProp.loc.end.line; i < path.node.loc.end.line; i++) {
-          if (state.startLineToComments[i]) {
-            trailingComments.push(state.startLineToComments[i]);
-          }
-        }
-        lastProp.trailingComments = trailingComments;
-      }
-    },
-    exit(path) {
-      const { exact, callProperties, properties, indexers } = path.node; // TODO: inexact
-
-      if (exact) {
-        console.warn("downgrading exact object type");
-      }
-
-      // TODO: create multiple sets of elements so that we can convert
-      // {x: number, ...T, y: number} to {x: number} & T & {y: number}
-      const elements = [];
-      const spreads = [];
-
-      if (callProperties) {
-        for (const prop of callProperties) {
-          elements.push(prop);
-        }
-      }
-
-      for (const prop of properties) {
-        if (t.isObjectTypeSpreadProperty(prop)) {
-          const { argument } = prop;
-          spreads.push(argument);
-        } else {
-          elements.push(prop);
-        }
-      }
-
-      // TODO: maintain the position of indexers
-      indexers.forEach((indexer) => {
-        const value = indexer.typeAnnotation.typeAnnotation;
-        const key = indexer.parameters[0].typeAnnotation.typeAnnotation;
-        if (
-          t.isTSSymbolKeyword(key) ||
-          t.isTSStringKeyword(key) ||
-          t.isTSNumberKeyword(key) ||
-          t.isTSTypeReference(key)
-        ) {
-          elements.push(indexer);
-        } else {
-          const typeParameter = t.tsTypeParameter(key);
-          typeParameter.name = indexer.parameters[0].name;
-
-          const mappedType = {
-            type: "TSMappedType",
-            typeParameter: typeParameter,
-            typeAnnotation: value,
-            optional: true,
-          };
-
-          spreads.push(mappedType);
-        }
-      });
-
-      // If there's only one property and it's an indexer convert the object
-      // type to use Record, e.g.
-      // {[string]: number} -> Record<string, number>
-      if (
-        spreads.length === 0 &&
-        elements.length === 1 &&
-        indexers.length === 1
-      ) {
-        const indexer = indexers[0];
-        const value = indexer.typeAnnotation.typeAnnotation;
-        const key = indexer.parameters[0].typeAnnotation.typeAnnotation;
-
-        const record = t.tsTypeReference(
-          t.identifier("Record"),
-          t.tsTypeParameterInstantiation([key, value])
-        );
-
-        if (indexer.readonly) {
-          path.replaceWith(
-            t.tsTypeReference(
-              t.identifier("Readonly"),
-              t.tsTypeParameterInstantiation([record])
-            )
-          );
-        } else {
-          path.replaceWith(record);
-        }
-
+      const replacement = react.QualifiedTypeIdentifier.exit(path, state);
+      if (replacement) {
+        path.replaceWith(replacement);
         return;
       }
 
-      if (spreads.length > 0 && elements.length > 0) {
-        path.replaceWith(
-          t.tsIntersectionType([...spreads, t.tsTypeLiteral(elements)])
-        );
-      } else if (spreads.length > 0) {
-        path.replaceWith(t.tsIntersectionType(spreads));
-      } else {
-        const typeLiteral = t.tsTypeLiteral(elements);
-        path.replaceWith(typeLiteral);
-      }
+      // fallthrough case
+      path.replaceWith(t.tsQualifiedName(left, right));
     },
   },
+  ObjectTypeCallProperty: objectType.ObjectTypeCallProperty,
+  ObjectTypeProperty: objectType.ObjectTypeProperty,
+  ObjectTypeIndexer: objectType.ObjectTypeIndexer,
+  ObjectTypeAnnotation: objectType.ObjectTypeAnnotation,
   TypeAlias: {
     exit(path, state) {
       const {
@@ -1133,120 +686,10 @@ const transform = {
       }
     },
   },
-  DeclareVariable: {
-    exit(path) {
-      const { id } = path.node;
-
-      // TODO: patch @babel/types - t.variableDeclaration omits declare param
-      // const declaration = t.variableDeclaration("var", [
-      //   t.variableDeclarator(id),
-      // ], true),
-
-      path.replaceWith({
-        type: "VariableDeclaration",
-        kind: "var",
-        declarations: [t.variableDeclarator(id)],
-        declare: true,
-      });
-    },
-  },
-  DeclareClass: {
-    exit(path, state) {
-      const {
-        id,
-        body,
-        typeParameters,
-        leadingComments,
-        trailingComments,
-        loc,
-      } = path.node;
-      const superClass =
-        path.node.extends.length > 0 ? path.node.extends[0] : undefined;
-
-      // TODO: patch @babel/types - t.classDeclaration omits typescript params
-      // t.classDeclaration(id, superClass, body, [], false, true, [], undefined)
-
-      const replacementNode = {
-        type: "ClassDeclaration",
-        id,
-        typeParameters,
-        superClass,
-        superClassTypeParameters: superClass
-          ? superClass.typeParameters
-          : undefined,
-        body,
-        declare: true,
-        leadingComments,
-        trailingComments,
-        loc,
-      };
-
-      trackComments(replacementNode);
-
-      path.replaceWith(replacementNode);
-    },
-  },
-  DeclareFunction: {
-    exit(path, state) {
-      const { id, leadingComments, trailingComments, loc } = path.node;
-      const { name, typeAnnotation } = id;
-
-      // TSFunctionType
-      const functionType = typeAnnotation.typeAnnotation;
-
-      // TODO: patch @babel/types - t.tsDeclaration only accepts 4 params but should accept 7
-      // t.tsDeclareFunction(
-      //   t.identifier(name),
-      //   t.noop(),
-      //   functionType.parameters,
-      //   functionType.typeAnnotation,
-      //   false, // async
-      //   true,
-      //   false, // generator
-      // ),
-
-      const replacementNode = {
-        type: "TSDeclareFunction",
-        id: t.identifier(name),
-        typeParameters: functionType.typeParameters,
-        params: functionType.parameters,
-        returnType: functionType.typeAnnotation,
-        declare: !t.isDeclareExportDeclaration(path.parent),
-        async: false, // TODO
-        generator: false, // TODO
-        leadingComments,
-        trailingComments,
-        loc,
-      };
-
-      trackComments(replacementNode, state);
-
-      path.replaceWith(replacementNode);
-    },
-  },
-  DeclareExportDeclaration: {
-    exit(path, state) {
-      const {
-        declaration,
-        default: _default,
-        leadingComments,
-        trailingComments,
-        loc,
-      } = path.node;
-
-      const replacementNode = {
-        type: _default ? "ExportDefaultDeclaration" : "ExportNamedDeclaration",
-        declaration,
-        leadingComments,
-        trailingComments,
-        loc,
-      };
-
-      trackComments(replacementNode, state);
-
-      path.replaceWith(replacementNode);
-    },
-  },
+  DeclareVariable: declare.DeclareVariable,
+  DeclareClass: declare.DeclareClass,
+  DeclareFunction: declare.DeclareFunction,
+  DeclareExportDeclaration: declare.DeclareExportDeclaration,
 };
 
 module.exports = transform;
