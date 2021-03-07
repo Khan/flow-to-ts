@@ -361,9 +361,23 @@ const transform = {
   },
   ClassProperty(path, state) {
     trackComments(path.node, state);
+
+    const { node } = path;
+    if (node.variance && node.variance.kind === "plus") {
+      node.readonly = true;
+    }
+    delete node.variance;
   },
   ClassPrivateProperty(path, state) {
     trackComments(path.node, state);
+
+    // There's a @babel/generator bug such that the `readonly` modifier isn't
+    // included in the output.
+    const { node } = path;
+    if (node.variance && node.variance.kind === "plus") {
+      node.readonly = true;
+    }
+    delete node.variance;
   },
 
   // All other non-leaf nodes must be processed on exit()
