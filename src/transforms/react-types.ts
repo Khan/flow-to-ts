@@ -1,4 +1,4 @@
-import * as t from "../../babel-types/lib/index.js";
+import * as t from "@babel/types";
 
 export const GenericTypeAnnotation = {
   exit(path, state) {

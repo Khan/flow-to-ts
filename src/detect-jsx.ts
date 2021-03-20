@@ -1,7 +1,7 @@
 import { parse } from "@babel/parser";
-import traverse from "../babel-traverse/lib/index.js";
+import traverse from "@babel/traverse";
 
-import { parseOptions } from "./convert.js";
+import { parseOptions } from "./convert";
 
 export const detectJsx = (code) => {
   let jsx = false;

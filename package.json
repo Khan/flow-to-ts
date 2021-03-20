@@ -14,22 +14,21 @@
   },
   "license": "MIT",
   "dependencies": {
-    "@babel/core": "^7.13.8",
-    "@babel/generator": "^7.13.0",
-    "@babel/parser": "^7.13.4",
-    "@babel/plugin-proposal-nullish-coalescing-operator": "^7.4.4",
-    "@babel/plugin-syntax-dynamic-import": "^7.8.3",
-    "@babel/plugin-syntax-optional-chaining": "^7.2.0",
-    "@babel/preset-flow": "^7.0.0",
-    "@babel/traverse": "^7.13.0",
-    "@babel/types": "^7.4.0",
     "commander": "^2.19.0",
     "glob": "^7.1.6",
     "prettier": "2.2.1",
     "trim-right": "^1.0.1"
   },
   "devDependencies": {
+    "@babel/core": "^7.13.10",
+    "@babel/plugin-proposal-class-properties": "^7.13.0",
+    "@babel/plugin-transform-flow-strip-types": "^7.13.0",
+    "@babel/plugin-transform-typescript": "^7.13.0",
+    "@babel/preset-env": "^7.13.10",
+    "@babel/preset-flow": "^7.12.13",
+    "@babel/preset-typescript": "^7.13.0",
     "@types/jest": "^26.0.20",
+    "@types/prettier": "^2.2.3",
     "@types/typescript": "^2.0.0",
     "codecov": "^3.2.0",
     "flow-bin": "^0.98.0",
@@ -38,6 +37,7 @@
     "jest-mock-console": "^0.4.2",
     "jest-mock-process": "^1.2.0",
     "tmp": "^0.1.0",
+    "ts-jest": "^26.5.4",
     "typescript": "^4.2.3"
   },
   "scripts": {
@@ -45,7 +45,7 @@
     "watch": "tsc --watch --project tsconfig.json",
     "test": "jest",
     "coverage": "jest --coverage --collectCoverageFrom=src/**/*.js --coveragePathIgnorePatterns=src/flow-to-ts.js",
-    "pretty-quick": "prettier src/*.ts test/*.js playground/src/*.tsx babel-traverse/lib/**/*.js --write",
+    "pretty-quick": "prettier src/*.ts test/*.ts playground/src/*.tsx --write",
     "pretty-tests": "prettier ./test/fixtures/**/ts.js --parser typescript --write && prettier ./test/fixtures/**/flow.js --parser flow --write"
   },
   "husky": {

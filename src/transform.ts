@@ -1,12 +1,11 @@
-import path from "path";
-import * as t from "../babel-types/lib/index.js";
+import * as t from "../babel/packages/babel-types/src/index";
 
-import * as declare from "./transforms/declare.js";
-import * as reactTypes from "./transforms/react-types.js";
-import * as objectType from "./transforms/object-type.js";
-import * as utilityTypes from "./transforms/utility-types.js";
+import * as declare from "./transforms/declare";
+import * as reactTypes from "./transforms/react-types";
+import * as objectType from "./transforms/object-type";
+import * as utilityTypes from "./transforms/utility-types";
 
-import { trackComments } from "./util.js";
+import { trackComments } from "./util";
 
 const locToString = (loc) =>
   `${loc.start.line}:${loc.start.column}-${loc.end.line}:${loc.end.column}`;
@@ -26,6 +25,7 @@ const transformFunction = (path) => {
   }
   for (const param of path.node.params) {
     if (t.isAssignmentPattern(param)) {
+      // @ts-ignore: Property 'optional' does not exist on type 'ObjectPattern'.
       param.left.optional = false;
     }
   }
@@ -595,7 +595,7 @@ export const transform = {
         replacementNode.trailingComments = trailingComments;
         replacementNode.loc = loc;
 
-        trackComments(replacementNode);
+        trackComments(replacementNode, state);
 
         path.replaceWith(replacementNode);
       } else {

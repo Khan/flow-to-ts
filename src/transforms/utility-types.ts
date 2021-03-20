@@ -1,4 +1,4 @@
-import * as t from "../../babel-types/lib/index.js";
+import * as t from "@babel/types";
 
 // TODO: figure out how to template these inline definitions
 const utilityTypes = {
@@ -16,6 +16,7 @@ const utilityTypes = {
     // $Keys<T> -> T[keyof T]
     return t.tsIndexedAccessType(
       T,
+      // @ts-ignore
       {
         type: "TSTypeOperator",
         typeAnnotation: T,

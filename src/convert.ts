@@ -1,12 +1,13 @@
 import { parse } from "@babel/parser";
-import traverse from "../babel-traverse/lib/index.js";
+import traverse from "@babel/traverse";
 import generate from "@babel/generator";
 import * as prettier from "prettier/standalone.js";
 const plugins = [require("prettier/parser-typescript.js")];
 
-import { transform } from "./transform.js";
+import { transform } from "./transform";
+import type { ParserOptions } from "@babel/parser";
 
-export const parseOptions = {
+export const parseOptions: ParserOptions = {
   sourceType: "module",
   plugins: [
     // enable jsx and flow syntax
@@ -50,7 +51,7 @@ const fixComments = (commentsToNodesMap) => {
   }
 };
 
-export const convert = (flowCode, options) => {
+export const convert = (flowCode: string, options?: any) => {
   const ast = parse(flowCode, parseOptions);
 
   // key = startLine:endLine, value = {leading, trailing} (nodes)
@@ -78,10 +79,7 @@ export const convert = (flowCode, options) => {
 
   // we pass flowCode so that generate can compute source maps
   // if we ever decide to
-  let tsCode = generate(ast, flowCode).code;
-  for (let i = 0; i < state.trailingLines; i++) {
-    tsCode += "\n";
-  }
+  let tsCode = generate(ast, undefined, flowCode).code;
 
   if (options && options.prettier) {
     const prettierOptions = {

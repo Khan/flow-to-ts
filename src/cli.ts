@@ -3,8 +3,8 @@ import fs from "fs";
 import glob from "glob";
 import prettier from "prettier";
 
-import { convert } from "./convert.js";
-import { detectJsx } from "./detect-jsx.js";
+import { convert } from "./convert";
+import { detectJsx } from "./detect-jsx";
 import { version } from "../package.json";
 
 export const cli = (argv) => {
@@ -75,6 +75,7 @@ export const cli = (argv) => {
     try {
       const prettierConfig = prettier.resolveConfig.sync(process.cwd());
       if (prettierConfig) {
+        // @ts-ignore
         options.prettierOptions = prettierConfig;
       }
     } catch (e) {
@@ -84,7 +85,7 @@ export const cli = (argv) => {
     }
   }
 
-  const files = new Set();
+  const files = new Set<string>();
   for (const arg of program.args) {
     for (const file of glob.sync(arg)) {
       files.add(file);

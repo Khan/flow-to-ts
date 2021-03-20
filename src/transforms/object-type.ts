@@ -1,5 +1,5 @@
-import * as t from "../../babel-types/lib/index.js";
-import { trackComments } from "../util.js";
+import * as t from "@babel/types";
+import { trackComments } from "../util";
 
 export const ObjectTypeAnnotation = {
   enter(path, state) {
@@ -57,8 +57,9 @@ export const ObjectTypeAnnotation = {
       ) {
         elements.push(indexer);
       } else {
-        const typeParameter = t.tsTypeParameter(key);
-        typeParameter.name = indexer.parameters[0].name;
+        const name = indexer.parameters[0].name;
+        // @ts-ignore
+        const typeParameter = t.tsTypeParameter(key, undefined, name);
 
         const mappedType = {
           type: "TSMappedType",
@@ -112,23 +113,6 @@ export const ObjectTypeAnnotation = {
       const typeLiteral = t.tsTypeLiteral(elements);
       path.replaceWith(typeLiteral);
     }
-  },
-};
-
-export const QualifiedTypeIdentifier = {
-  exit(path, state) {
-    const { qualification, id } = path.node;
-    const left = qualification;
-    const right = id;
-
-    const replacement = react.QualifiedTypeIdentifier.exit(path, state);
-    if (replacement) {
-      path.replaceWith(replacement);
-      return;
-    }
-
-    // fallthrough case
-    path.replaceWith(t.tsQualifiedName(left, right));
   },
 };
 

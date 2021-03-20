@@ -1,5 +1,5 @@
-import * as t from "../../babel-types/lib/index.js";
-import { trackComments } from "../util.js";
+import * as t from "@babel/types";
+import { trackComments } from "../util";
 
 export const DeclareVariable = {
   exit(path) {
@@ -50,7 +50,7 @@ export const DeclareClass = {
       loc,
     };
 
-    trackComments(replacementNode);
+    trackComments(replacementNode, state);
 
     path.replaceWith(replacementNode);
   },
