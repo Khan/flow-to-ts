@@ -1,34 +1,19 @@
 const path = require("path");
 const { transformSync } = require("@babel/core");
 
-const presetOptions = {
-  targets: { node: 12 },
-};
+const { flowConfig, tsConfig } = require("./babel.configs.js");
 
 module.exports = {
   process(src, filename, config, options) {
-    if (path.extname(filename) === ".js" && src.startsWith("// @flow")) {
+    if (path.extname(filename) === ".js") {
       return transformSync(src, {
-        babelrc: false,
+        ...flowConfig,
         filename: filename,
-        presets: [["@babel/preset-env", presetOptions]],
-        plugins: [
-          [
-            "@babel/plugin-transform-flow-strip-types",
-            { allowDeclareFields: true },
-          ],
-          "@babel/plugin-proposal-class-properties",
-        ],
       }).code;
     } else {
       return transformSync(src, {
-        babelrc: false,
+        ...tsConfig,
         filename: filename,
-        presets: [["@babel/preset-env", presetOptions]],
-        plugins: [
-          ["@babel/plugin-transform-typescript", { allowDeclareFields: true }],
-          "@babel/plugin-proposal-class-properties",
-        ],
       }).code;
     }
   },
