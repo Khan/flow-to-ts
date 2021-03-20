@@ -12,6 +12,10 @@
   "bin": {
     "flow-to-ts": "./bin/flow-to-ts.js"
   },
+  "files": [
+    "bin/",
+    "dist/"
+  ],
   "license": "MIT",
   "dependencies": {
     "commander": "^2.19.0",
@@ -45,6 +49,7 @@
     "webpack-cli": "^4.5.0"
   },
   "scripts": {
+    "prepublishOnly": "webpack build",
     "build": "webpack build",
     "type-check": "tsc --project tsconfig.json",
     "watch": "tsc --watch --project tsconfig.json",
