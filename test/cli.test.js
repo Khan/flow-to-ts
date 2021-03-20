@@ -12,7 +12,7 @@ jest.mock("prettier", () => ({
   },
 }));
 
-const cli = require("../src/cli.js");
+const { cli } = require("../out/cli.js");
 
 // cleanup temp dir automatically in case of an exception
 tmp.setGracefulCleanup();

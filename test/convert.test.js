@@ -4,7 +4,7 @@ const path = require("path");
 const trimTrailingNewlines = (string) =>
   string.replace(new RegExp("\r\n", "g"), "\n").replace(/(\n)+$/, "");
 
-const convert = require("../src/convert.js");
+const { convert } = require("../out/convert.js");
 
 const failingTestNames = ["spread03", "spread04"];
 

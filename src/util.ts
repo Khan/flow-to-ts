@@ -19,7 +19,7 @@
  * @param {*} node
  * @param {*} state
  */
-exports.trackComments = (node, state) => {
+export const trackComments = (node, state) => {
   if (node.leadingComments) {
     for (const comment of node.leadingComments) {
       const { start, end } = comment;

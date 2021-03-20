@@ -1,13 +1,13 @@
-const { Command } = require("commander");
-const fs = require("fs");
-const glob = require("glob");
-const prettier = require("prettier");
+import { Command } from "commander";
+import fs from "fs";
+import glob from "glob";
+import prettier from "prettier";
 
-const convert = require("./convert.js");
-const detectJsx = require("./detect-jsx.js");
-const version = require("../package.json").version;
+import { convert } from "./convert.js";
+import { detectJsx } from "./detect-jsx.js";
+import { version } from "../package.json";
 
-const cli = (argv) => {
+export const cli = (argv) => {
   const program = new Command();
   program
     .version(version)
@@ -115,5 +115,3 @@ const cli = (argv) => {
     }
   }
 };
-
-module.exports = cli;

@@ -1,4 +1,4 @@
-const t = require("../../babel-types/lib/index.js");
+import * as t from "../../babel-types/lib/index.js";
 
 // TODO: figure out how to template these inline definitions
 const utilityTypes = {
@@ -66,7 +66,7 @@ const utilityTypes = {
   $Rest: "$Diff",
 };
 
-exports.GenericTypeAnnotation = {
+export const GenericTypeAnnotation = {
   exit(path, state) {
     const { id: typeName, typeParameters } = path.node;
 

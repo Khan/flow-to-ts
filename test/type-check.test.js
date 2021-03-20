@@ -7,7 +7,7 @@ const flow = require("flow-bin");
 
 require("./matchers.js");
 
-const convert = require("../src/convert.js");
+const { convert } = require("../out/convert.js");
 
 const tsOptions = {
   filename: "foo.ts",
@@ -55,9 +55,9 @@ describe("type-checking", () => {
     const diagnostics = convertAndGetDiagnostics("simple-types-fail");
 
     expect(diagnostics).toEqual([
-      "Type '5' is not assignable to type 'string'.",
-      "Type 'true' is not assignable to type 'number'.",
-      "Type '\"foo\"' is not assignable to type 'boolean'.",
+      "Type 'number' is not assignable to type 'string'.",
+      "Type 'boolean' is not assignable to type 'number'.",
+      "Type 'string' is not assignable to type 'boolean'.",
     ]);
     expect(flowResults["simple-types-fail.js"]).toEqual([
       "Cannot assign `5` to `foo` because number [1] is incompatible with string [2].",

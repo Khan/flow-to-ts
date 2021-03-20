@@ -1,12 +1,12 @@
-const { parse } = require("@babel/parser");
-const traverse = require("../babel-traverse/lib/index.js").default;
-const generate = require("@babel/generator").default;
-const prettier = require("prettier/standalone.js");
+import { parse } from "@babel/parser";
+import traverse from "../babel-traverse/lib/index.js";
+import generate from "@babel/generator";
+import * as prettier from "prettier/standalone.js";
 const plugins = [require("prettier/parser-typescript.js")];
 
-const transform = require("./transform.js");
+import { transform } from "./transform.js";
 
-const parseOptions = {
+export const parseOptions = {
   sourceType: "module",
   plugins: [
     // enable jsx and flow syntax
@@ -50,7 +50,7 @@ const fixComments = (commentsToNodesMap) => {
   }
 };
 
-const convert = (flowCode, options) => {
+export const convert = (flowCode, options) => {
   const ast = parse(flowCode, parseOptions);
 
   // key = startLine:endLine, value = {leading, trailing} (nodes)
@@ -94,6 +94,3 @@ const convert = (flowCode, options) => {
     return tsCode;
   }
 };
-
-module.exports = convert;
-module.exports.parseOptions = parseOptions;

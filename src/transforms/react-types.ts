@@ -1,6 +1,6 @@
-const t = require("../../babel-types/lib/index.js");
+import * as t from "../../babel-types/lib/index.js";
 
-exports.GenericTypeAnnotation = {
+export const GenericTypeAnnotation = {
   exit(path, state) {
     const { id: typeName, typeParameters } = path.node;
 
@@ -132,7 +132,7 @@ const UnqualifiedReactTypeNameMap = {
   React$ElementType: "ElementType",
 };
 
-exports.QualifiedTypeIdentifier = {
+export const QualifiedTypeIdentifier = {
   exit(path, state) {
     const { qualification, id } = path.node;
     const left = qualification;

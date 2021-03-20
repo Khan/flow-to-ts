@@ -1,7 +1,7 @@
-const t = require("../../babel-types/lib/index.js");
-const { trackComments } = require("../util.js");
+import * as t from "../../babel-types/lib/index.js";
+import { trackComments } from "../util.js";
 
-exports.ObjectTypeAnnotation = {
+export const ObjectTypeAnnotation = {
   enter(path, state) {
     const { properties } = path.node;
     if (properties.length > 0) {
@@ -115,7 +115,7 @@ exports.ObjectTypeAnnotation = {
   },
 };
 
-exports.QualifiedTypeIdentifier = {
+export const QualifiedTypeIdentifier = {
   exit(path, state) {
     const { qualification, id } = path.node;
     const left = qualification;
@@ -132,7 +132,7 @@ exports.QualifiedTypeIdentifier = {
   },
 };
 
-exports.ObjectTypeCallProperty = {
+export const ObjectTypeCallProperty = {
   exit(path, state) {
     // NOTE: `value` has already been converted to a TSFunctionType
     const { value, leadingComments, trailingComments, loc } = path.node;
@@ -152,7 +152,7 @@ exports.ObjectTypeCallProperty = {
   },
 };
 
-exports.ObjectTypeProperty = {
+export const ObjectTypeProperty = {
   exit(path, state) {
     const {
       key,
@@ -221,7 +221,7 @@ exports.ObjectTypeProperty = {
   },
 };
 
-exports.ObjectTypeIndexer = {
+export const ObjectTypeIndexer = {
   exit(path, state) {
     const {
       id,

@@ -1,4 +1,4 @@
 #!/usr/bin/env node
-const cli = require("./cli.js");
+import { cli } from "./cli.js";
 
 cli(process.argv);

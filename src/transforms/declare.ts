@@ -1,7 +1,7 @@
-const t = require("../../babel-types/lib/index.js");
-const { trackComments } = require("../util.js");
+import * as t from "../../babel-types/lib/index.js";
+import { trackComments } from "../util.js";
 
-exports.DeclareVariable = {
+export const DeclareVariable = {
   exit(path) {
     const { id } = path.node;
 
@@ -19,7 +19,7 @@ exports.DeclareVariable = {
   },
 };
 
-exports.DeclareClass = {
+export const DeclareClass = {
   exit(path, state) {
     const {
       id,
@@ -56,7 +56,7 @@ exports.DeclareClass = {
   },
 };
 
-exports.DeclareFunction = {
+export const DeclareFunction = {
   exit(path, state) {
     const { id, leadingComments, trailingComments, loc } = path.node;
     const { name, typeAnnotation } = id;
@@ -95,7 +95,7 @@ exports.DeclareFunction = {
   },
 };
 
-exports.DeclareExportDeclaration = {
+export const DeclareExportDeclaration = {
   exit(path, state) {
     const {
       declaration,

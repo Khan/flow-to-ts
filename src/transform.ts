@@ -1,12 +1,12 @@
-const path = require("path");
-const t = require("../babel-types/lib/index.js");
+import path from "path";
+import * as t from "../babel-types/lib/index.js";
 
-const declare = require("./transforms/declare.js");
-const reactTypes = require("./transforms/react-types.js");
-const objectType = require("./transforms/object-type.js");
-const utilityTypes = require("./transforms/utility-types.js");
+import * as declare from "./transforms/declare.js";
+import * as reactTypes from "./transforms/react-types.js";
+import * as objectType from "./transforms/object-type.js";
+import * as utilityTypes from "./transforms/utility-types.js";
 
-const { trackComments } = require("./util.js");
+import { trackComments } from "./util.js";
 
 const locToString = (loc) =>
   `${loc.start.line}:${loc.start.column}-${loc.end.line}:${loc.end.column}`;
@@ -31,7 +31,7 @@ const transformFunction = (path) => {
   }
 };
 
-const transform = {
+export const transform = {
   Program: {
     enter(path, state) {
       const { body } = path.node;
@@ -616,5 +616,3 @@ const transform = {
   DeclareFunction: declare.DeclareFunction,
   DeclareExportDeclaration: declare.DeclareExportDeclaration,
 };
-
-module.exports = transform;
