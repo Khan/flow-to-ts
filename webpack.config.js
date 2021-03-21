@@ -3,10 +3,15 @@ const path = require("path");
 const {flowConfig, tsConfig} = require("./babel.configs.js");
 
 module.exports = {
-  entry: "./src/convert.ts",
+  target: "node",
+  mode: "development",
+  entry: {
+    convert: "./src/convert.ts",
+    cli: "./src/cli.ts",
+  },
   output: {
     path: path.resolve(__dirname, "dist"),
-    filename: "convert.js",
+    filename: "[name].bundle.js",
     library: {
       name: "flowToTs",
       type: "umd",
