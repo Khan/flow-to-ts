@@ -5,7 +5,7 @@ import { Controlled as CodeMirror } from "react-codemirror2";
 import "codemirror/mode/jsx/jsx.js";
 import "codemirror/mode/javascript/javascript.js";
 
-import convert from "../../src/convert.js";
+import { convert } from "../../src/convert";
 import OptionsPanel, { Options } from "./options-panel";
 import { maybeDecodeHash, encodeHash } from "./hash";
 
@@ -99,12 +99,6 @@ class App extends React.Component<Props, State> {
     }
   }
 
-  componentDidMount() {
-    // Flow type checking the playground is disabled until we can figure out
-    // how to enable optional chaining and nullish coalescing.
-    // this.loadFlow();
-  }
-
   componentDidUpdate(prevProps: Props, prevState: State) {
     if (
       JSON.stringify(prevState.options) !== JSON.stringify(this.state.options)
@@ -115,44 +109,11 @@ class App extends React.Component<Props, State> {
       try {
         const tsCode = convert(flowCode, this.state.options);
         this.setState({ tsCode });
-        this.typeCheck(flowCode);
       } catch (e) {
-        debugger;
         this.setState({ errors: [e.toString()] });
         console.log(e);
       }
     }
-  }
-
-  loadFlow() {
-    import(`../static/0.98.1/flow.js`).then((flow: Flow) => {
-      Promise.all([
-        fetch(`/static/0.98.1/flowlib/core.js"`),
-        fetch(`/static/0.98.1/flowlib/react.js"`),
-        fetch(`/static/0.98.1/flowlib/intl.js"`),
-      ])
-        .then((results) => Promise.all(results.map((res) => res.text())))
-        .then((values) => {
-          const [core, react, intl] = values;
-          try {
-            flow.registerFile(`/static/0.98.1/flowlib/core.js`, core);
-            flow.registerFile(`/static/0.98.1/flowlib/react.js`, react);
-            flow.registerFile(`/static/0.98.1/flowlib/intl.js`, intl);
-            flow.registerFile("try-lib.js", TRY_LIB_CONTENTS);
-            flow.setLibs([
-              `/static/0.98.1/flowlib/core.js`,
-              `/static/0.98.1/flowlib/react.js`,
-              `/static/0.98.1/flowlib/intl.js`,
-              "try-lib.js",
-            ]);
-          } catch (e) {
-            // ignore errors
-          }
-
-          this.flow = flow;
-          this.typeCheck(this.state.flowCode);
-        });
-    });
   }
 
   update(flowCode: string) {
@@ -161,26 +122,10 @@ class App extends React.Component<Props, State> {
       this.setState({ flowCode });
       const tsCode = convert(flowCode, this.state.options);
       this.setState({ tsCode });
-      this.typeCheck(flowCode);
       this.setState({ errors: [] });
     } catch (e) {
-      debugger;
       this.setState({ errors: [e.toString()] });
       console.log(e);
-    }
-  }
-
-  typeCheck(flowCode: string) {
-    if (this.flow) {
-      const errors = this.flow.checkContent("-", flowCode);
-      console.log(errors);
-      if (errors.length > 0) {
-        this.setState({
-          errors: errors.map((error) => error.message[0].descr),
-        });
-      } else {
-        this.setState({ errors: [] });
-      }
     }
   }
 

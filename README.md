@@ -61,6 +61,10 @@ test cases and should have 100% diff coverage.
 ```bash
 git clone git@github.com:Khan/flow-to-ts.git
 cd flow-to-ts
+git submodule update --depth 1 --init -- babel
+cd babel
+yarn
+cd ..
 yarn
 yarn test
 ```

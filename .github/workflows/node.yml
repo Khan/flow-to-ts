@@ -12,7 +12,12 @@ jobs:
         uses: actions/setup-node@v1
         with:
           node-version: 12.x
-      - name: yarn install
+      - name: checkout babel submodule
+        run: git submodule update --depth 1 --init -- babel
+      - name: install babel deps
+        working-directory: ./babel
+        run: yarn install
+      - name: install flow-to-ts deps
         run: yarn install
       - name: yarn coverage
         run: yarn coverage
@@ -34,7 +39,12 @@ jobs:
         uses: actions/setup-node@v1
         with:
           node-version: ${{ matrix.node-version }}
-      - name: yarn install
+      - name: checkout babel submodule
+        run: git submodule update --depth 1 --init -- babel
+      - name: install babel deps
+        working-directory: ./babel
+        run: yarn install
+      - name: install flow-to-ts deps
         run: yarn install
       - name: yarn test
         run: yarn test

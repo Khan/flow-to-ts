@@ -1,6 +1,8 @@
 const path = require("path");
+const webpack = require("webpack");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
-const CopyWebpackPlugin = require("copy-webpack-plugin");
+
+const {flowConfig, tsConfig, tsxConfig} = require("./babel.configs.js");
 
 module.exports = {
   mode: "development",
@@ -17,11 +19,28 @@ module.exports = {
   module: {
     rules: [
       {
-        test: /\.(ts|tsx|js|jsx)$/,
-        exclude: [/node_modules/, /static/],
+        test: /\.(js|jsx)$/,
+        exclude: /(node_modules|bower_components)/,
         use: {
-          loader: "babel-loader"
-        }
+          loader: "babel-loader",
+          options: flowConfig,
+        },
+      },
+      {
+        test: /\.ts$/,
+        exclude: /(node_modules|bower_components)/,
+        use: {
+          loader: "babel-loader",
+          options: tsConfig,
+        },
+      },
+      {
+        test: /\.tsx$/,
+        exclude: /(node_modules|bower_components)/,
+        use: {
+          loader: "babel-loader",
+          options: tsxConfig,
+        },
       },
       {
         test: /\.css$/,
@@ -33,17 +52,28 @@ module.exports = {
       }
     ]
   },
-  node: {
-    fs: "empty"
-  },
   resolve: {
-    extensions: [".ts", ".tsx", ".js", ".json"]
+    extensions: [".ts", ".tsx", ".js", ".json"],
+    fallback: {
+      fs: false,
+      constants: false,
+    },
   },
   plugins: [
     new HtmlWebpackPlugin({
       template: "./templates/index.html"
     }),
-    new CopyWebpackPlugin([{ from: "static", to: "static" }])
+    new webpack.DefinePlugin({
+      "process.platform": JSON.stringify("web"),
+      "process.env": {
+        NODE_ENV: JSON.stringify("development"),
+      },
+    }),
+    new webpack.ProvidePlugin({
+      Buffer: ['buffer', 'Buffer'],
+    }),
   ],
-  devtool: "none"
+  node: {
+    global: true,
+  },
 };
