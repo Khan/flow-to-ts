@@ -51,6 +51,7 @@
     "webpack-cli": "^4.5.0"
   },
   "scripts": {
+    "prepare": "git submodule update --init --recursive",
     "prepublishOnly": "webpack build",
     "build": "webpack build",
     "type-check": "tsc --project tsconfig.json",
