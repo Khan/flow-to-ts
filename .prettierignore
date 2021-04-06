@@ -2,6 +2,7 @@ test/fixtures/convert/formatting
 test/fixtures/convert/imports/named_import_specifier_kind/
 test/fixtures/convert/function-types/predicate03
 test/fixtures/convert/imports/dynamic_import
+test/fixtures/convert/decorator/
 playground/static
 babel-traverse
 babel-types
