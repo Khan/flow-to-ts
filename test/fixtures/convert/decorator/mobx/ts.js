@@ -5,17 +5,12 @@ export class Store {
 
   @computed
   get filePath(): string | null | undefined {
-    const editor = this.editor;
-    if (!editor) return null;
-    const savedFilePath = editor.getPath();
-    return savedFilePath ? savedFilePath : `Unsaved Editor ${editor.id}`;
+    return "/file";
   }
 
   @action
   newMarkerStore(editorId: number) {
-    const markerStore = new MarkerStore();
-    this.markersMapping.set(editorId, markerStore);
-    return markerStore;
+    return 1;
   }
 
 }
