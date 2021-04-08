@@ -22,6 +22,8 @@ export const parseOptions: ParserOptions = {
     "nullishCoalescingOperator",
     "classPrivateProperties",
     "classPrivateMethods",
+    // decorators
+    "decorators-legacy",
   ],
 };
 

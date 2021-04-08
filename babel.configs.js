@@ -4,6 +4,10 @@ const presets = [
 
 const commonPlugins = [
   "@babel/plugin-proposal-class-properties",
+  [
+    "@babel/plugin-proposal-decorators",
+    { legacy: true },
+  ],
   ["module-resolver", {
     "alias": {
       "^@babel/(.+)": "./babel/packages/babel-\\1/src/index"
