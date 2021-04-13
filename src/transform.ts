@@ -5,7 +5,7 @@ import * as reactTypes from "./transforms/react-types";
 import * as objectType from "./transforms/object-type";
 import * as utilityTypes from "./transforms/utility-types";
 
-import { trackComments } from "./util";
+import { trackComments, partition, returning } from "./util";
 
 const locToString = (loc) =>
   `${loc.start.line}:${loc.start.column}-${loc.end.line}:${loc.end.column}`;
@@ -575,18 +575,22 @@ export const transform = {
   ImportDeclaration: {
     exit(path, state) {
       stripSuffixFromImportSource(path);
+      let replacementNode = null;
+
+      const {
+        importKind,
+        specifiers,
+        source,
+        leadingComments,
+        trailingComments,
+        loc,
+      } = path.node;
+
       if (
-        path.node.importKind === "typeof" &&
-        t.isImportDefaultSpecifier(path.node.specifiers[0])
+        importKind === "typeof" &&
+        t.isImportDefaultSpecifier(specifiers[0])
       ) {
-        const {
-          specifiers,
-          source,
-          leadingComments,
-          trailingComments,
-          loc,
-        } = path.node;
-        const replacementNode = t.tsTypeAliasDeclaration(
+        replacementNode = t.tsTypeAliasDeclaration(
           specifiers[0].local,
           undefined,
           t.tsTypeQuery(t.tsImportType(source, t.identifier("default")))
@@ -594,12 +598,59 @@ export const transform = {
         replacementNode.leadingComments = leadingComments;
         replacementNode.trailingComments = trailingComments;
         replacementNode.loc = loc;
+      } else if (importKind === "value") {
+        // find any "type" imports within the ImportSpecifier list
+        // and pull them out to separate ImportDeclarations
 
-        trackComments(replacementNode, state);
+        const [valSpecs, typeSpecs] = partition(
+          specifiers,
+          (s) => s.importKind === "type"
+        );
 
-        path.replaceWith(replacementNode);
-      } else {
-        trackComments(path.node, state);
+        if (typeSpecs.length > 0) {
+          const typeNode = t.importDeclaration(
+            typeSpecs.map((s) =>
+              t.importSpecifier(
+                returning(t.identifier(s.local.name), (n) => {
+                  n.loc = s.local.loc;
+                }),
+                returning(t.identifier(s.imported.name), (n) => {
+                  n.loc = s.imported.loc;
+                })
+              )
+            ),
+            source
+          );
+          typeNode.leadingComments = leadingComments;
+          typeNode.importKind = "type";
+          typeNode.loc = loc;
+
+          const valNode = t.importDeclaration(valSpecs, source);
+          valNode.trailingComments = trailingComments;
+          valNode.loc = {
+            source: loc.source,
+            start: {
+              line: loc.start.line + 1,
+              column: 0,
+            },
+            end: {
+              line: loc.start.line + 1,
+              column: 0,
+            },
+          };
+
+          replacementNode = [typeNode, valNode];
+        }
+      }
+
+      trackComments(replacementNode ?? path.node, state);
+
+      if (replacementNode != null) {
+        if (Array.isArray(replacementNode)) {
+          path.replaceWithMultiple(replacementNode);
+        } else {
+          path.replaceWith(replacementNode);
+        }
       }
     },
   },

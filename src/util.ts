@@ -20,28 +20,53 @@
  * @param {*} state
  */
 export const trackComments = (node, state) => {
-  if (node.leadingComments) {
-    for (const comment of node.leadingComments) {
+  let leadingNode = node,
+    trailingNode = node;
+
+  if (Array.isArray(node)) {
+    leadingNode = node[0];
+    trailingNode = node[node.length - 1];
+  }
+
+  if (leadingNode.leadingComments) {
+    for (const comment of leadingNode.leadingComments) {
       const { start, end } = comment;
       const key = `${start}:${end}`;
 
       if (state.commentsToNodesMap.has(key)) {
-        state.commentsToNodesMap.get(key).leading = node;
+        state.commentsToNodesMap.get(key).leading = leadingNode;
       } else {
-        state.commentsToNodesMap.set(key, { leading: node });
+        state.commentsToNodesMap.set(key, { leading: leadingNode });
       }
     }
   }
-  if (node.trailingComments) {
-    for (const comment of node.trailingComments) {
+  if (trailingNode.trailingComments) {
+    for (const comment of trailingNode.trailingComments) {
       const { start, end } = comment;
       const key = `${start}:${end}`;
 
       if (state.commentsToNodesMap.has(key)) {
-        state.commentsToNodesMap.get(key).trailing = node;
+        state.commentsToNodesMap.get(key).trailing = trailingNode;
       } else {
-        state.commentsToNodesMap.set(key, { trailing: node });
+        state.commentsToNodesMap.set(key, { trailing: trailingNode });
       }
     }
   }
 };
+
+export function partition<T>(
+  iter: Iterable<T>,
+  fn: (val: T) => bool
+): [T[], T[]] {
+  const l = [],
+    r = [];
+  for (const v of iter) {
+    (fn(v) ? r : l).push(v);
+  }
+  return [l, r];
+}
+
+export function returning<T>(v: T, fn: (arg: T) => unknown): T {
+  fn(v);
+  return v;
+}
