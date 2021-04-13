@@ -54,10 +54,10 @@ export const trackComments = (node, state) => {
   }
 };
 
-export function partition<T>(
+export function partition<T, U extends T>(
   iter: Iterable<T>,
-  fn: (val: T) => bool
-): [T[], T[]] {
+  fn: (val: T) => val is U
+): [T[], U[]] {
   const l = [],
     r = [];
   for (const v of iter) {

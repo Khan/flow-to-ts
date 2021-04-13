@@ -1,4 +1,5 @@
-import * as t from "../babel/packages/babel-types/src/index";
+import * as t from "@babel/types";
+import { ImportSpecifier, ImportDeclaration } from "@babel/types";
 
 import * as declare from "./transforms/declare";
 import * as reactTypes from "./transforms/react-types";
@@ -584,7 +585,7 @@ export const transform = {
         leadingComments,
         trailingComments,
         loc,
-      } = path.node;
+      } = path.node as ImportDeclaration;
 
       if (
         importKind === "typeof" &&
@@ -604,7 +605,8 @@ export const transform = {
 
         const [valSpecs, typeSpecs] = partition(
           specifiers,
-          (s) => s.importKind === "type"
+          (s): s is ImportSpecifier =>
+            s.type === "ImportSpecifier" && s.importKind === "type"
         );
 
         if (typeSpecs.length > 0) {
@@ -614,9 +616,16 @@ export const transform = {
                 returning(t.identifier(s.local.name), (n) => {
                   n.loc = s.local.loc;
                 }),
-                returning(t.identifier(s.imported.name), (n) => {
-                  n.loc = s.imported.loc;
-                })
+                returning(
+                  t.identifier(
+                    s.imported.type === "Identifier"
+                      ? s.imported.name
+                      : s.imported.value
+                  ),
+                  (n) => {
+                    n.loc = s.imported.loc;
+                  }
+                )
               )
             ),
             source
@@ -628,7 +637,6 @@ export const transform = {
           const valNode = t.importDeclaration(valSpecs, source);
           valNode.trailingComments = trailingComments;
           valNode.loc = {
-            source: loc.source,
             start: {
               line: loc.start.line + 1,
               column: 0,
