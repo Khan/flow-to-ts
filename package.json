@@ -18,7 +18,7 @@
   ],
   "license": "MIT",
   "dependencies": {
-    "commander": "^2.19.0",
+    "commander": "^7.2.0",
     "glob": "^7.1.6",
     "prettier": "2.2.1",
     "trim-right": "^1.0.1"
