@@ -277,6 +277,11 @@ export const transform = {
       path.replaceWith(t.tsArrayType(elementType));
     },
   },
+  SymbolTypeAnnotation: {
+    exit(path) {
+      path.replaceWith(t.tsSymbolKeyword());
+    },
+  },
   TupleTypeAnnotation: {
     exit(path) {
       const { types } = path.node;
