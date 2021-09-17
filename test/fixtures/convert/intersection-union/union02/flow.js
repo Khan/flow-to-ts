@@ -1,0 +1,1 @@
+let obj: string | symbol;
