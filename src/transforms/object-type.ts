@@ -138,8 +138,8 @@ export const ObjectTypeCallProperty = {
 
 export const ObjectTypeProperty = {
   exit(path, state) {
+    let { key } = path.node;
     const {
-      key,
       value,
       optional,
       variance,
@@ -151,15 +151,24 @@ export const ObjectTypeProperty = {
     } = path.node; // TODO: static, kind
     const typeAnnotation = t.tsTypeAnnotation(value);
     const initializer = undefined; // TODO: figure out when this used
-    const computed = false; // TODO: maybe set this to true for indexers
+    let computed = false;
     const readonly = variance && variance.kind === "plus";
-
     if (variance && variance.kind === "minus") {
       // TODO: include file and location of infraction
       console.warn("typescript doesn't support writeonly properties");
     }
     if (kind !== "init") {
       console.warn("we don't handle get() or set() yet, :P");
+    }
+
+    if (t.isIdentifier(key)) {
+      if (key.name.startsWith("@@")) {
+        key = t.memberExpression(
+          t.identifier("Symbol"),
+          t.identifier(key.name.replace("@@", ""))
+        );
+        computed = true;
+      }
     }
 
     if (method) {
