@@ -6,6 +6,7 @@ const plugins = [require("prettier/parser-typescript.js")];
 
 import { transform } from "./transform";
 import type { ParserOptions } from "@babel/parser";
+import type { Options } from "./types";
 
 export const parseOptions: ParserOptions = {
   sourceType: "module",
@@ -53,7 +54,7 @@ const fixComments = (commentsToNodesMap) => {
   }
 };
 
-export const convert = (flowCode: string, options?: any) => {
+export const convert = (flowCode: string, options?: Options) => {
   const ast = parse(flowCode, parseOptions);
 
   // key = startLine:endLine, value = {leading, trailing} (nodes)
@@ -81,7 +82,11 @@ export const convert = (flowCode: string, options?: any) => {
 
   // we pass flowCode so that generate can compute source maps
   // if we ever decide to
-  let tsCode = generate(ast, undefined, flowCode).code;
+  let tsCode = generate(
+    ast,
+    { retainLines: options && options.retainLines },
+    flowCode
+  ).code;
 
   if (options && options.prettier) {
     const prettierOptions = {

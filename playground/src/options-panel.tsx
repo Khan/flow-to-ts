@@ -1,5 +1,7 @@
 import * as React from "react";
 
+import type { Options } from "../../src/types";
+
 // examples
 import basicTypes from "!!raw-loader!../examples/basic-types.js";
 import functionTypes from "!!raw-loader!../examples/function-types.js";
@@ -17,19 +19,7 @@ const examples = {
   utilityTypes,
 };
 
-export type Options = {
-  prettier: boolean;
-  prettierOptions: {
-    semi: boolean;
-    singleQuote: boolean;
-    tabWidth: number;
-    trailingComma: "all" | "es5" | "none";
-    bracketSpacing: boolean;
-    arrowParens: "avoid" | "always";
-    printWidth: number;
-  };
-  inlineUtilityTypes: boolean;
-};
+export type { Options };
 
 type Props = {
   options: Options;
@@ -246,6 +236,18 @@ class OptionsPanel extends React.Component<Props> {
               onOptionsChange({
                 ...options,
                 inlineUtilityTypes: e.currentTarget.checked,
+              });
+            }}
+          />
+          <label htmlFor="retain-lines">retain lines</label>
+          <input
+            id="retain-lines"
+            type="checkbox"
+            checked={options.retainLines}
+            onChange={(e) => {
+              onOptionsChange({
+                ...options,
+                retainLines: e.currentTarget.checked,
               });
             }}
           />

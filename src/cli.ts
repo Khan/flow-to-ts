@@ -6,6 +6,7 @@ import prettier from "prettier";
 import { convert } from "./convert";
 import { detectJsx } from "./detect-jsx";
 import { version } from "../package.json";
+import type { Options } from "./types";
 
 export const cli = (argv) => {
   const program = new Command();
@@ -47,6 +48,10 @@ export const cli = (argv) => {
       "avoid"
     )
     .option("--print-width [width]", "line width (depends on --prettier)", 80)
+    .option(
+      "--retain-lines",
+      "have babel try to retain original line numbers which may help preserve whitespace (recommended to be used with --prettier)"
+    )
     .option("--write", "write output to disk instead of STDOUT")
     .option("--delete-source", "delete the source file");
 
@@ -59,7 +64,7 @@ export const cli = (argv) => {
 
   const options = {
     inlineUtilityTypes: Boolean(program.inlineUtilityTypes),
-    prettier: program.prettier,
+    prettier: Boolean(program.prettier),
     prettierOptions: {
       semi: Boolean(program.semi),
       singleQuote: Boolean(program.singleQuote),
@@ -69,7 +74,8 @@ export const cli = (argv) => {
       arrowParens: program.arrowParens,
       printWidth: parseInt(program.printWidth),
     },
-  };
+    retainLines: Boolean(program.retainLines),
+  } as Options;
 
   if (options.prettier) {
     try {
