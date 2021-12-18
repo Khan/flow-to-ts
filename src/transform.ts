@@ -655,6 +655,12 @@ export const transform = {
 
       if (replacementNode != null) {
         if (Array.isArray(replacementNode)) {
+          // Fixes https://github.com/Khan/flow-to-ts/issues/281
+          // Imports with multiple types will be moved to their own node leaving the source node without specifiers;
+          // do not print it as it will result in an import declaration without specifiers
+          replacementNode = replacementNode.filter(
+            (x) => x.specifiers.length > 0
+          );
           path.replaceWithMultiple(replacementNode);
         } else {
           path.replaceWith(replacementNode);
