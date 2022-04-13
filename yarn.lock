@@ -2581,9 +2581,10 @@ find-up@^4.0.0, find-up@^4.1.0:
     locate-path "^5.0.0"
     path-exists "^4.0.0"
 
-flow-bin@^0.98.0:
-  version "0.98.0"
-  resolved "https://registry.yarnpkg.com/flow-bin/-/flow-bin-0.98.0.tgz#3361a03682326a83a5f0a864749f4f7f0d826bce"
+flow-bin@^0.176.0:
+  version "0.176.0"
+  resolved "https://registry.yarnpkg.com/flow-bin/-/flow-bin-0.176.0.tgz#581419d683474dafa0c837c10d030665695ad1f8"
+  integrity sha512-wJvHjsv5nUXnL7aumLdpwDxnCtNG4ysSnGgUHoqKPwHbbLx9Of/7NGK54g3Wi82WsPk9wnSmSDFv0neItHAYug==
 
 for-in@^1.0.2:
   version "1.0.2"
