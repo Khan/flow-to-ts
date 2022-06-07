@@ -680,5 +680,5 @@ export const transform = {
     exit(path) {
       path.replaceWith(t.tsAnyKeyword());
     },
-  }
+  },
 };
