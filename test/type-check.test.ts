@@ -61,9 +61,9 @@ describe("type-checking", () => {
       "Type 'string' is not assignable to type 'boolean'.",
     ]);
     expect(flowResults["simple-types-fail.js"]).toEqual([
-      "Cannot assign `5` to `foo` because number [1] is incompatible with string [2].",
-      "Cannot assign `true` to `bar` because boolean [1] is incompatible with number [2].",
-      "Cannot assign `'foo'` to `baz` because string [1] is incompatible with boolean [2].",
+      "Cannot assign `5` to `foo` because number [1] is incompatible with string [2]. [incompatible-type]",
+      "Cannot assign `true` to `bar` because boolean [1] is incompatible with number [2]. [incompatible-type]",
+      "Cannot assign `'foo'` to `baz` because string [1] is incompatible with boolean [2]. [incompatible-type]",
     ]);
   });
 

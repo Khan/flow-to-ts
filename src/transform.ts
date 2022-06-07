@@ -515,13 +515,8 @@ export const transform = {
   },
   InterfaceDeclaration: {
     exit(path, state) {
-      const {
-        id,
-        typeParameters,
-        leadingComments,
-        trailingComments,
-        loc,
-      } = path.node; // TODO: implements, mixins
+      const { id, typeParameters, leadingComments, trailingComments, loc } =
+        path.node; // TODO: implements, mixins
       const body = t.tsInterfaceBody(path.node.body.members);
       const _extends =
         path.node.extends.length > 0 ? path.node.extends : undefined;
@@ -674,4 +669,16 @@ export const transform = {
   DeclareClass: declare.DeclareClass,
   DeclareFunction: declare.DeclareFunction,
   DeclareExportDeclaration: declare.DeclareExportDeclaration,
+  IndexedAccessType: {
+    exit(path) {
+      path.replaceWith(
+        t.tsIndexedAccessType(path.node.objectType, path.node.indexType)
+      );
+    },
+  },
+  OptionalIndexedAccessType: {
+    exit(path) {
+      path.replaceWith(t.tsAnyKeyword());
+    },
+  },
 };

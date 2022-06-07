@@ -12,6 +12,7 @@ describe.only("convert", () => {
   const suites = false
     ? []
     : fs.readdirSync(path.join(__dirname, "fixtures/convert"));
+
   for (const suiteName of suites) {
     describe(suiteName, () => {
       const tests = false
