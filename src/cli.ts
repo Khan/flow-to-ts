@@ -47,6 +47,16 @@ export const cli = (argv) => {
       "avoid"
     )
     .option("--print-width [width]", "line width (depends on --prettier)", 80)
+    .option(
+      "--parser [parser]",
+      "parser to be used by prettier (depends on --prettier)",
+      "babel-ts"
+    )
+    .option(
+      "--override-prettier-config-options",
+      "if the provided prettier options should override the ones specified in a prettier config found in the current working directory",
+      false
+    )
     .option("--write", "write output to disk instead of STDOUT")
     .option("--delete-source", "delete the source file");
 
@@ -68,13 +78,14 @@ export const cli = (argv) => {
       bracketSpacing: Boolean(program.bracketSpacing),
       arrowParens: program.arrowParens,
       printWidth: parseInt(program.printWidth),
+      parser: program.parser,
     },
   };
 
   if (options.prettier) {
     try {
       const prettierConfig = prettier.resolveConfig.sync(process.cwd());
-      if (prettierConfig) {
+      if (prettierConfig && !Boolean(program.overridePrettierConfigOptions)) {
         // @ts-ignore
         options.prettierOptions = prettierConfig;
       }

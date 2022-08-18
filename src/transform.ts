@@ -515,13 +515,8 @@ export const transform = {
   },
   InterfaceDeclaration: {
     exit(path, state) {
-      const {
-        id,
-        typeParameters,
-        leadingComments,
-        trailingComments,
-        loc,
-      } = path.node; // TODO: implements, mixins
+      const { id, typeParameters, leadingComments, trailingComments, loc } =
+        path.node; // TODO: implements, mixins
       const body = t.tsInterfaceBody(path.node.body.members);
       const _extends =
         path.node.extends.length > 0 ? path.node.extends : undefined;
