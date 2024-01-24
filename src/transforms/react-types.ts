@@ -1,5 +1,55 @@
 import * as t from "@babel/types";
 
+export const ImportSpecifier = {
+  exit(path, state) {
+    const { local, imported } = path.node;
+
+    if (
+      path.parent.source.value === "react" &&
+      // TODO: Support transforming unqualified React types imported as aliases.
+      local.name === imported.name
+    ) {
+      state.unqualifiedReactImports.add(local.name);
+
+      if (local.name in QualifiedReactTypeNameMap) {
+        return t.importSpecifier(
+          t.identifier(QualifiedReactTypeNameMap[local.name]),
+          t.identifier(QualifiedReactTypeNameMap[local.name])
+        );
+      }
+
+      if (local.name === "ElementConfig") {
+        return t.importSpecifier(
+          t.identifier("ComponentProps"),
+          t.identifier("ComponentProps")
+        );
+      }
+    }
+  },
+};
+
+export const ImportDeclaration = {
+  exit(path, state) {
+    if (path.node?.source?.value === "react") {
+      let seenComponentProps = false;
+      path.node.specifiers = (path.node.specifiers ?? []).filter((n) => {
+        if (
+          n.local?.name === "ComponentProps" &&
+          n.imported?.name === "ComponentProps"
+        ) {
+          if (!seenComponentProps) {
+            seenComponentProps = true;
+            return true;
+          } else {
+            return false;
+          }
+        }
+        return true;
+      });
+    }
+  },
+};
+
 export const GenericTypeAnnotation = {
   exit(path, state) {
     const { id: typeName, typeParameters } = path.node;
@@ -12,7 +62,18 @@ export const GenericTypeAnnotation = {
           t.identifier(UnqualifiedReactTypeNameMap[typeName.name])
         ),
         // TypeScript doesn't support empty type param lists
-        typeParameters && typeParameters.params.length > 0 ? typeParameters : null
+        typeParameters && typeParameters.params.length > 0
+          ? typeParameters
+          : null
+      );
+    }
+
+    if (
+      typeName.name in QualifiedReactTypeNameMap &&
+      state.unqualifiedReactImports.has(typeName.name)
+    ) {
+      return t.tsTypeReference(
+        t.identifier(QualifiedReactTypeNameMap[typeName.name])
       );
     }
 
@@ -81,6 +142,26 @@ export const GenericTypeAnnotation = {
       );
     }
 
+    if (
+      typeName.name === "ElementConfig" &&
+      state.unqualifiedReactImports.has("ElementConfig")
+    ) {
+      // ElementConfig<T> -> JSX.LibraryManagedAttributes<T, ComponentProps<T>>
+      return t.tsTypeReference(
+        t.tsQualifiedName(
+          t.identifier("JSX"),
+          t.identifier("LibraryManagedAttributes")
+        ),
+        t.tsTypeParameterInstantiation([
+          typeParameters.params[0],
+          t.tsTypeReference(
+            t.identifier("ComponentProps"),
+            t.tsTypeParameterInstantiation([typeParameters.params[0]])
+          ),
+        ])
+      );
+    }
+
     if (t.isTSQualifiedName(typeName)) {
       const { left, right } = typeName;
 
@@ -107,7 +188,7 @@ export const GenericTypeAnnotation = {
         );
       }
     }
-  }
+  },
 };
 
 // Mapping between React types for Flow and those for TypeScript.
@@ -144,7 +225,7 @@ export const QualifiedTypeIdentifier = {
         t.identifier(QualifiedReactTypeNameMap[right.name])
       );
     }
-  }
+  },
 };
 
 // Only types with different names are included.

@@ -67,6 +67,7 @@ export const convert = (flowCode: string, options?: any) => {
   // apply our transforms, traverse mutates the ast
   const state = {
     usedUtilityTypes: new Set(),
+    unqualifiedReactImports: new Set(),
     options: Object.assign({ inlineUtilityTypes: false }, options),
     commentsToNodesMap,
     startLineToComments,

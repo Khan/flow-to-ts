@@ -660,13 +660,21 @@ export const transform = {
           path.replaceWith(replacementNode);
         }
       }
+
+      reactTypes.ImportDeclaration.exit(path, state);
     },
   },
   ImportSpecifier: {
-    exit(path) {
+    exit(path, state) {
       // TODO(#223): Handle "typeof" imports.
       if (path.node.importKind === "typeof") {
         path.node.importKind = "value";
+      }
+
+      const replacement = reactTypes.ImportSpecifier.exit(path, state);
+      if (replacement) {
+        path.replaceWith(replacement);
+        return;
       }
     },
   },
