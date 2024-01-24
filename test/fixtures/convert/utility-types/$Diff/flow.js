@@ -1,1 +1,0 @@
-type B = $Diff<A>;

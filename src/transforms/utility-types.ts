@@ -55,10 +55,22 @@ const utilityTypes = {
   $FlowFixMe: () => {
     return t.tsAnyKeyword();
   },
-  Class: null, // TODO
+  $Diff: (T, U) => {
+    // $Diff<T, U> -> Omit<T, keyof U>
+    const typeName = t.identifier("Omit");
+    // TODO: patch @babel/types - tsTypeOperator should accept two arguments
+    // const keyof = t.tsTypeOperator(typeAnnotation, "keyof");
+    const keyofU = {
+      type: "TSTypeOperator",
+      typeAnnotation: U,
+      operator: "keyof",
+    };
+    const typeParameters = t.tsTypeParameterInstantiation([T, keyofU]);
+    return t.tsTypeReference(typeName, typeParameters);
+  },
 
+  Class: null, // TODO
   // These are too complicated to inline so we'll leave them as imports
-  $Diff: null,
   $ElementType: null,
   $Call: null,
 
