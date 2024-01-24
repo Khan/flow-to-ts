@@ -1,2 +1,2 @@
 import { $Diff } from "utility-types";
-type B = $Diff<A>;
+type C = $Diff<A, B>;
