@@ -12,3 +12,4 @@ let child: ReactChild;
 let portal: ReactPortal;
 let nodeArray: ReactNodeArray;
 let element: ReactElement;
+let children: T | T[];

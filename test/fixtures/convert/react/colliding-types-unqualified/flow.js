@@ -14,3 +14,4 @@ let context: Context;
 let ref: Ref;
 let key: Key;
 let elementConfig: ElementConfig;
+let chilernArray: ChildrenArray;

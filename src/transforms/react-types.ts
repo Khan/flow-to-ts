@@ -43,8 +43,14 @@ export const ImportDeclaration = {
           } else {
             return false;
           }
+        } else if (
+          n.local?.name === "ChildrenArray" &&
+          n.imported?.name === "ChildrenArray"
+        ) {
+          return false;
+        } else {
+          return true;
         }
-        return true;
       });
     }
   },
@@ -143,6 +149,16 @@ export const GenericTypeAnnotation = {
     }
 
     if (
+      typeName.name === "ChildrenArray" &&
+      state.unqualifiedReactImports.has("ChildrenArray")
+    ) {
+      return t.tsUnionType([
+        typeParameters.params[0],
+        t.tsArrayType(typeParameters.params[0]),
+      ]);
+    }
+
+    if (
       typeName.name === "ElementConfig" &&
       state.unqualifiedReactImports.has("ElementConfig")
     ) {
@@ -186,6 +202,16 @@ export const GenericTypeAnnotation = {
             ),
           ])
         );
+      }
+
+      if (
+        t.isIdentifier(left, { name: "React" }) &&
+        t.isIdentifier(right, { name: "ChildrenArray" })
+      ) {
+        return t.tsUnionType([
+          typeParameters.params[0],
+          t.tsArrayType(typeParameters.params[0]),
+        ]);
       }
     }
   },
