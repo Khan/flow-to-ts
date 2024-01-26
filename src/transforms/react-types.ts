@@ -233,9 +233,7 @@ const QualifiedReactTypeNameMap = {
   Node: "ReactNode",
   Text: "ReactText",
   Child: "ReactChild",
-  Children: "ReactChildren",
   Element: "ReactElement", // 1:1 mapping is wrong, since ReactElement takes two type params
-  Fragment: "ReactFragment",
   Portal: "ReactPortal",
   NodeArray: "ReactNodeArray",
 
